@@ -1,0 +1,43 @@
+@model AssetDisposal
+@{
+    ViewData["Title"] = "Asset Disposal Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Asset Disposal Details</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Asset</dt>
+            <dd class="col-sm-8">@Model.AssetRegister?.Name (@Model.AssetRegister?.AssetNo)</dd>
+            <dt class="col-sm-4">Branch</dt>
+            <dd class="col-sm-8">@Model.AssetRegister?.Branch?.Name</dd>
+            <dt class="col-sm-4">Disposal Date</dt>
+            <dd class="col-sm-8">@Model.DisposalDate.ToString("dd MMM yyyy")</dd>
+            <dt class="col-sm-4">Sale Value</dt>
+            <dd class="col-sm-8">@Model.SaleValue.ToString("N2")</dd>
+            <dt class="col-sm-4">Book Value at Disposal</dt>
+            <dd class="col-sm-8">@Model.BookValueAtDisposal.ToString("N2")</dd>
+            <dt class="col-sm-4">Gain / Loss</dt>
+            <dd class="col-sm-8">
+                @if (Model.Result == DisposalResult.Gain)
+                {
+                    <span class="badge bg-success">Gain of @Model.GainLossAmount.ToString("N2")</span>
+                }
+                else if (Model.Result == DisposalResult.Loss)
+                {
+                    <span class="badge bg-danger">Loss of @Model.GainLossAmount.ToString("N2")</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">No gain/loss</span>
+                }
+            </dd>
+            <dt class="col-sm-4">Note</dt>
+            <dd class="col-sm-8">@Model.Note</dd>
+        </dl>
+    </div>
+</div>

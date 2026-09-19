@@ -1,0 +1,124 @@
+@model CompanyERP.ViewModels.Employee.SalaryPaymentFormViewModel
+@{
+    ViewData["Title"] = "Salary Payments";
+    var employeeName = ViewBag.EmployeeName as string ?? string.Empty;
+    var payments = (ViewBag.Payments as List<CompanyERP.Entities.Employee.SalaryPayment>) ?? [];
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Salary Payments - @employeeName</h1>
+    <a asp-action="Details" asp-route-id="@Model.EmployeeId" class="btn btn-outline-secondary">Back to Employee</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Payment Date</th>
+                            <th class="text-end">Amount</th>
+                            <th>Status</th>
+                            <th>Mode</th>
+                            <th>Reference</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!payments.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">No salary payment recorded yet.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in payments)
+                            {
+                                <tr>
+                                    <td>@item.ForMonth.ToString("MMM yyyy")</td>
+                                    <td>@item.PaymentDate.ToString("dd-MM-yyyy")</td>
+                                    <td class="text-end">@item.Amount.ToString("N2")</td>
+                                    <td>
+                                        @if (item.Status == CompanyERP.Entities.Employee.SalaryPaymentStatus.Paid)
+                                        {
+                                            <span class="badge bg-success">Paid</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        }
+                                    </td>
+                                    <td>@(item.PaymentMode?.ToString() ?? "-")</td>
+                                    <td>@(item.ReferenceNo ?? "-")</td>
+                                    <td class="text-end">
+                                        <form asp-action="DeleteSalaryPayment" method="post" class="d-inline" onsubmit="return confirm('Delete this salary payment?');">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="employeeId" value="@Model.EmployeeId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Record Payment</h2>
+                <form asp-action="CreateSalaryPayment" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="EmployeeId" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="ForMonth" class="form-label"></label>
+                        <input asp-for="ForMonth" type="month" class="form-control" />
+                        <span asp-validation-for="ForMonth" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="PaymentDate" class="form-label"></label>
+                        <input asp-for="PaymentDate" type="date" class="form-control" />
+                        <span asp-validation-for="PaymentDate" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Amount" class="form-label"></label>
+                        <input asp-for="Amount" class="form-control" />
+                        <span asp-validation-for="Amount" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Status" class="form-label"></label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="1">Pending</option>
+                            <option value="2">Paid</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="PaymentMode" class="form-label"></label>
+                        <select asp-for="PaymentMode" class="form-select">
+                            <option value="">-- Select Mode --</option>
+                            <option value="1">Cash</option>
+                            <option value="2">Bank</option>
+                        </select>
+                        <span asp-validation-for="PaymentMode" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ReferenceNo" class="form-label"></label>
+                        <input asp-for="ReferenceNo" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Note" class="form-label"></label>
+                        <textarea asp-for="Note" class="form-control" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Save Payment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

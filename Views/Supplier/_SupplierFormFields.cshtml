@@ -1,0 +1,67 @@
+@model CompanyERP.ViewModels.Supplier.SupplierFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <label asp-for="CompanyId" class="form-label"></label>
+        <select asp-for="CompanyId" asp-items="ViewBag.Companies" class="form-select">
+            <option value="">-- Select Company --</option>
+        </select>
+        <span asp-validation-for="CompanyId" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="SupplierCode" class="form-label"></label>
+        <input asp-for="SupplierCode" class="form-control" placeholder="e.g. SUP001" />
+        <span asp-validation-for="SupplierCode" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" placeholder="e.g. Tech Supplier Ltd" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="LegalName" class="form-label"></label>
+        <input asp-for="LegalName" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="ContactPerson" class="form-label"></label>
+        <input asp-for="ContactPerson" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Phone" class="form-label"></label>
+        <input asp-for="Phone" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Website" class="form-label"></label>
+        <input asp-for="Website" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Fax" class="form-label"></label>
+        <input asp-for="Fax" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="OpeningPayable" class="form-label"></label>
+        <input asp-for="OpeningPayable" class="form-control" />
+        <span asp-validation-for="OpeningPayable" class="text-danger"></span>
+        <div class="form-text">Supplier creation creates no accounting entry.</div>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="OpeningBalanceDate" class="form-label"></label>
+        <input asp-for="OpeningBalanceDate" type="date" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="IsActive" class="form-label"></label>
+        <select asp-for="IsActive" class="form-select">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+    </div>
+    <div class="col-12">
+        <label asp-for="Note" class="form-label"></label>
+        <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+    </div>
+</div>

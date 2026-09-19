@@ -1,0 +1,69 @@
+@model CompanyERP.ViewModels.Inventory.StockInViewModel
+@{
+    ViewData["Title"] = "Stock In";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Stock In</h1>
+    <a asp-action="Balance" class="btn btn-outline-secondary">Back to Balance</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="StockIn" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="ProductId" class="form-label"></label>
+                    <select asp-for="ProductId" asp-items="ViewBag.Products" class="form-select">
+                        <option value="">-- Select Product --</option>
+                    </select>
+                    <span asp-validation-for="ProductId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="WarehouseId" class="form-label"></label>
+                    <select asp-for="WarehouseId" asp-items="ViewBag.Warehouses" class="form-select">
+                        <option value="">-- Select Warehouse --</option>
+                    </select>
+                    <span asp-validation-for="WarehouseId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Type" class="form-label"></label>
+                    <select asp-for="Type" asp-items="ViewBag.Types" class="form-select"></select>
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Quantity" class="form-label"></label>
+                    <input asp-for="Quantity" class="form-control" />
+                    <span asp-validation-for="Quantity" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="UnitCost" class="form-label"></label>
+                    <input asp-for="UnitCost" class="form-control" />
+                    <span asp-validation-for="UnitCost" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ReferenceNo" class="form-label"></label>
+                    <input asp-for="ReferenceNo" class="form-control" placeholder="e.g. PO-001" />
+                    <span asp-validation-for="ReferenceNo" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TransactionDate" class="form-label"></label>
+                    <input asp-for="TransactionDate" type="date" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label asp-for="Note" class="form-label"></label>
+                    <textarea asp-for="Note" class="form-control" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-success">Add Stock</button>
+                <a asp-action="Balance" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

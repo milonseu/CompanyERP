@@ -1,0 +1,433 @@
+@model AssetRegister
+@{
+    ViewData["Title"] = Model.Name + " (" + Model.AssetNo + ")";
+    var openAssignment = Model.Assignments.FirstOrDefault(a => !a.ReturnedDate.HasValue);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">@Model.Name <span class="text-muted fs-6">@Model.AssetNo</span></h1>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+        @if (Model.Status != AssetStatus.Disposed)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Edit</a>
+            <a asp-controller="AssetTransfer" asp-action="Create" asp-route-assetId="@Model.Id" class="btn btn-outline-info">Transfer</a>
+        }
+        @if (Model.Status != AssetStatus.Disposed && Model.Acquisition is null)
+        {
+            <a asp-controller="AssetDisposal" asp-action="Create" asp-route-assetId="@Model.Id" class="btn btn-outline-warning">Dispose</a>
+        }
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button">Overview</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-assignment" type="button">Assignment</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-transfers" type="button">Transfers</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-maintenance" type="button">Maintenance</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-depreciation" type="button">Depreciation</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-documents" type="button">Documents</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tab-overview">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Asset Details</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Company</dt>
+                            <dd class="col-sm-7">@Model.Company?.Name</dd>
+                            <dt class="col-sm-5">Branch</dt>
+                            <dd class="col-sm-7">@Model.Branch?.Name</dd>
+                            <dt class="col-sm-5">Category</dt>
+                            <dd class="col-sm-7">@Model.AssetType?.AssetCategory?.Name</dd>
+                            <dt class="col-sm-5">Type</dt>
+                            <dd class="col-sm-7">@Model.AssetType?.Name</dd>
+                            <dt class="col-sm-5">Serial No</dt>
+                            <dd class="col-sm-7">@Model.SerialNo</dd>
+                            <dt class="col-sm-5">Model</dt>
+                            <dd class="col-sm-7">@Model.Model</dd>
+                            <dt class="col-sm-5">Purchase Date</dt>
+                            <dd class="col-sm-7">@Model.PurchaseDate.ToString("dd MMM yyyy")</dd>
+                            <dt class="col-sm-5">Location</dt>
+                            <dd class="col-sm-7">@Model.Location</dd>
+                            <dt class="col-sm-5">Status</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.Status == AssetStatus.Disposed)
+                                {
+                                    <span class="badge bg-secondary">Disposed</span>
+                                }
+                                else if (Model.Status == AssetStatus.InMaintenance)
+                                {
+                                    <span class="badge bg-warning text-dark">In Maintenance</span>
+                                }
+                                else if (Model.Status == AssetStatus.Registered)
+                                {
+                                    <span class="badge bg-info">Registered</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Financial Summary</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Cost</dt>
+                            <dd class="col-sm-7">@Model.Cost.ToString("N2")</dd>
+                            <dt class="col-sm-5">Salvage Value</dt>
+                            <dd class="col-sm-7">@Model.SalvageValue.ToString("N2")</dd>
+                            <dt class="col-sm-5">Method</dt>
+                            <dd class="col-sm-7">@(Model.DepreciationMethod == AssetDepreciationMethod.StraightLine ? "Straight Line" : "Reducing Balance")</dd>
+                            <dt class="col-sm-5">Useful Life</dt>
+                            <dd class="col-sm-7">@Model.UsefulLifeMonths months</dd>
+                            <dt class="col-sm-5">Accum. Depreciation</dt>
+                            <dd class="col-sm-7">@Model.AccumulatedDepreciation.ToString("N2")</dd>
+                            <dt class="col-sm-5 fw-bold">Book Value</dt>
+                            <dd class="col-sm-7 fw-bold">@Model.BookValue.ToString("N2")</dd>
+                        </dl>
+                    </div>
+                </div>
+                @if (Model.Acquisition is not null)
+                {
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Acquisition</h5>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5">Acquired On</dt>
+                                <dd class="col-sm-7">@Model.Acquisition.AcquisitionDate.ToString("dd MMM yyyy")</dd>
+                                <dt class="col-sm-5">Supplier</dt>
+                                <dd class="col-sm-7">@Model.Acquisition.Supplier?.Name</dd>
+                                <dt class="col-sm-5">Payment Type</dt>
+                                <dd class="col-sm-7">
+                                    @if (Model.Acquisition.PaymentType == AcquisitionPaymentType.Cash)
+                                    {
+                                        <span>Cash</span>
+                                    }
+                                    else if (Model.Acquisition.PaymentType == AcquisitionPaymentType.Payable)
+                                    {
+                                        <span>Payable</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Bank</span>
+                                    }
+                                </dd>
+                                <dt class="col-sm-5">Amount Paid</dt>
+                                <dd class="col-sm-7">@Model.Acquisition.AmountPaid.ToString("N2")</dd>
+                                <dt class="col-sm-5">Reference</dt>
+                                <dd class="col-sm-7">@Model.Acquisition.PaymentReference</dd>
+                            </dl>
+                        </div>
+                    </div>
+                }
+                @if (Model.Disposal is not null)
+                {
+                    <div class="card shadow-sm mt-3 border-danger">
+                        <div class="card-body">
+                            <h5 class="card-title text-danger">Disposal</h5>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-5">Disposed On</dt>
+                                <dd class="col-sm-7">@Model.Disposal.DisposalDate.ToString("dd MMM yyyy")</dd>
+                                <dt class="col-sm-5">Sale Value</dt>
+                                <dd class="col-sm-7">@Model.Disposal.SaleValue.ToString("N2")</dd>
+                                <dt class="col-sm-5">Book Value</dt>
+                                <dd class="col-sm-7">@Model.Disposal.BookValueAtDisposal.ToString("N2")</dd>
+                                <dt class="col-sm-5">Result</dt>
+                                <dd class="col-sm-7">
+                                    @if (Model.Disposal.Result == DisposalResult.Gain)
+                                    {
+                                        <span class="badge bg-success">Gain of @Model.Disposal.GainLossAmount.ToString("N2")</span>
+                                    }
+                                    else if (Model.Disposal.Result == DisposalResult.Loss)
+                                    {
+                                        <span class="badge bg-danger">Loss of @Model.Disposal.GainLossAmount.ToString("N2")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">No gain/loss</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-assignment">
+        @if (Model.Status != AssetStatus.Disposed && openAssignment is null)
+        {
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Assign Asset</h5>
+                    <form asp-action="Assign" method="post" class="row g-3">
+                        <input type="hidden" name="AssetRegisterId" value="@Model.Id" />
+                        <div class="col-md-4">
+                            <label class="form-label">Employee</label>
+                            <select name="EmployeeId" asp-items="ViewBag.Employees" class="form-select">
+                                <option value="">-- Select Employee --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Assigned On</label>
+                            <input name="AssignedDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Note</label>
+                            <input name="Note" class="form-control" />
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Assign</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+        else if (openAssignment is not null)
+        {
+            <div class="card shadow-sm mb-3 border-warning">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">Currently Assigned</h5>
+                    <p class="mb-2">
+                        <strong>@openAssignment.Employee?.Name</strong> since @openAssignment.AssignedDate.ToString("dd MMM yyyy")
+                        @if (!string.IsNullOrEmpty(openAssignment.Note))
+                        {
+                            <span class="text-muted">— @openAssignment.Note</span>
+                        }
+                    </p>
+                    <form asp-action="Return" method="post" class="row g-2 align-items-end">
+                        <input type="hidden" name="assetId" value="@Model.Id" />
+                        <div class="col-md-4">
+                            <label class="form-label">Returned On</label>
+                            <input name="returnedDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-outline-primary">Return</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Assigned On</th>
+                            <th>Returned On</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Assignments.Any())
+                        {
+                            <tr><td colspan="4" class="text-center text-muted py-4">No assignment history.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.Assignments)
+                            {
+                                <tr>
+                                    <td>@item.Employee?.Name</td>
+                                    <td>@item.AssignedDate.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        @if (item.ReturnedDate.HasValue)
+                                        {
+                                            @item.ReturnedDate.Value.ToString("dd MMM yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Active</span>
+                                        }
+                                    </td>
+                                    <td>@item.Note</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-transfers">
+        <div class="card shadow-sm">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>From Branch</th>
+                            <th>To Branch</th>
+                            <th>Location</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Transfers.Any())
+                        {
+                            <tr><td colspan="5" class="text-center text-muted py-4">No transfers recorded.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.Transfers)
+                            {
+                                <tr>
+                                    <td>@item.TransferDate.ToString("dd MMM yyyy")</td>
+                                    <td>@(item.FromBranch?.Name ?? "-")</td>
+                                    <td>@item.ToBranch?.Name</td>
+                                    <td>@(item.ToLocation ?? item.FromLocation)</td>
+                                    <td>@item.Note</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-maintenance">
+        <div class="card shadow-sm">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th class="text-end">Cost</th>
+                            <th>Vendor</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Maintenances.Any())
+                        {
+                            <tr><td colspan="5" class="text-center text-muted py-4">No maintenance recorded.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.Maintenances.OrderByDescending(m => m.MaintenanceDate))
+                            {
+                                <tr>
+                                    <td>@item.MaintenanceDate.ToString("dd MMM yyyy")</td>
+                                    <td>@(item.Type == AssetMaintenanceType.Preventive ? "Preventive" : "Corrective")</td>
+                                    <td class="text-end">@item.Cost.ToString("N2")</td>
+                                    <td>@item.Vendor</td>
+                                    <td>@item.Description</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-depreciation">
+        <div class="card shadow-sm">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Period End</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-end">Accumulated After</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Depreciations.Any())
+                        {
+                            <tr><td colspan="5" class="text-center text-muted py-4">No depreciation posted. Run depreciation from the Depreciation module.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.Depreciations)
+                            {
+                                <tr>
+                                    <td>@item.PeriodKey</td>
+                                    <td>@item.PeriodDate.ToString("dd MMM yyyy")</td>
+                                    <td class="text-end">@item.Amount.ToString("N2")</td>
+                                    <td class="text-end">@item.AccumulatedAfter.ToString("N2")</td>
+                                    <td>@item.Note</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-documents">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Attach Document</h5>
+                <form asp-action="AttachDocument" method="post" class="row g-3">
+                    <input type="hidden" name="AssetRegisterId" value="@Model.Id" />
+                    <div class="col-md-4">
+                        <label class="form-label">Document Name</label>
+                        <input name="DocumentName" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">File Name</label>
+                        <input name="FileName" class="form-control" placeholder="e.g. receipt.pdf" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Uploaded On</label>
+                        <input name="UploadedDate" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Attach</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>File</th>
+                            <th>Uploaded On</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Documents.Any())
+                        {
+                            <tr><td colspan="4" class="text-center text-muted py-4">No documents attached.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model.Documents)
+                            {
+                                <tr>
+                                    <td>@item.DocumentName</td>
+                                    <td>@item.FileName</td>
+                                    <td>@item.UploadedDate.ToString("dd MMM yyyy")</td>
+                                    <td>@item.Note</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

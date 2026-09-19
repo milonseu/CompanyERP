@@ -1,0 +1,95 @@
+@model IEnumerable<Category>
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Categories</h1>
+    <a asp-action="Create" class="btn btn-primary">New Category</a>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <label class="form-label mb-0">Company</label>
+                <select name="companyId" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- All Companies --</option>
+                    @foreach (var item in ViewBag.Companies)
+                    {
+                        <option value="@item.Value" selected="@(item.Selected)">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label mb-0">Category Type</label>
+                <select name="categoryTypeId" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- All Types --</option>
+                    @foreach (var item in ViewBag.CategoryTypes)
+                    {
+                        <option value="@item.Value" selected="@(item.Selected)">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <div class="form-check mt-4">
+                    <input type="checkbox" name="showInactive" class="form-check-input" id="chkInactive" value="true" checked="@(ViewBag.ShowInactive == true)" onchange="this.form.submit()" />
+                    <label class="form-check-label" for="chkInactive">Show Inactive</label>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Category Type</th>
+                    <th>Code</th>
+                    <th>Category Name</th>
+                    <th>Description</th>
+                    <th class="text-center">Active</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">No category found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Company?.Name</td>
+                            <td>@(item.CategoryType?.Name ?? "-")</td>
+                            <td>@item.Code</td>
+                            <td>@item.Name</td>
+                            <td>@(item.Description ?? "-")</td>
+                            <td class="text-center">
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success">Yes</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

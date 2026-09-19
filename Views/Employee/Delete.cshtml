@@ -1,0 +1,48 @@
+@model CompanyERP.Entities.Employee.Employee
+@{
+    ViewData["Title"] = "Delete Employee";
+    var hasPayments = ViewBag.HasPayments as bool? ?? false;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Delete Employee</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm border-danger">
+    <div class="card-body">
+        <div class="alert alert-danger">
+            Are you sure you want to delete <strong>@Model.Name</strong>? This action cannot be undone.
+        </div>
+
+        @if (hasPayments)
+        {
+            <div class="alert alert-warning">
+                This employee already has salary payments. The employee cannot be deleted.
+            </div>
+        }
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Employee Code</dt>
+            <dd class="col-sm-9">@Model.EmployeeCode</dd>
+
+            <dt class="col-sm-3">Name</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Department</dt>
+            <dd class="col-sm-9">@Model.Department?.Name</dd>
+
+            <dt class="col-sm-3">Designation</dt>
+            <dd class="col-sm-9">@Model.Designation?.Name</dd>
+
+            <dt class="col-sm-3">Default Branch</dt>
+            <dd class="col-sm-9">@(Model.DefaultBranch?.Name ?? "-")</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="Index" class="btn btn-link">Cancel</a>
+        </form>
+    </div>
+</div>

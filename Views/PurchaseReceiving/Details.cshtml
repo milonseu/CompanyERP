@@ -1,0 +1,75 @@
+@model PurchaseReceiving
+@{
+    ViewData["Title"] = "Purchase Receiving Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Purchase Receiving Details</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-2">Company</dt>
+            <dd class="col-sm-4">@Model.Company?.Name</dd>
+            <dt class="col-sm-2">Receiving No</dt>
+            <dd class="col-sm-4">@Model.ReceivingNo</dd>
+            <dt class="col-sm-2">Purchase Order</dt>
+            <dd class="col-sm-4">@Model.PurchaseOrder?.OrderNo</dd>
+            <dt class="col-sm-2">Supplier</dt>
+            <dd class="col-sm-4">@Model.Supplier?.Name</dd>
+            <dt class="col-sm-2">Warehouse</dt>
+            <dd class="col-sm-4">@Model.Warehouse?.Name</dd>
+            <dt class="col-sm-2">Received Date</dt>
+            <dd class="col-sm-4">@Model.ReceivedDate.ToString("dd MMM yyyy")</dd>
+            <dt class="col-sm-2">Reference No</dt>
+            <dd class="col-sm-4">@(Model.ReferenceNo ?? "-")</dd>
+            <dt class="col-sm-2">Note</dt>
+            <dd class="col-sm-10">@(Model.Note ?? "-")</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0 table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th class="text-end">Quantity</th>
+                    <th class="text-end">Unit Cost</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Lines.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No lines.</td>
+                    </tr>
+                }
+                else
+                {
+                    var idx = 1;
+                    @foreach (var line in Model.Lines)
+                    {
+                        var total = line.Quantity * line.UnitCost;
+                        <tr>
+                            <td>@(idx++)</td>
+                            <td>@line.Product?.Name</td>
+                            <td class="text-end">@line.Quantity</td>
+                            <td class="text-end">@line.UnitCost.ToString("N2")</td>
+                            <td class="text-end">@total.ToString("N2")</td>
+                        </tr>
+                    }
+                    <tr class="table-light">
+                        <td colspan="4" class="text-end fw-bold">Grand Total</td>
+                        <td class="text-end fw-bold">@Model.Lines.Sum(l => l.Quantity * l.UnitCost).ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,87 @@
+@model PurchaseOrder
+@{
+    ViewData["Title"] = "New Purchase Order";
+    ViewBag.ExistingLinesJson = "[]";
+    ViewBag.UnitProperty = "UnitCost";
+    ViewBag.UnitLabel = "Unit Cost";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">New Purchase Order</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="CompanyId" class="form-label"></label>
+                    <select asp-for="CompanyId" asp-items="ViewBag.Companies" class="form-select">
+                        <option value="">-- Select Company --</option>
+                    </select>
+                    <span asp-validation-for="CompanyId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SupplierId" class="form-label"></label>
+                    <select asp-for="SupplierId" asp-items="ViewBag.Suppliers" class="form-select">
+                        <option value="">-- Select Supplier --</option>
+                    </select>
+                    <span asp-validation-for="SupplierId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="PurchaseQuotationId" class="form-label"></label>
+                    <select asp-for="PurchaseQuotationId" asp-items="ViewBag.Quotations" class="form-select">
+                        <option value="">-- None (Direct) --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="OrderNo" class="form-label"></label>
+                    <input asp-for="OrderNo" class="form-control" />
+                    <span asp-validation-for="OrderNo" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="OrderDate" class="form-label"></label>
+                    <input asp-for="OrderDate" type="date" class="form-control" />
+                    <span asp-validation-for="OrderDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="ExpectedDeliveryDate" class="form-label"></label>
+                    <input asp-for="ExpectedDeliveryDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="BranchId" class="form-label"></label>
+                    <select asp-for="BranchId" asp-items="ViewBag.Branches" class="form-select">
+                        <option value="">-- Select Branch --</option>
+                    </select>
+                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="WarehouseId" class="form-label"></label>
+                    <select asp-for="WarehouseId" asp-items="ViewBag.Warehouses" class="form-select">
+                        <option value="">-- Select Warehouse --</option>
+                    </select>
+                    <span asp-validation-for="WarehouseId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Note" class="form-label"></label>
+                    <input asp-for="Note" class="form-control" />
+                </div>
+            </div>
+
+            <h2 class="h6 mt-4 mb-2">Order Lines</h2>
+            <partial name="_LineEditor" />
+
+            <input type="hidden" asp-for="Status" />
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

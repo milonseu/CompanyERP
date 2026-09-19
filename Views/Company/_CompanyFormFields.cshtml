@@ -1,0 +1,89 @@
+@model CompanyERP.ViewModels.Company.CompanyProfileFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control" placeholder="e.g. CMP001" />
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="col-md-8">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="LegalName" class="form-label"></label>
+        <input asp-for="LegalName" class="form-control" />
+        <span asp-validation-for="LegalName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="CurrencyCode" class="form-label"></label>
+        <input asp-for="CurrencyCode" class="form-control" placeholder="BDT" />
+        <span asp-validation-for="CurrencyCode" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="RegistrationNo" class="form-label"></label>
+        <input asp-for="RegistrationNo" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="TaxId" class="form-label"></label>
+        <input asp-for="TaxId" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="VatRegistrationNo" class="form-label"></label>
+        <input asp-for="VatRegistrationNo" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="TradeLicenseNo" class="form-label"></label>
+        <input asp-for="TradeLicenseNo" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Phone" class="form-label"></label>
+        <input asp-for="Phone" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Website" class="form-label"></label>
+        <input asp-for="Website" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="IncorporationDate" class="form-label"></label>
+        <input asp-for="IncorporationDate" class="form-control" />
+    </div>
+    <div class="col-12">
+        <label asp-for="Address" class="form-label"></label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="City" class="form-label"></label>
+        <input asp-for="City" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="State" class="form-label"></label>
+        <input asp-for="State" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="PostalCode" class="form-label"></label>
+        <input asp-for="PostalCode" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Country" class="form-label"></label>
+        <input asp-for="Country" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="FiscalYearStartMonth" class="form-label"></label>
+        <input asp-for="FiscalYearStartMonth" class="form-control" min="1" max="12" />
+        <span asp-validation-for="FiscalYearStartMonth" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="IsActive" class="form-label"></label>
+        <select asp-for="IsActive" class="form-select">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+    </div>
+</div>

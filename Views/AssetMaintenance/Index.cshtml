@@ -1,0 +1,67 @@
+@model IEnumerable<AssetMaintenance>
+@{
+    ViewData["Title"] = "Asset Maintenance";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Asset Maintenance</h1>
+    <a asp-action="Create" class="btn btn-primary">Record Maintenance</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <select name="assetId" asp-items="ViewBag.Assets" class="form-select">
+            <option value="">-- All Assets --</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Asset</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th class="text-end">Cost</th>
+                    <th>Vendor</th>
+                    <th>Description</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">No maintenance record found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.AssetRegister?.Name</td>
+                            <td>@item.MaintenanceDate.ToString("dd MMM yyyy")</td>
+                            <td>@(item.Type == AssetMaintenanceType.Preventive ? "Preventive" : "Corrective")</td>
+                            <td class="text-end">@item.Cost.ToString("N2")</td>
+                            <td>@item.Vendor</td>
+                            <td>@item.Description</td>
+                            <td class="text-end text-nowrap">
+                                <a asp-controller="Asset" asp-action="Details" asp-route-id="@item.AssetRegisterId" class="btn btn-sm btn-outline-info">Asset</a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

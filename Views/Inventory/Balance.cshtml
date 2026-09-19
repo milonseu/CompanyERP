@@ -1,0 +1,105 @@
+@model IEnumerable<CompanyERP.Entities.Inventory.StockBalance>
+@{
+    ViewData["Title"] = "Stock Balance";
+    var totalQty = Model.Sum(sb => sb.Quantity);
+    var totalValue = Model.Sum(sb => sb.Quantity * sb.AverageCost);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Stock Balance</h1>
+    <div>
+        <a asp-action="StockIn" class="btn btn-success">Stock In</a>
+        <a asp-action="StockOut" class="btn btn-warning">Stock Out</a>
+        <a asp-action="Transfer" class="btn btn-primary">Transfer</a>
+        <a asp-action="Adjust" class="btn btn-outline-primary">Adjust</a>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <select name="productId" asp-items="ViewBag.Products" class="form-select">
+            <option value="">-- All Products --</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <select name="warehouseId" asp-items="ViewBag.Warehouses" class="form-select">
+            <option value="">-- All Warehouses --</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="branchId" asp-items="ViewBag.Branches" class="form-select">
+            <option value="">-- All Branches --</option>
+        </select>
+    </div>
+    <div class="col-md-1">
+        <button type="submit" class="btn btn-outline-secondary">Filter</button>
+        <a asp-action="Balance" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Branch</th>
+                    <th>Warehouse</th>
+                    <th class="text-end">Quantity</th>
+                    <th class="text-end">Average Cost</th>
+                    <th class="text-end">Total Value</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No stock found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        var low = item.Product?.MinimumStockLevel > 0 && item.Quantity < item.Product.MinimumStockLevel;
+                        var rowValue = item.Quantity * item.AverageCost;
+                        <tr>
+                            <td>@item.Product?.Name</td>
+                            <td>@(item.Product?.Category?.Name ?? "-")</td>
+                            <td>@(item.Warehouse?.Branch?.Name ?? "-")</td>
+                            <td>@item.Warehouse?.Name</td>
+                            <td class="text-end">@item.Quantity.ToString("N3")</td>
+                            <td class="text-end">@item.AverageCost.ToString("N2")</td>
+                            <td class="text-end">@rowValue.ToString("N2")</td>
+                            <td class="text-center">
+                                @if (item.Quantity == 0)
+                                {
+                                    <span class="badge bg-secondary">Empty</span>
+                                }
+                                else if (low)
+                                {
+                                    <span class="badge bg-warning text-dark">Low</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">OK</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr class="table-light">
+                    <th colspan="4" class="text-end">Total</th>
+                    <th class="text-end">@totalQty.ToString("N3")</th>
+                    <th></th>
+                    <th class="text-end">@totalValue.ToString("N2")</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

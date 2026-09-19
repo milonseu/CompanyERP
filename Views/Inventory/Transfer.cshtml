@@ -1,0 +1,62 @@
+@model CompanyERP.ViewModels.Inventory.StockTransferViewModel
+@{
+    ViewData["Title"] = "Stock Transfer";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Stock Transfer</h1>
+    <a asp-action="Transfers" class="btn btn-outline-secondary">Back to Transfers</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Transfer" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="ProductId" class="form-label"></label>
+                    <select asp-for="ProductId" asp-items="ViewBag.Products" class="form-select">
+                        <option value="">-- Select Product --</option>
+                    </select>
+                    <span asp-validation-for="ProductId" class="text-danger"></span>
+                    <small class="text-danger">Transfer requires sufficient available quantity in source warehouse.</small>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Quantity" class="form-label"></label>
+                    <input asp-for="Quantity" class="form-control" />
+                    <span asp-validation-for="Quantity" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="FromWarehouseId" class="form-label"></label>
+                    <select asp-for="FromWarehouseId" asp-items="ViewBag.Warehouses" class="form-select">
+                        <option value="">-- From Warehouse --</option>
+                    </select>
+                    <span asp-validation-for="FromWarehouseId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ToWarehouseId" class="form-label"></label>
+                    <select asp-for="ToWarehouseId" asp-items="ViewBag.ToWarehouses" class="form-select">
+                        <option value="">-- To Warehouse --</option>
+                    </select>
+                    <span asp-validation-for="ToWarehouseId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TransferDate" class="form-label"></label>
+                    <input asp-for="TransferDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Note" class="form-label"></label>
+                    <input asp-for="Note" class="form-control" />
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Transfer</button>
+                <a asp-action="Transfers" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

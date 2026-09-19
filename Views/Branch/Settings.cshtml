@@ -1,0 +1,29 @@
+@model CompanyERP.ViewModels.CompanyBranch.BranchSettingsFormViewModel
+@{
+    ViewData["Title"] = "Branch Settings";
+    var branchName = ViewBag.BranchName as string ?? string.Empty;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Branch Settings - @branchName</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Settings" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="BranchId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <partial name="_BranchSettingsFields" model="Model" />
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+                <a asp-action="Index" class="btn btn-link">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

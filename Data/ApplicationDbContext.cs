@@ -1,0 +1,113 @@
+using CompanyERP.Entities.Asset;
+using CompanyERP.Entities.Common;
+using CompanyERP.Entities.Company;
+using CompanyERP.Entities.CompanyBranch;
+using CompanyERP.Entities.Customer;
+using CompanyERP.Entities.Employee;
+using CompanyERP.Entities.Inventory;
+using CompanyERP.Entities.MasterData;
+using CompanyERP.Entities.Purchase;
+using CompanyERP.Entities.Supplier;
+using Microsoft.EntityFrameworkCore;
+
+namespace CompanyERP.Data;
+
+public class ApplicationDbContext : DbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<CompanyProfile> Companies => Set<CompanyProfile>();
+    public DbSet<FinancialYear> FinancialYears => Set<FinancialYear>();
+    public DbSet<AccountingPeriod> AccountingPeriods => Set<AccountingPeriod>();
+
+    public DbSet<BranchType> BranchTypes => Set<BranchType>();
+    public DbSet<Branch> Branches => Set<Branch>();
+    public DbSet<BranchSettings> BranchSettings => Set<BranchSettings>();
+
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<Designation> Designations => Set<Designation>();
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<EmployeeBranchAssignment> EmployeeBranchAssignments => Set<EmployeeBranchAssignment>();
+    public DbSet<SalaryStructure> SalaryStructures => Set<SalaryStructure>();
+    public DbSet<SalaryPayment> SalaryPayments => Set<SalaryPayment>();
+    public DbSet<EmployeeAssetAssignment> EmployeeAssetAssignments => Set<EmployeeAssetAssignment>();
+
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<SupplierContact> SupplierContacts => Set<SupplierContact>();
+    public DbSet<SupplierAddress> SupplierAddresses => Set<SupplierAddress>();
+
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<CustomerContact> CustomerContacts => Set<CustomerContact>();
+    public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
+
+    public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<StockBalance> StockBalances => Set<StockBalance>();
+    public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
+    public DbSet<StockTransfer> StockTransfers => Set<StockTransfer>();
+
+    public DbSet<CategoryType> CategoryTypes => Set<CategoryType>();
+    public DbSet<Category> Categories => Set<Category>();
+
+    public DbSet<PurchaseRequest> PurchaseRequests => Set<PurchaseRequest>();
+    public DbSet<PurchaseRequestLine> PurchaseRequestLines => Set<PurchaseRequestLine>();
+    public DbSet<PurchaseQuotation> PurchaseQuotations => Set<PurchaseQuotation>();
+    public DbSet<PurchaseQuotationLine> PurchaseQuotationLines => Set<PurchaseQuotationLine>();
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+    public DbSet<PurchaseOrderLine> PurchaseOrderLines => Set<PurchaseOrderLine>();
+    public DbSet<PurchaseInvoice> PurchaseInvoices => Set<PurchaseInvoice>();
+    public DbSet<PurchaseInvoiceLine> PurchaseInvoiceLines => Set<PurchaseInvoiceLine>();
+    public DbSet<PurchaseReceiving> PurchaseReceivings => Set<PurchaseReceiving>();
+    public DbSet<PurchaseReceivingLine> PurchaseReceivingLines => Set<PurchaseReceivingLine>();
+    public DbSet<PurchaseReturn> PurchaseReturns => Set<PurchaseReturn>();
+    public DbSet<PurchaseReturnLine> PurchaseReturnLines => Set<PurchaseReturnLine>();
+
+    public DbSet<AssetCategory> AssetCategories => Set<AssetCategory>();
+    public DbSet<AssetType> AssetTypes => Set<AssetType>();
+    public DbSet<AssetRegister> AssetRegisters => Set<AssetRegister>();
+    public DbSet<AssetAcquisition> AssetAcquisitions => Set<AssetAcquisition>();
+    public DbSet<AssetAssignment> AssetAssignments => Set<AssetAssignment>();
+    public DbSet<AssetTransfer> AssetTransfers => Set<AssetTransfer>();
+    public DbSet<AssetMaintenance> AssetMaintenances => Set<AssetMaintenance>();
+    public DbSet<AssetDepreciation> AssetDepreciations => Set<AssetDepreciation>();
+    public DbSet<AssetDisposal> AssetDisposals => Set<AssetDisposal>();
+    public DbSet<AssetDocument> AssetDocuments => Set<AssetDocument>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ApplyAuditFields();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ApplyAuditFields()
+    {
+        var entries = ChangeTracker.Entries<BaseEntity>();
+
+        foreach (var entry in entries)
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Entity.CreatedAt = DateTime.Now;
+                    entry.Entity.UpdatedAt = null;
+                    entry.Entity.CreatedBy = "System";
+                    entry.Entity.IsActive = true;
+                    break;
+
+                case EntityState.Modified:
+                    entry.Entity.UpdatedAt = DateTime.Now;
+                    entry.Entity.UpdatedBy = "System";
+                    break;
+            }
+        }
+    }
+}

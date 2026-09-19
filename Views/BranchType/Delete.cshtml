@@ -1,0 +1,42 @@
+@model CompanyERP.Entities.CompanyBranch.BranchType
+@{
+    ViewData["Title"] = "Delete Branch Type";
+    var hasBranches = ViewBag.HasBranches as bool? ?? false;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Delete Branch Type</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm border-danger">
+    <div class="card-body">
+        <div class="alert alert-danger">
+            Are you sure you want to delete <strong>@Model.Name</strong>? This action cannot be undone.
+        </div>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Branch Type Code</dt>
+            <dd class="col-sm-9">@Model.Code</dd>
+
+            <dt class="col-sm-3">Branch Type</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Description</dt>
+            <dd class="col-sm-9">@(Model.Description ?? "-")</dd>
+        </dl>
+
+        @if (hasBranches)
+        {
+            <div class="alert alert-warning mt-3 mb-0">
+                This branch type is used by one or more branches and cannot be deleted.
+            </div>
+        }
+
+        <form asp-action="Delete" method="post" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger" @(hasBranches ? "disabled" : "")>Delete</button>
+            <a asp-action="Index" class="btn btn-link">Cancel</a>
+        </form>
+    </div>
+</div>

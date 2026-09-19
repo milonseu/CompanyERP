@@ -1,0 +1,117 @@
+@model CompanyERP.ViewModels.Employee.EmployeeAssetAssignmentFormViewModel
+@{
+    ViewData["Title"] = "Asset Assignments";
+    var employeeName = ViewBag.EmployeeName as string ?? string.Empty;
+    var assets = (ViewBag.Assets as List<CompanyERP.Entities.Employee.EmployeeAssetAssignment>) ?? [];
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Asset Assignments - @employeeName</h1>
+    <a asp-action="Details" asp-route-id="@Model.EmployeeId" class="btn btn-outline-secondary">Back to Employee</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Serial</th>
+                            <th>Assigned On</th>
+                            <th>Returned On</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!assets.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No asset assigned yet.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in assets)
+                            {
+                                <tr>
+                                    <td>
+                                        @item.AssetName
+                                        @if (!string.IsNullOrWhiteSpace(item.AssetCode))
+                                        {
+                                            <small class="text-muted d-block">@item.AssetCode</small>
+                                        }
+                                    </td>
+                                    <td>@(item.SerialNumber ?? "-")</td>
+                                    <td>@item.AssignedOn.ToString("dd-MM-yyyy")</td>
+                                    <td>
+                                        @if (item.ReturnedOn is not null)
+                                        {
+                                            @item.ReturnedOn.Value.ToString("dd-MM-yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark">In use</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        @if (item.ReturnedOn is null)
+                                        {
+                                            <form asp-action="MarkAssetReturned" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <input type="hidden" name="employeeId" value="@Model.EmployeeId" />
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Mark Returned</button>
+                                            </form>
+                                        }
+                                        <form asp-action="DeleteAssetAssignment" method="post" class="d-inline" onsubmit="return confirm('Remove this assignment?');">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="employeeId" value="@Model.EmployeeId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Assign Asset</h2>
+                <form asp-action="CreateAssetAssignment" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="EmployeeId" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="AssetCode" class="form-label"></label>
+                        <input asp-for="AssetCode" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="AssetName" class="form-label"></label>
+                        <input asp-for="AssetName" class="form-control" />
+                        <span asp-validation-for="AssetName" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="SerialNumber" class="form-label"></label>
+                        <input asp-for="SerialNumber" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="AssignedOn" class="form-label"></label>
+                        <input asp-for="AssignedOn" type="date" class="form-control" />
+                        <span asp-validation-for="AssignedOn" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Note" class="form-label"></label>
+                        <textarea asp-for="Note" class="form-control" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Assign Asset</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,30 @@
+@model PurchaseRequest
+@{
+    ViewData["Title"] = "Delete Purchase Request";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Delete Purchase Request</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <p class="mb-3">Are you sure you want to delete this purchase request?</p>
+        <dl class="row mb-3">
+            <dt class="col-sm-2">Request No</dt>
+            <dd class="col-sm-10">@Model.RequestNo</dd>
+            <dt class="col-sm-2">Company</dt>
+            <dd class="col-sm-10">@Model.Company?.Name</dd>
+            <dt class="col-sm-2">Date</dt>
+            <dd class="col-sm-10">@Model.RequestDate.ToString("dd MMM yyyy")</dd>
+            <dt class="col-sm-2">Status</dt>
+            <dd class="col-sm-10">@Model.Status</dd>
+        </dl>
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,72 @@
+@{
+    var productsJson = (string?)ViewBag.ProductsJson ?? "[]";
+    var existingLinesJson = (string?)ViewBag.ExistingLinesJson ?? "[]";
+    var unitProperty = (string?)ViewBag.UnitProperty;
+    var unitLabel = (string?)ViewBag.UnitLabel;
+    var unitColumn = !string.IsNullOrWhiteSpace(unitProperty);
+}
+
+<style>
+    #lineEditorBody tr td { vertical-align: top; }
+    .remove-line { margin-top: 30px; }
+</style>
+
+<div class="table-responsive">
+    <table class="table table-sm align-middle" id="lineEditor" style="min-width: 700px;">
+        <thead>
+            <tr>
+                <th style="min-width: 260px;">Product</th>
+                <th style="width: 140px;">Quantity</th>
+                @if (unitColumn)
+                {
+                    <th style="width: 170px;">@unitLabel</th>
+                }
+                <th style="width: 80px;"></th>
+            </tr>
+        </thead>
+        <tbody id="lineEditorBody"></tbody>
+    </table>
+</div>
+<button type="button" id="btnAddLine" class="btn btn-sm btn-outline-primary mb-2">+ Add Line</button>
+
+<script>
+    (function () {
+        var products = @Html.Raw(productsJson);
+        var existingLines = @Html.Raw(existingLinesJson);
+        var unitProperty = @(unitColumn ? Html.Raw("'" + unitProperty + "'") : Html.Raw("null"));
+        var counter = 0;
+        var body = document.getElementById('lineEditorBody');
+
+        function productOptions(selectedId) {
+            var html = '<option value="">-- Select Product --</option>';
+            products.forEach(function (p) {
+                html += '<option value="' + p.id + '"' + (p.id === selectedId ? ' selected' : '') + '>' + p.name + '</option>';
+            });
+            return html;
+        }
+
+        function unitInput(index, value) {
+            if (!unitProperty) return '';
+            return '<input type="number" step="0.01" min="0" name="lines[' + index + '].' + unitProperty + '" class="form-control" value="' + (value ?? '') + '" />';
+        }
+
+        function renderRow(line) {
+            var i = counter++;
+            var row = document.createElement('tr');
+            row.innerHTML = '<td><select class="form-select" name="lines[' + i + '].ProductId">' + productOptions(line ? line.productId : 0) + '</select></td>' +
+                '<td><input type="number" step="any" min="0" name="lines[' + i + '].Quantity" class="form-control" value="' + (line ? line.quantity : '') + '" /></td>' +
+                (unitProperty ? '<td>' + unitInput(i, line ? line.unit : '') + '</td>' : '') +
+                '<td class="remove-line"><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest(\'tr\').remove();">Remove</button></td>';
+            body.appendChild(row);
+        }
+
+        document.getElementById('btnAddLine').addEventListener('click', function () {
+            renderRow(null);
+        });
+
+        existingLines.forEach(renderRow);
+        if (existingLines.length === 0) {
+            renderRow(null);
+        }
+    })();
+</script>

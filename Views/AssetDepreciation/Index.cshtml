@@ -1,0 +1,76 @@
+@model IEnumerable<AssetDepreciation>
+@{
+    ViewData["Title"] = "Asset Depreciation";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Asset Depreciation</h1>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Run Depreciation</h5>
+        <p class="text-muted">Straight-line posts an equal share of (cost &minus; salvage) per month. Reducing balance posts 2&times; the straight-line rate on the remaining book value. Fully depreciated or disposed assets are skipped. A period can only be posted once per company.</p>
+        <form asp-action="Run" method="post" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Period (yyyy-MM)</label>
+                <input name="periodKey" class="form-control" value="@ViewBag.PeriodKey" />
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Note</label>
+                <input name="note" class="form-control" placeholder="Optional note" />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Run</button>
+            </div>
+            <div class="col-md-2">
+                <a asp-action="Index" class="btn btn-outline-secondary w-100">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Period End</th>
+                    <th>Asset</th>
+                    <th class="text-end">Amount</th>
+                    <th class="text-end">Accumulated After</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No depreciation posted for period @ViewBag.PeriodKey.</td>
+                    </tr>
+                }
+                else
+                {
+                    var total = Model.Sum(d => d.Amount);
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.PeriodKey</td>
+                            <td>@item.PeriodDate.ToString("dd MMM yyyy")</td>
+                            <td>@item.AssetRegister?.Name</td>
+                            <td class="text-end">@item.Amount.ToString("N2")</td>
+                            <td class="text-end">@item.AccumulatedAfter.ToString("N2")</td>
+                            <td>@item.Note</td>
+                        </tr>
+                    }
+                    <tr class="table-light fw-semibold">
+                        <td colspan="3" class="text-end">Total</td>
+                        <td class="text-end">@total.ToString("N2")</td>
+                        <td colspan="2"></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

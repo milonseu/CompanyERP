@@ -1,0 +1,67 @@
+@model PurchaseRequest
+@{
+    ViewData["Title"] = "Edit Purchase Request";
+    ViewBag.ExistingLinesJson = System.Text.Json.JsonSerializer.Serialize(
+        Model.Lines.Where(l => l.ProductId != 0).Select(l => new { productId = l.ProductId, quantity = l.Quantity }).ToList());
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Edit Purchase Request</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Status" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="CompanyId" class="form-label"></label>
+                    <select asp-for="CompanyId" asp-items="ViewBag.Companies" class="form-select">
+                        <option value="">-- Select Company --</option>
+                    </select>
+                    <span asp-validation-for="CompanyId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="RequestNo" class="form-label"></label>
+                    <input asp-for="RequestNo" class="form-control" />
+                    <span asp-validation-for="RequestNo" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="RequestDate" class="form-label"></label>
+                    <input asp-for="RequestDate" type="date" class="form-control" />
+                    <span asp-validation-for="RequestDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="RequestedBy" class="form-label"></label>
+                    <input asp-for="RequestedBy" class="form-control" />
+                    <span asp-validation-for="RequestedBy" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="BranchId" class="form-label"></label>
+                    <select asp-for="BranchId" asp-items="ViewBag.Branches" class="form-select">
+                        <option value="">-- Select Branch --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Note" class="form-label"></label>
+                    <input asp-for="Note" class="form-control" />
+                </div>
+            </div>
+
+            <h2 class="h6 mt-4 mb-2">Request Lines</h2>
+            <partial name="_LineEditor" />
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

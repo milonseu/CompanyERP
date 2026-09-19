@@ -1,0 +1,51 @@
+@model AssetDisposal
+@{
+    ViewData["Title"] = "Dispose Asset";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Dispose Asset</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="AssetRegisterId" class="form-label"></label>
+                    <select asp-for="AssetRegisterId" asp-items="ViewBag.Assets" class="form-select">
+                        <option value="">-- Select Asset --</option>
+                    </select>
+                    <span asp-validation-for="AssetRegisterId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="DisposalDate" class="form-label"></label>
+                    <input asp-for="DisposalDate" type="date" class="form-control" />
+                    <span asp-validation-for="DisposalDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SaleValue" class="form-label"></label>
+                    <input asp-for="SaleValue" class="form-control" />
+                    <span asp-validation-for="SaleValue" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Note" class="form-label"></label>
+                    <input asp-for="Note" class="form-control" />
+                </div>
+            </div>
+            <div class="form-text mb-3">
+                Book value at disposal = Cost &minus; Accumulated Depreciation. Gain/Loss = Sale Value &minus; Book Value. Disposing marks the asset as Disposed and stops further depreciation.
+            </div>
+            <div class="mt-3 d-flex gap-2">
+                <button type="submit" class="btn btn-warning">Dispose</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

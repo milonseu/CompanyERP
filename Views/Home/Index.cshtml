@@ -1,0 +1,122 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center mb-4">
+    <h1 class="display-5">CompanyERP</h1>
+    <p class="lead text-muted">Company Inventory &amp; Accounting Management System</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-building text-primary"></i> Company Management
+                </h5>
+                <p class="card-text text-muted">Company profile, financial years and accounting periods.</p>
+                <a asp-controller="Company" asp-action="Index" class="btn btn-sm btn-outline-primary">Company Profile</a>
+                <a asp-controller="FinancialYear" asp-action="Index" class="btn btn-sm btn-outline-primary">Financial Year</a>
+                <a asp-controller="AccountingPeriod" asp-action="Index" class="btn btn-sm btn-outline-primary">Accounting Period</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-columns-gap text-success"></i> Branch Management
+                </h5>
+                <p class="card-text text-muted">Branch types and company branches with settings.</p>
+                <a asp-controller="BranchType" asp-action="Index" class="btn btn-sm btn-outline-success">Branch Type</a>
+                <a asp-controller="Branch" asp-action="Index" class="btn btn-sm btn-outline-success">Branch</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-people text-info"></i> Employee Management
+                </h5>
+                <p class="card-text text-muted">Departments, designations, employees, salary and asset assignments.</p>
+                <a asp-controller="Department" asp-action="Index" class="btn btn-sm btn-outline-info">Department</a>
+                <a asp-controller="Designation" asp-action="Index" class="btn btn-sm btn-outline-info">Designation</a>
+                <a asp-controller="Employee" asp-action="Index" class="btn btn-sm btn-outline-info">Employee</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-truck text-warning"></i> Supplier Management
+                </h5>
+                <p class="card-text text-muted">Suppliers with contacts, addresses and opening payable.</p>
+                <a asp-controller="Supplier" asp-action="Index" class="btn btn-sm btn-outline-warning">Supplier</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-person-lines-fill text-danger"></i> Customer Management
+                </h5>
+                <p class="card-text text-muted">Customers with contacts, addresses and opening receivable.</p>
+                <a asp-controller="Customer" asp-action="Index" class="btn btn-sm btn-outline-danger">Customer</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-box-seam text-secondary"></i> Product &amp; Inventory
+                </h5>
+                <p class="card-text text-muted">Products, categories, warehouses, stock in/out, transfer and adjustment.</p>
+                <a asp-controller="Product" asp-action="Index" class="btn btn-sm btn-outline-secondary">Product</a>
+                <a asp-controller="Warehouse" asp-action="Index" class="btn btn-sm btn-outline-secondary">Warehouse</a>
+                <a asp-controller="Inventory" asp-action="Balance" class="btn btn-sm btn-outline-secondary">Balance</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-tags text-primary-emphasis"></i> Master Data
+                </h5>
+                <p class="card-text text-muted">Generic category types and categories used as dropdowns across modules.</p>
+                <a asp-controller="CategoryType" asp-action="Index" class="btn btn-sm btn-outline-primary-emphasis">Category Type</a>
+                <a asp-controller="Category" asp-action="Index" class="btn btn-sm btn-outline-primary-emphasis">Category</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-cart4 text-success"></i> Purchase Management
+                </h5>
+                <p class="card-text text-muted">Purchase request, quotation, order, receiving, invoice and return.</p>
+                <a asp-controller="PurchaseRequest" asp-action="Index" class="btn btn-sm btn-outline-success">Purchase Request</a>
+                <a asp-controller="PurchaseOrder" asp-action="Index" class="btn btn-sm btn-outline-success">Purchase Order</a>
+                <a asp-controller="PurchaseReceiving" asp-action="Index" class="btn btn-sm btn-outline-success">Receiving</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-truck text-warning"></i> Asset Management
+                </h5>
+                <p class="card-text text-muted">Asset categories, types, register, transfer, maintenance, depreciation and disposal.</p>
+                <a asp-controller="AssetCategory" asp-action="Index" class="btn btn-sm btn-outline-warning">Category</a>
+                <a asp-controller="Asset" asp-action="Index" class="btn btn-sm btn-outline-warning">Register</a>
+                <a asp-controller="AssetDepreciation" asp-action="Index" class="btn btn-sm btn-outline-warning">Depreciation</a>
+            </div>
+        </div>
+    </div>
+</div>

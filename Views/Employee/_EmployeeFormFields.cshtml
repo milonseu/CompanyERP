@@ -1,0 +1,159 @@
+@model CompanyERP.ViewModels.Employee.EmployeeFormViewModel
+@{
+    var companies = (ViewBag.Companies as IEnumerable<SelectListItem>) ?? [];
+    var departments = (ViewBag.Departments as IEnumerable<CompanyERP.Entities.Employee.Department>) ?? [];
+    var designations = (ViewBag.Designations as IEnumerable<CompanyERP.Entities.Employee.Designation>) ?? [];
+    var branches = (ViewBag.Branches as IEnumerable<SelectListItem>) ?? [];
+
+    var deptOptions = new System.Text.StringBuilder();
+    foreach (var d in departments)
+    {
+        var sel = Model.DepartmentId == d.Id ? " selected" : string.Empty;
+        deptOptions.Append($"<option value=\"{d.Id}\" data-company=\"{d.CompanyId}\"{sel}>{d.Name} ({d.Code})</option>");
+    }
+
+    var desigOptions = new System.Text.StringBuilder();
+    foreach (var d in designations)
+    {
+        var sel = Model.DesignationId == d.Id ? " selected" : string.Empty;
+        desigOptions.Append($"<option value=\"{d.Id}\" data-company=\"{d.CompanyId}\"{sel}>{d.Name} ({d.Code})</option>");
+    }
+}
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <label asp-for="EmployeeCode" class="form-label"></label>
+        <input asp-for="EmployeeCode" class="form-control" placeholder="e.g. EMP001" />
+        <span asp-validation-for="EmployeeCode" class="text-danger"></span>
+    </div>
+    <div class="col-md-8">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" placeholder="Employee full name" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <label asp-for="Gender" class="form-label"></label>
+        <select asp-for="Gender" class="form-select">
+            <option value="1">Male</option>
+            <option value="2">Female</option>
+            <option value="3">Other</option>
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DateOfBirth" class="form-label"></label>
+        <input asp-for="DateOfBirth" type="date" class="form-control" />
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <label asp-for="Mobile" class="form-label"></label>
+        <input asp-for="Mobile" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <label asp-for="NationalId" class="form-label"></label>
+        <input asp-for="NationalId" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="JoiningDate" class="form-label"></label>
+        <input asp-for="JoiningDate" type="date" class="form-control" />
+        <span asp-validation-for="JoiningDate" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <label asp-for="FatherName" class="form-label"></label>
+        <input asp-for="FatherName" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="MotherName" class="form-label"></label>
+        <input asp-for="MotherName" class="form-control" />
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <label asp-for="PresentAddress" class="form-label"></label>
+        <textarea asp-for="PresentAddress" class="form-control" rows="2"></textarea>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="PermanentAddress" class="form-label"></label>
+        <textarea asp-for="PermanentAddress" class="form-control" rows="2"></textarea>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <label asp-for="CompanyId" class="form-label"></label>
+        <select asp-for="CompanyId" asp-items="@(companies)" class="form-select" id="CompanyId">
+            <option value="">-- Select Company --</option>
+        </select>
+        <span asp-validation-for="CompanyId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DepartmentId" class="form-label"></label>
+        <select asp-for="DepartmentId" class="form-select" id="DepartmentId">
+            <option value="">-- Select Department --</option>
+            @Html.Raw(deptOptions.ToString())
+        </select>
+        <span asp-validation-for="DepartmentId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DesignationId" class="form-label"></label>
+        <select asp-for="DesignationId" class="form-select" id="DesignationId">
+            <option value="">-- Select Designation --</option>
+            @Html.Raw(desigOptions.ToString())
+        </select>
+        <span asp-validation-for="DesignationId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DefaultBranchId" class="form-label"></label>
+        <select asp-for="DefaultBranchId" asp-items="@(branches)" class="form-select">
+            <option value="">-- Select Branch --</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="IsActive" class="form-label"></label>
+        <select asp-for="IsActive" class="form-select">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var companySel = document.getElementById('CompanyId');
+        var deptSel = document.getElementById('DepartmentId');
+        var desigSel = document.getElementById('DesignationId');
+        if (!companySel || !deptSel || !desigSel) return;
+
+        function filter() {
+            [deptSel, desigSel].forEach(function (sel) {
+                var selVal = sel.value;
+                Array.prototype.forEach.call(sel.options, function (opt) {
+                    opt.hidden = !(opt.value === '' || String(opt.dataset.company) === String(companySel.value));
+                });
+                if (selVal) {
+                    var current = sel.querySelector('option[value="' + selVal + '"]');
+                    if (current && current.hidden) { sel.value = ''; }
+                }
+            });
+        }
+
+        companySel.addEventListener('change', filter);
+        filter();
+    })();
+</script>

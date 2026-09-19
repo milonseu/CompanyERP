@@ -1,0 +1,85 @@
+@model Category
+@{
+    ViewData["Title"] = "Edit Category";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Edit Category</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="CompanyId" class="form-label"></label>
+                    <select asp-for="CompanyId" asp-items="ViewBag.Companies" class="form-select" onchange="loadTypes()">
+                        <option value="">-- Select Company --</option>
+                    </select>
+                    <span asp-validation-for="CompanyId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="CategoryTypeId" class="form-label"></label>
+                    <select asp-for="CategoryTypeId" asp-items="ViewBag.CategoryTypes" class="form-select">
+                        <option value="">-- Select Category Type --</option>
+                    </select>
+                    <span asp-validation-for="CategoryTypeId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Code" class="form-label"></label>
+                    <input asp-for="Code" class="form-control" placeholder="e.g. LPT" />
+                    <span asp-validation-for="Code" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" placeholder="e.g. Laptop" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Description" class="form-label"></label>
+                    <input asp-for="Description" class="form-control" />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check form-switch mb-2">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function loadTypes() {
+            var companyId = document.getElementById('CompanyId').value;
+            var select = document.getElementById('CategoryTypeId');
+            select.innerHTML = '';
+            if (!companyId) return;
+            fetch('@Url.Action("GetTypesByCompany", "CategoryType")?companyId=' + encodeURIComponent(companyId))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var none = document.createElement('option');
+                    none.value = '';
+                    none.text = '-- Select Category Type --';
+                    select.appendChild(none);
+                    data.forEach(function (t) {
+                        var opt = document.createElement('option');
+                        opt.value = t.id;
+                        opt.text = t.name;
+                        if (t.id === @Model.CategoryTypeId) { opt.selected = true; }
+                        select.appendChild(opt);
+                    });
+                });
+        }
+    </script>
+}

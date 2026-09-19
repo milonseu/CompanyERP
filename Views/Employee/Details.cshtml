@@ -1,0 +1,249 @@
+@model CompanyERP.Entities.Employee.Employee
+@{
+    ViewData["Title"] = "Employee Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">@Model.Name</h1>
+    <div>
+        <a asp-action="SalaryStructure" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-info">Salary Structure</a>
+        <a asp-action="BranchAssignments" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-info">Branch Assignments</a>
+        <a asp-action="SalaryPayments" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-info">Salary Payments</a>
+        <a asp-action="AssetAssignments" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-info">Asset Assignments</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Employee Code</dt>
+            <dd class="col-sm-9">@Model.EmployeeCode</dd>
+
+            <dt class="col-sm-3">Name</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Gender / DOB</dt>
+            <dd class="col-sm-9">
+                @Model.Gender
+                @if (Model.DateOfBirth is not null)
+                {
+                    <text> / </text>@Model.DateOfBirth.Value.ToString("dd-MM-yyyy")
+                }
+            </dd>
+
+            <dt class="col-sm-3">Mobile / Email</dt>
+            <dd class="col-sm-9">
+                @(Model.Mobile ?? "-")
+                @if (!string.IsNullOrWhiteSpace(Model.Email))
+                {
+                    <text> / </text>@Model.Email
+                }
+            </dd>
+
+            <dt class="col-sm-3">National ID</dt>
+            <dd class="col-sm-9">@(Model.NationalId ?? "-")</dd>
+
+            <dt class="col-sm-3">Joining Date</dt>
+            <dd class="col-sm-9">@Model.JoiningDate.ToString("dd-MM-yyyy")</dd>
+
+            <dt class="col-sm-3">Company</dt>
+            <dd class="col-sm-9">@Model.Company?.Name</dd>
+
+            <dt class="col-sm-3">Department</dt>
+            <dd class="col-sm-9">@Model.Department?.Name</dd>
+
+            <dt class="col-sm-3">Designation</dt>
+            <dd class="col-sm-9">@Model.Designation?.Name</dd>
+
+            <dt class="col-sm-3">Default Branch</dt>
+            <dd class="col-sm-9">@(Model.DefaultBranch?.Name ?? "-")</dd>
+
+            <dt class="col-sm-3">Address</dt>
+            <dd class="col-sm-9">
+                @(Model.PresentAddress ?? "-")
+                @if (!string.IsNullOrWhiteSpace(Model.PermanentAddress))
+                {
+                    <small class="d-block text-muted">Permanent: @Model.PermanentAddress</small>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success">Active</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Inactive</span>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <h2 class="h5">Salary Structure</h2>
+        @if (Model.SalaryStructure is null)
+        {
+            <p class="text-muted mb-0">No salary structure defined yet.
+                <a asp-action="SalaryStructure" asp-route-id="@Model.Id">Set up now</a>.
+            </p>
+        }
+        else
+        {
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Effective From</dt>
+                <dd class="col-sm-9">@Model.SalaryStructure.EffectiveFrom.ToString("dd-MM-yyyy")</dd>
+
+                <dt class="col-sm-3">Basic / Rent / Medical</dt>
+                <dd class="col-sm-9">
+                    @Model.SalaryStructure.BasicSalary.ToString("N2") / @Model.SalaryStructure.HouseRent.ToString("N2") / @Model.SalaryStructure.MedicalAllowance.ToString("N2")
+                </dd>
+
+                <dt class="col-sm-3">Conveyance / Other</dt>
+                <dd class="col-sm-9">
+                    @Model.SalaryStructure.ConveyanceAllowance.ToString("N2") / @Model.SalaryStructure.OtherAllowance.ToString("N2")
+                </dd>
+
+                <dt class="col-sm-3">Provident Fund</dt>
+                <dd class="col-sm-9">@Model.SalaryStructure.ProvidentFundPercent.ToString("N2")%</dd>
+
+                <dt class="col-sm-3">Gross Salary</dt>
+                <dd class="col-sm-9">@Model.SalaryStructure.GrossSalary.ToString("N2")</dd>
+            </dl>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <h2 class="h5">Branch Assignments</h2>
+        @if (!Model.BranchAssignments.Any())
+        {
+            <p class="text-muted mb-0">No branch assignments yet.
+                <a asp-action="BranchAssignments" asp-route-id="@Model.Id">Assign a branch</a>.
+            </p>
+        }
+        else
+        {
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Branch</th>
+                        <th>Assigned Date</th>
+                        <th>Default</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model.BranchAssignments.OrderByDescending(x => x.IsDefault))
+                    {
+                        <tr>
+                            <td>@a.Branch?.Name</td>
+                            <td>@(a.AssignedDate?.ToString("dd-MM-yyyy") ?? "-")</td>
+                            <td>
+                                @if (a.IsDefault)
+                                {
+                                    <span class="badge bg-primary">Default</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <h2 class="h5">Salary Payments</h2>
+        @if (!Model.SalaryPayments.Any())
+        {
+            <p class="text-muted mb-0">No salary payments yet.
+                <a asp-action="SalaryPayments" asp-route-id="@Model.Id">Record a payment</a>.
+            </p>
+        }
+        else
+        {
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Payment Date</th>
+                        <th class="text-end">Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.SalaryPayments.OrderByDescending(x => x.ForMonth))
+                    {
+                        <tr>
+                            <td>@p.ForMonth.ToString("MMM yyyy")</td>
+                            <td>@p.PaymentDate.ToString("dd-MM-yyyy")</td>
+                            <td class="text-end">@p.Amount.ToString("N2")</td>
+                            <td>
+                                @if (p.Status == CompanyERP.Entities.Employee.SalaryPaymentStatus.Paid)
+                                {
+                                    <span class="badge bg-success">Paid</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <h2 class="h5">Asset Assignments</h2>
+        @if (!Model.AssetAssignments.Any())
+        {
+            <p class="text-muted mb-0">No assets assigned.
+                <a asp-action="AssetAssignments" asp-route-id="@Model.Id">Assign an asset</a>.
+            </p>
+        }
+        else
+        {
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Serial</th>
+                        <th>Assigned On</th>
+                        <th>Returned On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model.AssetAssignments.OrderByDescending(x => x.AssignedOn))
+                    {
+                        <tr>
+                            <td>@(a.AssetCode ?? "-") - @a.AssetName</td>
+                            <td>@(a.SerialNumber ?? "-")</td>
+                            <td>@a.AssignedOn.ToString("dd-MM-yyyy")</td>
+                            <td>
+                                @if (a.ReturnedOn is not null)
+                                {
+                                    @a.ReturnedOn.Value.ToString("dd-MM-yyyy")
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info text-dark">In use</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

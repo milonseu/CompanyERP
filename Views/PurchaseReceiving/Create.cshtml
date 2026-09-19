@@ -1,0 +1,88 @@
+@{
+    ViewData["Title"] = "New Purchase Receiving";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">New Purchase Receiving</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Purchase Order (Approved)</label>
+                    <select name="orderId" id="orderId" class="form-select" onchange="loadOrder()">
+                        <option value="">-- Select Order --</option>
+                        @if (ViewBag.Orders != null)
+                        {
+                            foreach (var item in ViewBag.Orders)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Received Date</label>
+                    <input type="date" name="receivedDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Reference No</label>
+                    <input type="text" name="referenceNo" class="form-control" placeholder="Optional" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Note</label>
+                    <input type="text" name="note" class="form-control" placeholder="Optional" />
+                </div>
+            </div>
+
+            <h2 class="h6 mt-4 mb-2">Order Preview</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle" id="previewTable">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-end">Quantity</th>
+                            <th class="text-end">Unit Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-3">Select an approved purchase order.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Receive Goods</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var orders = @Html.Raw(ViewBag.OrderJson ?? "[]");
+
+        function loadOrder() {
+            var id = parseInt(document.getElementById('orderId').value, 10);
+            var order = null;
+            orders.forEach(function (o) { if (o.id === id) order = o; });
+            var tbody = document.querySelector('#previewTable tbody');
+            if (!order) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Select an approved purchase order.</td></tr>';
+                return;
+            }
+            var html = '';
+            order.lines.forEach(function (l) {
+                html += '<tr><td>' + l.productName + '</td><td class="text-end">' + l.quantity + '</td><td class="text-end">' + Number(l.unitCost).toFixed(2) + '</td></tr>';
+            });
+            html += '<tr class="table-light"><td colspan="2" class="text-end fw-bold">Warehouse</td><td class="text-end">' + order.warehouseName + '</td></tr>';
+            tbody.innerHTML = html;
+        }
+    </script>
+}

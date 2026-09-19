@@ -1,0 +1,40 @@
+@model CompanyERP.Entities.Company.AccountingPeriod
+@{
+    ViewData["Title"] = "Delete Accounting Period";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Delete Accounting Period</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm border-danger">
+    <div class="card-body">
+        <div class="alert alert-danger">
+            Are you sure you want to delete <strong>@Model.Name</strong>? This action cannot be undone.
+        </div>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Period Code</dt>
+            <dd class="col-sm-9">@Model.PeriodCode</dd>
+
+            <dt class="col-sm-3">Period Name</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Financial Year</dt>
+            <dd class="col-sm-9">@Model.FinancialYear?.Name</dd>
+
+            <dt class="col-sm-3">Start Date</dt>
+            <dd class="col-sm-9">@Model.StartDate.ToString("dd-MM-yyyy")</dd>
+
+            <dt class="col-sm-3">End Date</dt>
+            <dd class="col-sm-9">@Model.EndDate.ToString("dd-MM-yyyy")</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="Index" class="btn btn-link">Cancel</a>
+        </form>
+    </div>
+</div>

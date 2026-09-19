@@ -1,0 +1,69 @@
+@model IEnumerable<PurchaseInvoice>
+@{
+    ViewData["Title"] = "Purchase Invoices";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Purchase Invoices</h1>
+    <span class="text-muted">Invoices are auto-created when goods are received against an approved purchase order.</span>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Invoice No</th>
+                    <th>Date</th>
+                    <th>Due Date</th>
+                    <th>Supplier</th>
+                    <th>Order</th>
+                    <th class="text-end">Lines</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">No purchase invoice found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Company?.Name</td>
+                            <td>@item.InvoiceNo</td>
+                            <td>@item.InvoiceDate.ToString("dd MMM yyyy")</td>
+                            <td>@(item.DueDate?.ToString("dd MMM yyyy") ?? "-")</td>
+                            <td>@item.Supplier?.Name</td>
+                            <td>@item.PurchaseOrder?.OrderNo</td>
+                            <td class="text-end">@item.Lines.Count</td>
+                            <td>
+                                @if (item.Status == PurchaseInvoiceStatus.Paid)
+                                {
+                                    <span class="badge bg-success">Paid</span>
+                                }
+                                else if (item.Status == PurchaseInvoiceStatus.PartiallyPaid)
+                                {
+                                    <span class="badge bg-warning text-dark">Partial</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Unpaid</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">Details</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

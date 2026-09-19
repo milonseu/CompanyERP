@@ -1,0 +1,108 @@
+@model CompanyERP.Entities.CompanyBranch.Branch
+@{
+    ViewData["Title"] = "Branch Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">@Model.Name</h1>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Edit</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Branch Code</dt>
+            <dd class="col-sm-9">@Model.Code</dd>
+
+            <dt class="col-sm-3">Branch Name</dt>
+            <dd class="col-sm-9">
+                @Model.Name
+                @if (Model.IsHeadOffice)
+                {
+                    <span class="badge bg-primary ms-2">Head Office</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Short Name</dt>
+            <dd class="col-sm-9">@(Model.ShortName ?? "-")</dd>
+
+            <dt class="col-sm-3">Company</dt>
+            <dd class="col-sm-9">@Model.Company?.Name</dd>
+
+            <dt class="col-sm-3">Branch Type</dt>
+            <dd class="col-sm-9">@Model.BranchType?.Name</dd>
+
+            <dt class="col-sm-3">Address</dt>
+            <dd class="col-sm-9">
+                @Model.Address
+                @if (!string.IsNullOrWhiteSpace(Model.City))
+                {
+                    <text>, </text>@Model.City
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.State))
+                {
+                    <text>, </text>@Model.State
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.PostalCode))
+                {
+                    <text> - </text>@Model.PostalCode
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Country))
+                {
+                    <text>, </text>@Model.Country
+                }
+            </dd>
+
+            <dt class="col-sm-3">Phone</dt>
+            <dd class="col-sm-9">@(Model.Phone ?? "-")</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@(Model.Email ?? "-")</dd>
+
+            <dt class="col-sm-3">Opening Date</dt>
+            <dd class="col-sm-9">@(Model.OpeningDate?.ToString("dd-MM-yyyy") ?? "-")</dd>
+
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success">Active</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Inactive</span>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+
+@if (Model.Settings is not null)
+{
+    <div class="card shadow-sm mt-3">
+        <div class="card-body">
+            <h2 class="h5">Branch Settings</h2>
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Transaction Prefix</dt>
+                <dd class="col-sm-9">@(Model.Settings.TransactionPrefix ?? "-")</dd>
+
+                <dt class="col-sm-3">Default Currency</dt>
+                <dd class="col-sm-9">@Model.Settings.DefaultCurrencyCode</dd>
+
+                <dt class="col-sm-3">Default Payment Days</dt>
+                <dd class="col-sm-9">@Model.Settings.DefaultPaymentDays</dd>
+
+                <dt class="col-sm-3">Module Availability</dt>
+                <dd class="col-sm-9">
+                    <span class="badge @(Model.Settings.AllowInventory ? "bg-success" : "bg-secondary")">Inventory</span>
+                    <span class="badge @(Model.Settings.AllowSales ? "bg-success" : "bg-secondary")">Sales</span>
+                    <span class="badge @(Model.Settings.AllowPurchase ? "bg-success" : "bg-secondary")">Purchase</span>
+                    <span class="badge @(Model.Settings.AllowExpense ? "bg-success" : "bg-secondary")">Expense</span>
+                </dd>
+            </dl>
+        </div>
+    </div>
+}

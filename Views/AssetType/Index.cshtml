@@ -1,0 +1,53 @@
+@model IEnumerable<AssetType>
+@{
+    ViewData["Title"] = "Asset Types";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Asset Types</h1>
+    <a asp-action="Create" class="btn btn-primary">New Asset Type</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Depreciation Method</th>
+                    <th class="text-end">Useful Life (Months)</th>
+                    <th class="text-end">Salvage Value</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">No asset type found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Code</td>
+                            <td>@item.Name</td>
+                            <td>@item.AssetCategory?.Name</td>
+                            <td>@(item.DepreciationMethod == AssetDepreciationMethod.StraightLine ? "Straight Line" : "Reducing Balance")</td>
+                            <td class="text-end">@item.UsefulLifeMonths</td>
+                            <td class="text-end">@item.SalvageValue.ToString("N2")</td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

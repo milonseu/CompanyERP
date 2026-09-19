@@ -1,0 +1,76 @@
+@model PurchaseQuotation
+@{
+    ViewData["Title"] = "Edit Purchase Quotation";
+    ViewBag.ExistingLinesJson = System.Text.Json.JsonSerializer.Serialize(
+        Model.Lines.Where(l => l.ProductId != 0).Select(l => new { productId = l.ProductId, quantity = l.Quantity, unit = l.UnitPrice }).ToList());
+    ViewBag.UnitProperty = "UnitPrice";
+    ViewBag.UnitLabel = "Unit Price";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Edit Purchase Quotation</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Status" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="CompanyId" class="form-label"></label>
+                    <select asp-for="CompanyId" asp-items="ViewBag.Companies" class="form-select">
+                        <option value="">-- Select Company --</option>
+                    </select>
+                    <span asp-validation-for="CompanyId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SupplierId" class="form-label"></label>
+                    <select asp-for="SupplierId" asp-items="ViewBag.Suppliers" class="form-select">
+                        <option value="">-- Select Supplier --</option>
+                    </select>
+                    <span asp-validation-for="SupplierId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="PurchaseRequestId" class="form-label"></label>
+                    <select asp-for="PurchaseRequestId" asp-items="ViewBag.Requests" class="form-select">
+                        <option value="">-- None (Direct) --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="QuotationNo" class="form-label"></label>
+                    <input asp-for="QuotationNo" class="form-control" />
+                    <span asp-validation-for="QuotationNo" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="QuotationDate" class="form-label"></label>
+                    <input asp-for="QuotationDate" type="date" class="form-control" />
+                    <span asp-validation-for="QuotationDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="ValidUntil" class="form-label"></label>
+                    <input asp-for="ValidUntil" type="date" class="form-control" />
+                    <span asp-validation-for="ValidUntil" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Note" class="form-label"></label>
+                    <input asp-for="Note" class="form-control" />
+                </div>
+            </div>
+
+            <h2 class="h6 mt-4 mb-2">Quotation Lines</h2>
+            <partial name="_LineEditor" />
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

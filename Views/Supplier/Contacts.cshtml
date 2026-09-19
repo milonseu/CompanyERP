@@ -1,0 +1,101 @@
+@model CompanyERP.ViewModels.Supplier.SupplierContactFormViewModel
+@{
+    ViewData["Title"] = "Supplier Contacts";
+    var supplierName = ViewBag.SupplierName as string ?? string.Empty;
+    var contacts = (ViewBag.Contacts as List<CompanyERP.Entities.Supplier.SupplierContact>) ?? [];
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Contacts - @supplierName</h1>
+    <a asp-action="Details" asp-route-id="@Model.SupplierId" class="btn btn-outline-secondary">Back to Supplier</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Contact Person</th>
+                            <th>Designation</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th class="text-center">Primary</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!contacts.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No contact added yet.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in contacts)
+                            {
+                                <tr>
+                                    <td>@item.ContactPerson</td>
+                                    <td>@(item.Designation ?? "-")</td>
+                                    <td>@(item.Phone ?? "-")</td>
+                                    <td>@(item.Email ?? "-")</td>
+                                    <td class="text-center">
+                                        @if (item.IsPrimary)
+                                        {
+                                            <span class="badge bg-primary">Primary</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <form asp-action="DeleteContact" method="post" class="d-inline" onsubmit="return confirm('Remove this contact?');">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="supplierId" value="@Model.SupplierId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Add Contact</h2>
+                <form asp-action="CreateContact" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="SupplierId" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="ContactPerson" class="form-label"></label>
+                        <input asp-for="ContactPerson" class="form-control" />
+                        <span asp-validation-for="ContactPerson" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Designation" class="form-label"></label>
+                        <input asp-for="Designation" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Phone" class="form-label"></label>
+                        <input asp-for="Phone" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="IsPrimary" class="form-check-input" />
+                        <label asp-for="IsPrimary" class="form-check-label"></label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Add Contact</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

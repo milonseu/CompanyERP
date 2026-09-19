@@ -1,0 +1,49 @@
+@model CompanyERP.ViewModels.CompanyBranch.BranchSettingsFormViewModel
+
+<h6 class="text-muted border-bottom pb-2 mb-3">Branch Settings</h6>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <label asp-for="TransactionPrefix" class="form-label"></label>
+        <input asp-for="TransactionPrefix" class="form-control" placeholder="e.g. DHK-" />
+        <span asp-validation-for="TransactionPrefix" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="DefaultCurrencyCode" class="form-label"></label>
+        <input asp-for="DefaultCurrencyCode" class="form-control" placeholder="BDT" />
+        <span asp-validation-for="DefaultCurrencyCode" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="DefaultPaymentDays" class="form-label"></label>
+        <input asp-for="DefaultPaymentDays" class="form-control" min="0" max="365" />
+        <span asp-validation-for="DefaultPaymentDays" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="AllowInventory" class="form-label"></label>
+        <select asp-for="AllowInventory" class="form-select">
+            <option value="true">Allowed</option>
+            <option value="false">Not Allowed</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="AllowSales" class="form-label"></label>
+        <select asp-for="AllowSales" class="form-select">
+            <option value="true">Allowed</option>
+            <option value="false">Not Allowed</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="AllowPurchase" class="form-label"></label>
+        <select asp-for="AllowPurchase" class="form-select">
+            <option value="true">Allowed</option>
+            <option value="false">Not Allowed</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="AllowExpense" class="form-label"></label>
+        <select asp-for="AllowExpense" class="form-select">
+            <option value="true">Allowed</option>
+            <option value="false">Not Allowed</option>
+        </select>
+    </div>
+</div>

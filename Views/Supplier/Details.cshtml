@@ -1,0 +1,178 @@
+@model CompanyERP.Entities.Supplier.Supplier
+@{
+    ViewData["Title"] = "Supplier Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Supplier Details</h1>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Edit</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Supplier Information</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Company</dt>
+                    <dd class="col-sm-8">@Model.Company?.Name</dd>
+
+                    <dt class="col-sm-4">Supplier Code</dt>
+                    <dd class="col-sm-8"><span class="badge bg-light text-dark">@Model.SupplierCode</span></dd>
+
+                    <dt class="col-sm-4">Supplier Name</dt>
+                    <dd class="col-sm-8">@Model.Name</dd>
+
+                    <dt class="col-sm-4">Legal Name</dt>
+                    <dd class="col-sm-8">@(Model.LegalName ?? "-")</dd>
+
+                    <dt class="col-sm-4">Contact Person</dt>
+                    <dd class="col-sm-8">@(Model.ContactPerson ?? "-")</dd>
+
+                    <dt class="col-sm-4">Phone</dt>
+                    <dd class="col-sm-8">@(Model.Phone ?? "-")</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">@(Model.Email ?? "-")</dd>
+
+                    <dt class="col-sm-4">Website</dt>
+                    <dd class="col-sm-8">@(Model.Website ?? "-")</dd>
+
+                    <dt class="col-sm-4">Fax</dt>
+                    <dd class="col-sm-8">@(Model.Fax ?? "-")</dd>
+
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Opening Balance</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Opening Payable</dt>
+                    <dd class="col-sm-8 fw-bold">@Model.OpeningPayable.ToString("N2")</dd>
+
+                    <dt class="col-sm-4">Opening Date</dt>
+                    <dd class="col-sm-8">@(Model.OpeningBalanceDate?.ToString("dd-MM-yyyy") ?? "-")</dd>
+                </dl>
+                <div class="form-text mt-2">
+                    Opening payable is recorded as data only. It is posted to Accounts Payable during Accounting module opening balance setup.
+                </div>
+            </div>
+        </div>
+        <div class="card shadow-sm mt-3">
+            <div class="card-header">Note</div>
+            <div class="card-body">
+                @(string.IsNullOrWhiteSpace(Model.Note) ? "-" : Model.Note)
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Contacts (@Model.Contacts.Count)</span>
+                <a asp-action="Contacts" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">Manage</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Contact Person</th>
+                            <th>Designation</th>
+                            <th>Phone</th>
+                            <th class="text-center">Primary</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Contacts.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">No contact added.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var c in Model.Contacts)
+                            {
+                                <tr>
+                                    <td>@c.ContactPerson</td>
+                                    <td>@(c.Designation ?? "-")</td>
+                                    <td>@(c.Phone ?? "-")</td>
+                                    <td class="text-center">
+                                        @if (c.IsPrimary)
+                                        {
+                                            <span class="badge bg-primary">Primary</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Addresses (@Model.Addresses.Count)</span>
+                <a asp-action="Addresses" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">Manage</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th class="text-center">Primary</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Addresses.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">No address added.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var a in Model.Addresses)
+                            {
+                                <tr>
+                                    <td>@a.AddressType</td>
+                                    <td>@a.AddressLine</td>
+                                    <td>@(a.City ?? "-")</td>
+                                    <td class="text-center">
+                                        @if (a.IsPrimary)
+                                        {
+                                            <span class="badge bg-primary">Primary</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

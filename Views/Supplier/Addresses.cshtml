@@ -1,0 +1,110 @@
+@model CompanyERP.ViewModels.Supplier.SupplierAddressFormViewModel
+@{
+    ViewData["Title"] = "Supplier Addresses";
+    var supplierName = ViewBag.SupplierName as string ?? string.Empty;
+    var addresses = (ViewBag.Addresses as List<CompanyERP.Entities.Supplier.SupplierAddress>) ?? [];
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Addresses - @supplierName</h1>
+    <a asp-action="Details" asp-route-id="@Model.SupplierId" class="btn btn-outline-secondary">Back to Supplier</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th>Country</th>
+                            <th class="text-center">Primary</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!addresses.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No address added yet.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in addresses)
+                            {
+                                <tr>
+                                    <td>@item.AddressType</td>
+                                    <td>@item.AddressLine</td>
+                                    <td>@(item.City ?? "-")</td>
+                                    <td>@(item.Country ?? "-")</td>
+                                    <td class="text-center">
+                                        @if (item.IsPrimary)
+                                        {
+                                            <span class="badge bg-primary">Primary</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <form asp-action="DeleteAddress" method="post" class="d-inline" onsubmit="return confirm('Remove this address?');">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="supplierId" value="@Model.SupplierId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Add Address</h2>
+                <form asp-action="CreateAddress" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="SupplierId" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="AddressType" class="form-label"></label>
+                        <select asp-for="AddressType" class="form-select" asp-items="Html.GetEnumSelectList<CompanyERP.Entities.Supplier.SupplierAddressType>()">
+                        </select>
+                        <span asp-validation-for="AddressType" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="AddressLine" class="form-label"></label>
+                        <input asp-for="AddressLine" class="form-control" />
+                        <span asp-validation-for="AddressLine" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="City" class="form-label"></label>
+                        <input asp-for="City" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="State" class="form-label"></label>
+                        <input asp-for="State" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="PostalCode" class="form-label"></label>
+                        <input asp-for="PostalCode" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Country" class="form-label"></label>
+                        <input asp-for="Country" class="form-control" />
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="IsPrimary" class="form-check-input" />
+                        <label asp-for="IsPrimary" class="form-check-label"></label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Add Address</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

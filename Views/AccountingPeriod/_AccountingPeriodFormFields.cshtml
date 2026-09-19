@@ -1,0 +1,35 @@
+@model CompanyERP.ViewModels.Company.AccountingPeriodFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="FinancialYearId" class="form-label"></label>
+        <select asp-for="FinancialYearId" asp-items="ViewBag.FinancialYears" class="form-select">
+            <option value="">-- Select Financial Year --</option>
+        </select>
+        <span asp-validation-for="FinancialYearId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="PeriodCode" class="form-label"></label>
+        <input asp-for="PeriodCode" class="form-control" placeholder="e.g. P07" />
+        <span asp-validation-for="PeriodCode" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" placeholder="e.g. July 2025" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<CompanyERP.Entities.Company.AccountingPeriodStatus>()" class="form-select"></select>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="StartDate" class="form-label"></label>
+        <input asp-for="StartDate" class="form-control" />
+        <span asp-validation-for="StartDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="EndDate" class="form-label"></label>
+        <input asp-for="EndDate" class="form-control" />
+        <span asp-validation-for="EndDate" class="text-danger"></span>
+    </div>
+</div>

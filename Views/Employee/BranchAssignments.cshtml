@@ -1,0 +1,94 @@
+@model CompanyERP.ViewModels.Employee.EmployeeBranchAssignmentFormViewModel
+@{
+    ViewData["Title"] = "Branch Assignments";
+    var employeeName = ViewBag.EmployeeName as string ?? string.Empty;
+    var assignments = (ViewBag.Assignments as List<CompanyERP.Entities.Employee.EmployeeBranchAssignment>) ?? [];
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Branch Assignments - @employeeName</h1>
+    <a asp-action="Details" asp-route-id="@Model.EmployeeId" class="btn btn-outline-secondary">Back to Employee</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Branch</th>
+                            <th>Assigned Date</th>
+                            <th class="text-center">Default</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!assignments.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No branch assigned yet.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in assignments)
+                            {
+                                <tr>
+                                    <td>@item.Branch?.Name</td>
+                                    <td>@(item.AssignedDate?.ToString("dd-MM-yyyy") ?? "-")</td>
+                                    <td class="text-center">
+                                        @if (item.IsDefault)
+                                        {
+                                            <span class="badge bg-primary">Default</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark">No</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <form asp-action="DeleteBranchAssignment" method="post" class="d-inline" onsubmit="return confirm('Remove this branch assignment?');">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <input type="hidden" name="employeeId" value="@Model.EmployeeId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Assign Branch</h2>
+                <form asp-action="CreateBranchAssignment" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="EmployeeId" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="BranchId" class="form-label"></label>
+                        <select asp-for="BranchId" asp-items="ViewBag.Branches" class="form-select">
+                            <option value="">-- Select Branch --</option>
+                        </select>
+                        <span asp-validation-for="BranchId" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="AssignedDate" class="form-label"></label>
+                        <input asp-for="AssignedDate" type="date" class="form-control" />
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="IsDefault" class="form-check-input" />
+                        <label asp-for="IsDefault" class="form-check-label"></label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Assign Branch</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

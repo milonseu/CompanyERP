@@ -1,0 +1,40 @@
+@model CompanyERP.Entities.Company.CompanyProfile
+@{
+    ViewData["Title"] = "Delete Company";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Delete Company Profile</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm border-danger">
+    <div class="card-body">
+        <div class="alert alert-danger">
+            Are you sure you want to delete <strong>@Model.Name</strong>? This action cannot be undone.
+        </div>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Company Code</dt>
+            <dd class="col-sm-9">@Model.Code</dd>
+
+            <dt class="col-sm-3">Company Name</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Legal Name</dt>
+            <dd class="col-sm-9">@Model.LegalName</dd>
+
+            <dt class="col-sm-3">City, Country</dt>
+            <dd class="col-sm-9">@Model.City, @Model.Country</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@(Model.Email ?? "-")</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a asp-action="Index" class="btn btn-link">Cancel</a>
+        </form>
+    </div>
+</div>

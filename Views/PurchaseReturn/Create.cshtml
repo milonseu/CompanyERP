@@ -1,0 +1,97 @@
+@model PurchaseReturn
+@{
+    ViewData["Title"] = "New Purchase Return";
+    ViewBag.ExistingLinesJson = "[]";
+    ViewBag.UnitProperty = "UnitCost";
+    ViewBag.UnitLabel = "Unit Cost";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">New Purchase Return</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="CompanyId" class="form-label"></label>
+                    <select asp-for="CompanyId" asp-items="ViewBag.Companies" class="form-select">
+                        <option value="">-- Select Company --</option>
+                    </select>
+                    <span asp-validation-for="CompanyId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SupplierId" class="form-label"></label>
+                    <select asp-for="SupplierId" asp-items="ViewBag.Suppliers" class="form-select">
+                        <option value="">-- Select Supplier --</option>
+                    </select>
+                    <span asp-validation-for="SupplierId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="PurchaseInvoiceId" class="form-label"></label>
+                    <select asp-for="PurchaseInvoiceId" asp-items="ViewBag.Invoices" class="form-select" onchange="loadInvoice()">
+                        <option value="">-- Select Invoice --</option>
+                    </select>
+                    <span asp-validation-for="PurchaseInvoiceId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="ReturnDate" class="form-label"></label>
+                    <input asp-for="ReturnDate" type="date" class="form-control" />
+                    <span asp-validation-for="ReturnDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="BranchId" class="form-label"></label>
+                    <select asp-for="BranchId" asp-items="ViewBag.Branches" class="form-select">
+                        <option value="">-- Select Branch --</option>
+                    </select>
+                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="WarehouseId" class="form-label"></label>
+                    <select asp-for="WarehouseId" asp-items="ViewBag.Warehouses" class="form-select">
+                        <option value="">-- Select Warehouse --</option>
+                    </select>
+                    <span asp-validation-for="WarehouseId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ReferenceNo" class="form-label"></label>
+                    <input asp-for="ReferenceNo" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Note" class="form-label"></label>
+                    <input asp-for="Note" class="form-control" />
+                </div>
+            </div>
+
+            <h2 class="h6 mt-4 mb-2">Return Lines</h2>
+            <partial name="_LineEditor" />
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function loadInvoice() {
+            var invoiceId = document.getElementById('PurchaseInvoiceId').value;
+            if (!invoiceId) return;
+            fetch('@Url.Action("GetInvoiceLines", "PurchaseReturn")?invoiceId=' + encodeURIComponent(invoiceId))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data.success) return;
+                    var company = document.getElementById('CompanyId');
+                    var supplier = document.getElementById('SupplierId');
+                    company.value = data.companyId;
+                    supplier.value = data.supplierId;
+                });
+        }
+    </script>
+}

@@ -1,0 +1,67 @@
+@model IEnumerable<CompanyERP.Entities.Company.AccountingPeriod>
+@{
+    ViewData["Title"] = "Periods";
+    var financialYearId = ViewData["FinancialYearId"] as int? ?? 0;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Accounting Periods</h1>
+    <div>
+        <a asp-controller="AccountingPeriod" asp-action="Create" asp-route-financialYearId="@financialYearId" class="btn btn-primary">New Period</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to Financial Years</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Period Code</th>
+                    <th>Financial Year</th>
+                    <th>Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">No accounting period found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-light text-dark">@item.PeriodCode</span></td>
+                            <td>@item.FinancialYear?.Name</td>
+                            <td>@item.Name</td>
+                            <td>@item.StartDate.ToString("dd-MM-yyyy")</td>
+                            <td>@item.EndDate.ToString("dd-MM-yyyy")</td>
+                            <td class="text-center">
+                                @if (item.Status == CompanyERP.Entities.Company.AccountingPeriodStatus.Open)
+                                {
+                                    <span class="badge bg-success">Open</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Closed</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-controller="AccountingPeriod" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Details</a>
+                                <a asp-controller="AccountingPeriod" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a asp-controller="AccountingPeriod" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

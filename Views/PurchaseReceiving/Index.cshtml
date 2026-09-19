@@ -1,0 +1,54 @@
+@model IEnumerable<PurchaseReceiving>
+@{
+    ViewData["Title"] = "Purchase Receivings";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Purchase Receivings</h1>
+    <a asp-action="Create" class="btn btn-primary">New Receiving</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Receiving No</th>
+                    <th>Date</th>
+                    <th>Order</th>
+                    <th>Supplier</th>
+                    <th>Warehouse</th>
+                    <th class="text-center">Lines</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No receiving found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Company?.Name</td>
+                            <td>@item.ReceivingNo</td>
+                            <td>@item.ReceivedDate.ToString("dd MMM yyyy")</td>
+                            <td>@item.PurchaseOrder?.OrderNo</td>
+                            <td>@item.Supplier?.Name</td>
+                            <td>@item.Warehouse?.Name</td>
+                            <td class="text-center">@item.Lines.Count</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">Details</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

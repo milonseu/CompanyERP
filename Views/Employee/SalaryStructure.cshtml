@@ -1,0 +1,69 @@
+@model CompanyERP.ViewModels.Employee.SalaryStructureFormViewModel
+@{
+    ViewData["Title"] = "Salary Structure";
+    var employeeName = ViewBag.EmployeeName as string ?? string.Empty;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Salary Structure - @employeeName</h1>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.EmployeeId" class="btn btn-outline-secondary">Back to Employee</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Employees</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="SalaryStructure" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EmployeeId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="EffectiveFrom" class="form-label"></label>
+                    <input asp-for="EffectiveFrom" type="date" class="form-control" />
+                    <span asp-validation-for="EffectiveFrom" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="BasicSalary" class="form-label"></label>
+                    <input asp-for="BasicSalary" class="form-control" />
+                    <span asp-validation-for="BasicSalary" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="HouseRent" class="form-label"></label>
+                    <input asp-for="HouseRent" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="MedicalAllowance" class="form-label"></label>
+                    <input asp-for="MedicalAllowance" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ConveyanceAllowance" class="form-label"></label>
+                    <input asp-for="ConveyanceAllowance" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="OtherAllowance" class="form-label"></label>
+                    <input asp-for="OtherAllowance" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ProvidentFundPercent" class="form-label"></label>
+                    <input asp-for="ProvidentFundPercent" class="form-control" />
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-3 mb-0">
+                <strong>Gross Salary:</strong> @Model.GrossSalary.ToString("N2")
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Save Structure</button>
+                <a asp-action="Details" asp-route-id="@Model.EmployeeId" class="btn btn-link">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

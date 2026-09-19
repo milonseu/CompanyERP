@@ -1,0 +1,85 @@
+@model CompanyERP.ViewModels.CompanyBranch.BranchFormViewModel
+
+<h6 class="text-muted border-bottom pb-2 mb-3">Branch Information</h6>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="CompanyId" class="form-label"></label>
+        <select asp-for="CompanyId" asp-items="ViewBag.Companies" class="form-select">
+            <option value="">-- Select Company --</option>
+        </select>
+        <span asp-validation-for="CompanyId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="BranchTypeId" class="form-label"></label>
+        <select asp-for="BranchTypeId" asp-items="ViewBag.BranchTypes" class="form-select">
+            <option value="">-- Select Branch Type --</option>
+        </select>
+        <span asp-validation-for="BranchTypeId" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control" placeholder="e.g. BR001" />
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="col-md-8">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ShortName" class="form-label"></label>
+        <input asp-for="ShortName" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="OpeningDate" class="form-label"></label>
+        <input asp-for="OpeningDate" class="form-control" />
+    </div>
+    <div class="col-12">
+        <label asp-for="Address" class="form-label"></label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="City" class="form-label"></label>
+        <input asp-for="City" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="State" class="form-label"></label>
+        <input asp-for="State" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="PostalCode" class="form-label"></label>
+        <input asp-for="PostalCode" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Country" class="form-label"></label>
+        <input asp-for="Country" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Phone" class="form-label"></label>
+        <input asp-for="Phone" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="IsHeadOffice" class="form-label"></label>
+        <select asp-for="IsHeadOffice" class="form-select">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+        </select>
+    </div>
+    <div class="col-12">
+        <label asp-for="IsActive" class="form-label"></label>
+        <select asp-for="IsActive" class="form-select">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+    </div>
+</div>
+
+<div class="mt-4">
+    <partial name="_BranchSettingsFields" model="Model.Settings" />
+</div>

@@ -1,0 +1,31 @@
+@model CompanyERP.ViewModels.Company.FinancialYearFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="YearCode" class="form-label"></label>
+        <input asp-for="YearCode" class="form-control" placeholder="e.g. FY2025-26" />
+        <span asp-validation-for="YearCode" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" placeholder="e.g. 2025-2026" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="StartDate" class="form-label"></label>
+        <input asp-for="StartDate" class="form-control" />
+        <span asp-validation-for="StartDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="EndDate" class="form-label"></label>
+        <input asp-for="EndDate" class="form-control" />
+        <span asp-validation-for="EndDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="IsClosed" class="form-label"></label>
+        <select asp-for="IsClosed" class="form-select">
+            <option value="false">Open</option>
+            <option value="true">Closed</option>
+        </select>
+    </div>
+</div>
