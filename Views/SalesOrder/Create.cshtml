@@ -1,0 +1,60 @@
+@model CompanyERP.Entities.Sales.SalesOrder
+@{
+    ViewData["Title"] = "New Sales Order";
+}
+
+<h1 class="h4 mb-3"><i class="bi bi-plus-lg"></i> New Sales Order</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-controller="SalesOrder" asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="CompanyId" />
+            <input type="hidden" asp-for="OrderNo" />
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Order No</label>
+                    <input class="form-control" value="@Model.OrderNo" readonly />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="OrderDate" class="form-label"></label>
+                    <input asp-for="OrderDate" type="date" class="form-control" />
+                    <span asp-validation-for="OrderDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="ExpectedDeliveryDate" class="form-label"></label>
+                    <input asp-for="ExpectedDeliveryDate" type="date" class="form-control" />
+                    <span asp-validation-for="ExpectedDeliveryDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="BranchId" class="form-label"></label>
+                    <select asp-for="BranchId" asp-items="ViewBag.Branches" class="form-select">
+                        <option value="">-- Select Branch --</option>
+                    </select>
+                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="CustomerId" class="form-label"></label>
+                    <select asp-for="CustomerId" asp-items="ViewBag.Customers" class="form-select">
+                        <option value="">-- Select Customer --</option>
+                    </select>
+                    <span asp-validation-for="CustomerId" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="Note" class="form-label"></label>
+                    <input asp-for="Note" class="form-control" />
+                </div>
+            </div>
+
+            <hr class="my-3" />
+            <h6 class="mb-2">Order Items</h6>
+            <partial name="_SalesLineEditor" />
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save Order</button>
+                <a asp-controller="SalesOrder" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

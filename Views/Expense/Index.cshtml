@@ -1,0 +1,94 @@
+@model IEnumerable<ExpenseEntry>
+@{
+    ViewData["Title"] = "Expense Entries";
+    var total = Model.Sum(e => (decimal?)e.Amount) ?? 0;
+    var totalPaid = Model.Sum(e => (decimal?)e.AmountPaid) ?? 0;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Expense Entries</h1>
+    <a asp-action="Create" class="btn btn-primary">New Expense Entry</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <select name="branchId" asp-items="ViewBag.Branches" class="form-select">
+            <option value="">-- All Branches --</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <select name="typeId" asp-items="ViewBag.Types" class="form-select">
+            <option value="">-- All Types --</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Expense No</th>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Branch</th>
+                    <th>Payment</th>
+                    <th class="text-end">Amount</th>
+                    <th class="text-end">Paid</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">No expense entry found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.ExpenseNo</td>
+                            <td>@item.ExpenseDate.ToString("dd MMM yyyy")</td>
+                            <td>@item.ExpenseType?.ExpenseCategory?.Name</td>
+                            <td>@item.ExpenseType?.Name</td>
+                            <td>@item.Branch?.Name</td>
+                            <td>
+                                @if (item.PaymentType == ExpensePaymentType.Cash)
+                                {
+                                    <span class="badge bg-warning text-dark">Cash</span>
+                                }
+                                else if (item.PaymentType == ExpensePaymentType.Bank)
+                                {
+                                    <span class="badge bg-info">Bank</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Payable</span>
+                                }
+                            </td>
+                            <td class="text-end">@item.Amount.ToString("N2")</td>
+                            <td class="text-end">@item.AmountPaid.ToString("N2")</td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">Details</a>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                            </td>
+                        </tr>
+                    }
+                    <tr class="table-light fw-semibold">
+                        <td colspan="6" class="text-end">Total</td>
+                        <td class="text-end">@total.ToString("N2")</td>
+                        <td class="text-end">@totalPaid.ToString("N2")</td>
+                        <td></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

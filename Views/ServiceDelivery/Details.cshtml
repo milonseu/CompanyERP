@@ -1,0 +1,30 @@
+@model CompanyERP.Entities.Sales.ServiceDelivery
+@{
+    ViewData["Title"] = "Service Delivery Details";
+}
+
+<h1 class="h4 mb-3"><i class="bi bi-truck"></i> Delivery on @Model.DeliveryDate.ToString("yyyy-MM-dd")</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row mb-0 small">
+            <dt class="col-sm-3">Service Order</dt>
+            <dd class="col-sm-9">@Model.ServiceOrder?.OrderNo</dd>
+            <dt class="col-sm-3">Customer</dt>
+            <dd class="col-sm-9">@Model.ServiceOrder?.Customer?.Name</dd>
+            <dt class="col-sm-3">Service</dt>
+            <dd class="col-sm-9">@Model.ServiceOrder?.Service?.Name</dd>
+            <dt class="col-sm-3">Branch</dt>
+            <dd class="col-sm-9">@Model.Branch?.Name</dd>
+            <dt class="col-sm-3">Quantity</dt>
+            <dd class="col-sm-9">@Model.Quantity.ToString("N2")</dd>
+            <dt class="col-sm-3">Delivered By</dt>
+            <dd class="col-sm-9">@(Model.DeliveredBy ?? "-")</dd>
+            <dt class="col-sm-3">Note</dt>
+            <dd class="col-sm-9">@(Model.Note ?? "-")</dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <a asp-controller="ServiceDelivery" asp-action="Index" class="btn btn-outline-secondary">Back</a>
+    </div>
+</div>

@@ -4,9 +4,11 @@ using CompanyERP.Entities.Company;
 using CompanyERP.Entities.CompanyBranch;
 using CompanyERP.Entities.Customer;
 using CompanyERP.Entities.Employee;
+using CompanyERP.Entities.Expense;
 using CompanyERP.Entities.Inventory;
 using CompanyERP.Entities.MasterData;
 using CompanyERP.Entities.Purchase;
+using CompanyERP.Entities.Sales;
 using CompanyERP.Entities.Supplier;
 using Microsoft.EntityFrameworkCore;
 
@@ -75,6 +77,20 @@ public class ApplicationDbContext : DbContext
     public DbSet<AssetDepreciation> AssetDepreciations => Set<AssetDepreciation>();
     public DbSet<AssetDisposal> AssetDisposals => Set<AssetDisposal>();
     public DbSet<AssetDocument> AssetDocuments => Set<AssetDocument>();
+
+    public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
+    public DbSet<ExpenseType> ExpenseTypes => Set<ExpenseType>();
+    public DbSet<ExpenseEntry> ExpenseEntries => Set<ExpenseEntry>();
+
+    public DbSet<Service> Services => Set<Service>();
+    public DbSet<SalesOrder> SalesOrders => Set<SalesOrder>();
+    public DbSet<SalesOrderLine> SalesOrderLines => Set<SalesOrderLine>();
+    public DbSet<SalesInvoice> SalesInvoices => Set<SalesInvoice>();
+    public DbSet<SalesInvoiceLine> SalesInvoiceLines => Set<SalesInvoiceLine>();
+    public DbSet<ServiceOrder> ServiceOrders => Set<ServiceOrder>();
+    public DbSet<ServiceDelivery> ServiceDeliveries => Set<ServiceDelivery>();
+    public DbSet<SalesReturn> SalesReturns => Set<SalesReturn>();
+    public DbSet<SalesReturnLine> SalesReturnLines => Set<SalesReturnLine>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -256,6 +256,69 @@
                                 </li>
                             </ul>
                         </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-cash-stack"></i> Expense
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ExpenseCategory" asp-action="Index">
+                                        <i class="bi bi-tags"></i> Expense Category
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ExpenseType" asp-action="Index">
+                                        <i class="bi bi-diagram-3"></i> Expense Type
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Expense" asp-action="Index">
+                                        <i class="bi bi-receipt-cutoff"></i> Expense Entry
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-cart"></i> Sales
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Service" asp-action="Index">
+                                        <i class="bi bi-boxes"></i> Service Catalog
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="SalesOrder" asp-action="Index">
+                                        <i class="bi bi-bag"></i> Sales Order
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="SalesInvoice" asp-action="Index">
+                                        <i class="bi bi-receipt"></i> Sales Invoice
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ServiceOrder" asp-action="Index">
+                                        <i class="bi bi-tools"></i> Service Order
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ServiceDelivery" asp-action="Index">
+                                        <i class="bi bi-truck"></i> Service Delivery
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="SalesReturn" asp-action="Index">
+                                        <i class="bi bi-arrow-return-left"></i> Sales Return
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                     </ul>
                 </div>
             </div>

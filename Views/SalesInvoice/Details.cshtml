@@ -1,0 +1,124 @@
+@model CompanyERP.Entities.Sales.SalesInvoice
+@{
+    ViewData["Title"] = "Sales Invoice Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0"><i class="bi bi-receipt"></i> Invoice — @Model.InvoiceNo</h1>
+    <a asp-controller="SalesInvoice" asp-action="Index" class="btn btn-sm btn-outline-secondary">Back</a>
+</div>
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <span class="badge @(Model.Status switch
+                {
+                    SalesInvoiceStatus.Unpaid => "text-bg-danger",
+                    SalesInvoiceStatus.PartiallyPaid => "text-bg-warning",
+                    SalesInvoiceStatus.Paid => "text-bg-success",
+                    _ => "text-bg-secondary"
+                })">@Model.Status</span>
+                <span class="small text-muted">@Model.PaymentType</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item</th>
+                            <th>Type</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var line in Model.Lines)
+                        {
+                            var name = line.ItemType == SalesItemType.Product
+                                ? line.Product?.Name ?? $"Product #{line.ProductId}"
+                                : line.Service?.Name ?? $"Service #{line.ServiceId}";
+                            <tr>
+                                <td>@name</td>
+                                <td><span class="badge text-bg-light">@line.ItemType</span></td>
+                                <td class="text-end">@line.Quantity.ToString("N2")</td>
+                                <td class="text-end">@line.UnitPrice.ToString("N2")</td>
+                                <td class="text-end">@line.Amount.ToString("N2")</td>
+                            </tr>
+                        }
+                        <tr class="table-active">
+                            <td colspan="4" class="text-end fw-bold">Total</td>
+                            <td class="text-end fw-bold">@Model.Total.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end">Amount Paid</td>
+                            <td class="text-end">@Model.AmountPaid.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold">Balance</td>
+                            <td class="text-end fw-bold">@((Model.Total - Model.AmountPaid).ToString("N2"))</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <dl class="row mb-0 small">
+                    <dt class="col-sm-4">Customer</dt>
+                    <dd class="col-sm-8">@Model.Customer?.Name</dd>
+                    <dt class="col-sm-4">Branch</dt>
+                    <dd class="col-sm-8">@Model.Branch?.Name</dd>
+                    <dt class="col-sm-4">Source Order</dt>
+                    <dd class="col-sm-8">@Model.SalesOrder?.OrderNo</dd>
+                    <dt class="col-sm-4">Warehouse</dt>
+                    <dd class="col-sm-8">@Model.Warehouse?.Name</dd>
+                    <dt class="col-sm-4">Invoice Date</dt>
+                    <dd class="col-sm-8">@Model.InvoiceDate.ToString("yyyy-MM-dd")</dd>
+                    <dt class="col-sm-4">Due Date</dt>
+                    <dd class="col-sm-8">@(Model.DueDate?.ToString("yyyy-MM-dd") ?? "-")</dd>
+                    <dt class="col-sm-4">Note</dt>
+                    <dd class="col-sm-8">@(Model.Note ?? "-")</dd>
+                </dl>
+            </div>
+        </div>
+
+        @if (Model.Status != SalesInvoiceStatus.Paid)
+        {
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Record Payment</h6>
+                    <form asp-controller="SalesInvoice" asp-action="RecordPayment" asp-route-id="@Model.Id" method="post">
+                        <div class="input-group">
+                            <input name="amountPaid" type="number" step="0.01" min="0.01" max="@((Model.Total - Model.AmountPaid))" class="form-control" placeholder="Amount" required />
+                            <button type="submit" class="btn btn-success">Pay</button>
+                        </div>
+                        <div class="form-text">Maximum payable: @((Model.Total - Model.AmountPaid).ToString("N2"))</div>
+                    </form>
+                </div>
+            </div>
+        }
+
+        @if (Model.Status == SalesInvoiceStatus.Paid)
+        {
+            <div class="alert alert-success mb-0">Fully paid. Record a sales return if the customer returns items.</div>
+        }
+    </div>
+</div>

@@ -1,0 +1,101 @@
+@model CompanyERP.Entities.Sales.SalesOrder
+@{
+    ViewData["Title"] = "Sales Order Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0"><i class="bi bi-bag"></i> Sales Order — @Model.OrderNo</h1>
+    <div>
+        <a asp-controller="SalesOrder" asp-action="Index" class="btn btn-sm btn-outline-secondary">Back</a>
+        @if (Model.Status == SalesOrderStatus.Draft)
+        {
+            <a asp-controller="SalesOrder" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+            <form asp-controller="SalesOrder" asp-action="Confirm" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Confirm this sales order?');">
+                <button type="submit" class="btn btn-sm btn-outline-success">Confirm</button>
+            </form>
+        }
+        @if (Model.Status == SalesOrderStatus.Draft)
+        {
+            <form asp-controller="SalesOrder" asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Cancel this sales order?');">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <span class="badge @(Model.Status switch
+                {
+                    SalesOrderStatus.Draft => "text-bg-secondary",
+                    SalesOrderStatus.Confirmed => "text-bg-primary",
+                    SalesOrderStatus.Invoiced => "text-bg-success",
+                    SalesOrderStatus.Cancelled => "text-bg-danger",
+                    _ => "text-bg-secondary"
+                })">@Model.Status</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item</th>
+                            <th>Type</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var line in Model.Lines)
+                        {
+                            var name = line.ItemType == SalesItemType.Product
+                                ? line.Product?.Name ?? $"Product #{line.ProductId}"
+                                : line.Service?.Name ?? $"Service #{line.ServiceId}";
+                            <tr>
+                                <td>@name</td>
+                                <td><span class="badge text-bg-light">@line.ItemType</span></td>
+                                <td class="text-end">@line.Quantity.ToString("N2")</td>
+                                <td class="text-end">@line.UnitPrice.ToString("N2")</td>
+                                <td class="text-end">@line.Amount.ToString("N2")</td>
+                            </tr>
+                        }
+                        <tr class="table-active">
+                            <td colspan="4" class="text-end fw-bold">Total</td>
+                            <td class="text-end fw-bold">@Model.Total.ToString("N2")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <dl class="row mb-0 small">
+                    <dt class="col-sm-4">Customer</dt>
+                    <dd class="col-sm-8">@Model.Customer?.Name</dd>
+                    <dt class="col-sm-4">Branch</dt>
+                    <dd class="col-sm-8">@Model.Branch?.Name</dd>
+                    <dt class="col-sm-4">Order Date</dt>
+                    <dd class="col-sm-8">@Model.OrderDate.ToString("yyyy-MM-dd")</dd>
+                    <dt class="col-sm-4">Expected Delivery</dt>
+                    <dd class="col-sm-8">@(Model.ExpectedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")</dd>
+                    <dt class="col-sm-4">Note</dt>
+                    <dd class="col-sm-8">@(Model.Note ?? "-")</dd>
+                </dl>
+            </div>
+        </div>
+        @if (Model.Status == SalesOrderStatus.Confirmed)
+        {
+            <div class="alert alert-info mb-0">
+                <a asp-controller="SalesInvoice" asp-action="Create" class="alert-link">Create a sales invoice</a> to convert this confirmed order and stock out product items.
+            </div>
+        }
+        @if (Model.Status == SalesOrderStatus.Invoiced)
+        {
+            <div class="alert alert-success mb-0">This order has been fully invoiced.</div>
+        }
+    </div>
+</div>

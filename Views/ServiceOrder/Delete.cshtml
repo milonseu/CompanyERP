@@ -1,0 +1,40 @@
+@model CompanyERP.Entities.Sales.ServiceOrder
+@{
+    ViewData["Title"] = "Delete Service Order";
+}
+
+@if (Model.Status != ServiceOrderStatus.Pending)
+{
+    <div class="alert alert-danger">
+        Only pending service orders can be deleted. Order <strong>@Model.OrderNo</strong> is @Model.Status.
+    </div>
+    <a asp-controller="ServiceOrder" asp-action="Index" class="btn btn-outline-secondary">Back</a>
+}
+else
+{
+    <h1 class="h4 mb-3"><i class="bi bi-trash"></i> Delete Service Order</h1>
+    <div class="alert alert-warning">
+        Are you sure you want to delete service order <strong>@Model.OrderNo</strong>?
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <dl class="row mb-0 small">
+                <dt class="col-sm-3">Order No</dt>
+                <dd class="col-sm-9">@Model.OrderNo</dd>
+                <dt class="col-sm-3">Customer</dt>
+                <dd class="col-sm-9">@Model.Customer?.Name</dd>
+                <dt class="col-sm-3">Service</dt>
+                <dd class="col-sm-9">@Model.Service?.Name</dd>
+                <dt class="col-sm-3">Total</dt>
+                <dd class="col-sm-9">@Model.Total.ToString("N2")</dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <form asp-controller="ServiceOrder" asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post" class="d-inline">
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+            </form>
+            <a asp-controller="ServiceOrder" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </div>
+}

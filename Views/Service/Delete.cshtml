@@ -1,0 +1,36 @@
+@model CompanyERP.Entities.Sales.Service
+@{
+    ViewData["Title"] = "Delete Service";
+}
+
+<h1 class="h4 mb-3"><i class="bi bi-trash"></i> Delete Service</h1>
+
+<div class="alert alert-warning">
+    Are you sure you want to delete service <strong>@Model.Name</strong> (@Model.Code)?
+    Services already used on sales orders, invoices or service orders cannot be deleted.
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Service Code</dt>
+            <dd class="col-sm-9">@Model.Code</dd>
+            <dt class="col-sm-3">Service Name</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+            <dt class="col-sm-3">Type</dt>
+            <dd class="col-sm-9">@Model.ServiceKind</dd>
+            <dt class="col-sm-3">Unit Price</dt>
+            <dd class="col-sm-9">@Model.UnitPrice.ToString("N2")</dd>
+            <dt class="col-sm-3">Cost Price</dt>
+            <dd class="col-sm-9">@Model.CostPrice.ToString("N2")</dd>
+            <dt class="col-sm-3">Active</dt>
+            <dd class="col-sm-9">@(Model.IsActive ? "Yes" : "No")</dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <form asp-controller="Service" asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post" class="d-inline">
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+        </form>
+        <a asp-controller="Service" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</div>

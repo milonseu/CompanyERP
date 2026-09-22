@@ -1,0 +1,88 @@
+@model CompanyERP.Entities.Sales.ServiceOrder
+@{
+    ViewData["Title"] = "Service Order Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0"><i class="bi bi-tools"></i> Service Order — @Model.OrderNo</h1>
+    <div>
+        <a asp-controller="ServiceOrder" asp-action="Index" class="btn btn-sm btn-outline-secondary">Back</a>
+        @if (Model.Status == ServiceOrderStatus.Pending || Model.Status == ServiceOrderStatus.InProgress)
+        {
+            <a asp-controller="ServiceDelivery" asp-action="Create" class="btn btn-sm btn-outline-success">Record Delivery</a>
+        }
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light">
+                <span class="badge @(Model.Status switch
+                {
+                    ServiceOrderStatus.Pending => "text-bg-secondary",
+                    ServiceOrderStatus.InProgress => "text-bg-info",
+                    ServiceOrderStatus.Delivered => "text-bg-success",
+                    ServiceOrderStatus.Cancelled => "text-bg-danger",
+                    _ => "text-bg-secondary"
+                })">@Model.Status</span>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0 small">
+                    <dt class="col-sm-4">Customer</dt>
+                    <dd class="col-sm-8">@Model.Customer?.Name</dd>
+                    <dt class="col-sm-4">Branch</dt>
+                    <dd class="col-sm-8">@Model.Branch?.Name</dd>
+                    <dt class="col-sm-4">Service</dt>
+                    <dd class="col-sm-8">@Model.Service?.Name</dd>
+                    <dt class="col-sm-4">Order Date</dt>
+                    <dd class="col-sm-8">@Model.OrderDate.ToString("yyyy-MM-dd")</dd>
+                    <dt class="col-sm-4">Service Date</dt>
+                    <dd class="col-sm-8">@(Model.ServiceDate?.ToString("yyyy-MM-dd") ?? "-")</dd>
+                    <dt class="col-sm-4">Quantity</dt>
+                    <dd class="col-sm-8">@Model.Quantity.ToString("N2")</dd>
+                    <dt class="col-sm-4">Unit Price</dt>
+                    <dd class="col-sm-8">@Model.UnitPrice.ToString("N2")</dd>
+                    <dt class="col-sm-4">Total</dt>
+                    <dd class="col-sm-8 fw-bold">@Model.Total.ToString("N2")</dd>
+                    <dt class="col-sm-4">Delivered</dt>
+                    <dd class="col-sm-8">@Model.DeliveredQuantity.ToString("N2")</dd>
+                    <dt class="col-sm-4">Note</dt>
+                    <dd class="col-sm-8">@(Model.Note ?? "-")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">Deliveries</div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th class="text-end">Qty</th>
+                            <th>Delivered By</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Deliveries.Count == 0)
+                        {
+                            <tr><td colspan="4" class="text-center text-muted py-3">No deliveries recorded yet.</td></tr>
+                        }
+                        @foreach (var delivery in Model.Deliveries)
+                        {
+                            <tr>
+                                <td>@delivery.DeliveryDate.ToString("yyyy-MM-dd")</td>
+                                <td class="text-end">@delivery.Quantity.ToString("N2")</td>
+                                <td>@(delivery.DeliveredBy ?? "-")</td>
+                                <td>@(delivery.Note ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

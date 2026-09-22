@@ -1,0 +1,41 @@
+@model CompanyERP.Entities.Sales.SalesOrder
+@{
+    ViewData["Title"] = "Delete Sales Order";
+}
+
+@if (Model.Status != SalesOrderStatus.Draft)
+{
+    <div class="alert alert-danger">
+        Only draft sales orders can be deleted. Order <strong>@Model.OrderNo</strong> is @Model.Status.
+    </div>
+    <a asp-controller="SalesOrder" asp-action="Index" class="btn btn-outline-secondary">Back</a>
+}
+else
+{
+    <h1 class="h4 mb-3"><i class="bi bi-trash"></i> Delete Sales Order</h1>
+    <div class="alert alert-warning">
+        Are you sure you want to delete sales order <strong>@Model.OrderNo</strong>?
+        This will also remove all its item lines.
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <dl class="row mb-0 small">
+                <dt class="col-sm-3">Order No</dt>
+                <dd class="col-sm-9">@Model.OrderNo</dd>
+                <dt class="col-sm-3">Date</dt>
+                <dd class="col-sm-9">@Model.OrderDate.ToString("yyyy-MM-dd")</dd>
+                <dt class="col-sm-3">Customer</dt>
+                <dd class="col-sm-9">@Model.Customer?.Name</dd>
+                <dt class="col-sm-3">Total</dt>
+                <dd class="col-sm-9">@Model.Total.ToString("N2")</dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <form asp-controller="SalesOrder" asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post" class="d-inline">
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+            </form>
+            <a asp-controller="SalesOrder" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </div>
+}

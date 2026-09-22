@@ -119,4 +119,30 @@
             </div>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-cash-stack text-info"></i> Expense Management
+                </h5>
+                <p class="card-text text-muted">Operational expense categories, types and entries (rent, electricity, internet, etc.). Salary is managed under Employee.</p>
+                <a asp-controller="ExpenseCategory" asp-action="Index" class="btn btn-sm btn-outline-info">Category</a>
+                <a asp-controller="ExpenseType" asp-action="Index" class="btn btn-sm btn-outline-info">Type</a>
+                <a asp-controller="Expense" asp-action="Index" class="btn btn-sm btn-outline-info">Entry</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-cart text-primary"></i> Sales &amp; Service
+                </h5>
+                <p class="card-text text-muted">Product, software and service sales. Invoice, service order, delivery and sales return.</p>
+                <a asp-controller="Service" asp-action="Index" class="btn btn-sm btn-outline-primary">Service Catalog</a>
+                <a asp-controller="SalesOrder" asp-action="Index" class="btn btn-sm btn-outline-primary">Sales Order</a>
+                <a asp-controller="SalesInvoice" asp-action="Index" class="btn btn-sm btn-outline-primary">Invoice</a>
+            </div>
+        </div>
+    </div>
 </div>

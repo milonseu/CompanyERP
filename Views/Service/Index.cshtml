@@ -1,0 +1,83 @@
+@model List<CompanyERP.Entities.Sales.Service>
+@{
+    ViewData["Title"] = "Service Catalog";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0"><i class="bi bi-boxes"></i> Service Catalog</h1>
+    <a asp-controller="Service" asp-action="Create" class="btn btn-sm btn-primary">
+        <i class="bi bi-plus-lg"></i> New Service
+    </a>
+</div>
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th class="text-end">Unit Price</th>
+                    <th class="text-end">Cost Price</th>
+                    <th class="text-center">Active</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4">No services found.</td></tr>
+                }
+                @foreach (var service in Model)
+                {
+                    <tr>
+                        <td>@service.Code</td>
+                        <td>@service.Name</td>
+                        <td>
+                            @if (service.ServiceKind == ServiceKind.Software)
+                            {
+                                <span class="badge text-bg-info">Software</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-secondary">Service</span>
+                            }
+                        </td>
+                        <td class="text-end">@service.UnitPrice.ToString("N2")</td>
+                        <td class="text-end">@service.CostPrice.ToString("N2")</td>
+                        <td class="text-center">
+                            @if (service.IsActive)
+                            {
+                                <span class="badge text-bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-danger">Inactive</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a asp-controller="Service" asp-action="Edit" asp-route-id="@service.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <a asp-controller="Service" asp-action="Delete" asp-route-id="@service.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

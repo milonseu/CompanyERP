@@ -1,0 +1,74 @@
+@model List<CompanyERP.Entities.Sales.SalesInvoice>
+@{
+    ViewData["Title"] = "Sales Invoices";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0"><i class="bi bi-receipt"></i> Sales Invoices</h1>
+    <a asp-controller="SalesInvoice" asp-action="Create" class="btn btn-sm btn-primary">
+        <i class="bi bi-plus-lg"></i> New Invoice
+    </a>
+</div>
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Invoice No</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Order</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-end">Paid</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="8" class="text-center text-muted py-4">No sales invoices found.</td></tr>
+                }
+                @foreach (var invoice in Model)
+                {
+                    <tr>
+                        <td>@invoice.InvoiceNo</td>
+                        <td>@invoice.InvoiceDate.ToString("yyyy-MM-dd")</td>
+                        <td>@invoice.Customer?.Name</td>
+                        <td>@invoice.SalesOrder?.OrderNo</td>
+                        <td class="text-end">@invoice.Total.ToString("N2")</td>
+                        <td class="text-end">@invoice.AmountPaid.ToString("N2")</td>
+                        <td class="text-center">
+                            <span class="badge @(invoice.Status switch
+                            {
+                                SalesInvoiceStatus.Unpaid => "text-bg-danger",
+                                SalesInvoiceStatus.PartiallyPaid => "text-bg-warning",
+                                SalesInvoiceStatus.Paid => "text-bg-success",
+                                _ => "text-bg-secondary"
+                            })">@invoice.Status</span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-controller="SalesInvoice" asp-action="Details" asp-route-id="@invoice.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

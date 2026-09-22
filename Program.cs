@@ -5,9 +5,11 @@ using CompanyERP.Services.Company;
 using CompanyERP.Services.CompanyBranch;
 using CompanyERP.Services.Customer;
 using CompanyERP.Services.Employee;
+using CompanyERP.Services.Expense;
 using CompanyERP.Services.Inventory;
 using CompanyERP.Services.MasterData;
 using CompanyERP.Services.Purchase;
+using CompanyERP.Services.Sales;
 using CompanyERP.Services.Supplier;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,6 +66,19 @@ builder.Services.AddScoped<IAssetRegisterService, AssetRegisterService>();
 builder.Services.AddScoped<IAssetMaintenanceService, AssetMaintenanceService>();
 builder.Services.AddScoped<IAssetDepreciationService, AssetDepreciationService>();
 builder.Services.AddScoped<IAssetDisposalService, AssetDisposalService>();
+
+// Module: Expense Management
+builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
+builder.Services.AddScoped<IExpenseTypeService, ExpenseTypeService>();
+builder.Services.AddScoped<IExpenseEntryService, ExpenseEntryService>();
+
+// Module: Sales & Service Management
+builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
+builder.Services.AddScoped<ISalesInvoiceService, SalesInvoiceService>();
+builder.Services.AddScoped<IServiceOrderService, ServiceOrderService>();
+builder.Services.AddScoped<IServiceDeliveryService, ServiceDeliveryService>();
+builder.Services.AddScoped<ISalesReturnService, SalesReturnService>();
 
 var app = builder.Build();
 
