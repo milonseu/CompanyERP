@@ -22,12 +22,12 @@ public class ChartOfAccountController : Controller
         var companies = await _companyService.GetAllAsync();
         if (companies.Count == 0)
         {
-            return View(new List<ChartOfAccount>());
+            return View(new List<(CompanyERP.Entities.Accounting.ChartOfAccount Account, int Depth)>());
         }
 
-        var accounts = await _accountService.GetAllAsync(companies.First().Id);
+        var tree = await _accountService.GetTreeAsync(companies.First().Id);
         ViewBag.Companies = new SelectList(companies, "Id", "Name");
-        return View(accounts);
+        return View(tree);
     }
 
     [HttpGet]
@@ -39,8 +39,10 @@ public class ChartOfAccountController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        var companyId = companies.First().Id;
         ViewBag.Companies = new SelectList(companies, "Id", "Name");
-        return View(new ChartOfAccount { CompanyId = companies.First().Id });
+        ViewBag.Parents = new SelectList(await _accountService.GetParentCandidatesAsync(companyId), "Id", "AccountDisplayLabel");
+        return View(new ChartOfAccount { CompanyId = companyId });
     }
 
     [HttpPost]
@@ -49,7 +51,7 @@ public class ChartOfAccountController : Controller
     {
         if (!ModelState.IsValid)
         {
-            await PopulateCompaniesAsync(model.CompanyId);
+            await PopulateFormAsync(model);
             return View(model);
         }
 
@@ -57,7 +59,7 @@ public class ChartOfAccountController : Controller
         if (!result.Success)
         {
             ModelState.AddModelError(string.Empty, result.Error);
-            await PopulateCompaniesAsync(model.CompanyId);
+            await PopulateFormAsync(model);
             return View(model);
         }
 
@@ -79,7 +81,7 @@ public class ChartOfAccountController : Controller
             return NotFound();
         }
 
-        ViewBag.Companies = new SelectList(await _companyService.GetAllAsync(), "Id", "Name", account.CompanyId);
+        await PopulateFormAsync(account);
         return View(account);
     }
 
@@ -94,7 +96,7 @@ public class ChartOfAccountController : Controller
 
         if (!ModelState.IsValid)
         {
-            await PopulateCompaniesAsync(model.CompanyId);
+            await PopulateFormAsync(model);
             return View(model);
         }
 
@@ -102,7 +104,7 @@ public class ChartOfAccountController : Controller
         if (!result.Success)
         {
             ModelState.AddModelError(string.Empty, result.Error);
-            await PopulateCompaniesAsync(model.CompanyId);
+            await PopulateFormAsync(model);
             return View(model);
         }
 
@@ -142,6 +144,14 @@ public class ChartOfAccountController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task PopulateFormAsync(ChartOfAccount model)
+    {
+        await PopulateCompaniesAsync(model.CompanyId);
+        ViewBag.Parents = new SelectList(
+            await _accountService.GetParentCandidatesAsync(model.CompanyId, excludeId: model.Id),
+            "Id", "AccountDisplayLabel", model.ParentId);
     }
 
     private async Task PopulateCompaniesAsync(int? selectedId = null)

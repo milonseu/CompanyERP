@@ -18,5 +18,6 @@ public class ChartOfAccountConfiguration : IEntityTypeConfiguration<ChartOfAccou
         builder.Property(e => e.UpdatedBy).HasMaxLength(100);
         builder.HasIndex(e => new { e.CompanyId, e.AccountCode }).IsUnique();
         builder.HasOne(e => e.Company).WithMany().HasForeignKey(e => e.CompanyId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(e => e.Parent).WithMany(e => e.Children).HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Restrict);
     }
 }

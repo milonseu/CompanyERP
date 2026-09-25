@@ -21,7 +21,17 @@
                 <table class="table table-sm mb-0">
                     @foreach (var a in Model.Assets)
                     {
-                        <tr><td>@a.AccountCode - @a.AccountName</td><td class="text-end">@a.Amount.ToString("N2")</td></tr>
+                        var indent = a.Depth * 16;
+                        <tr class="@(a.IsSubtotal ? "table-light" : "")">
+                            <td style="padding-left: @(10 + indent)px;">
+                                @if (a.Depth > 0)
+                                {
+                                    <span class="text-muted me-1">@(a.IsSubtotal ? "├─" : "└─")</span>
+                                }
+                                <span class="@(a.IsSubtotal ? "fw-bold" : "")">@a.AccountCode - @a.AccountName</span>
+                            </td>
+                            <td class="text-end @(a.IsSubtotal ? "fw-bold" : "")">@a.Amount.ToString("N2")</td>
+                        </tr>
                     }
                     <tr class="fw-bold"><td>Total Assets</td><td class="text-end">@Model.TotalAssets.ToString("N2")</td></tr>
                 </table>
@@ -35,7 +45,17 @@
                 <table class="table table-sm mb-0">
                     @foreach (var l in Model.Liabilities)
                     {
-                        <tr><td>@l.AccountCode - @l.AccountName</td><td class="text-end">@l.Amount.ToString("N2")</td></tr>
+                        var indent = l.Depth * 16;
+                        <tr class="@(l.IsSubtotal ? "table-light" : "")">
+                            <td style="padding-left: @(10 + indent)px;">
+                                @if (l.Depth > 0)
+                                {
+                                    <span class="text-muted me-1">@(l.IsSubtotal ? "├─" : "└─")</span>
+                                }
+                                <span class="@(l.IsSubtotal ? "fw-bold" : "")">@l.AccountCode - @l.AccountName</span>
+                            </td>
+                            <td class="text-end @(l.IsSubtotal ? "fw-bold" : "")">@l.Amount.ToString("N2")</td>
+                        </tr>
                     }
                     <tr class="fw-bold"><td>Total Liabilities</td><td class="text-end">@Model.TotalLiabilities.ToString("N2")</td></tr>
                 </table>
@@ -49,7 +69,17 @@
                 <table class="table table-sm mb-0">
                     @foreach (var e in Model.Equity)
                     {
-                        <tr><td>@e.AccountCode - @e.AccountName</td><td class="text-end">@e.Amount.ToString("N2")</td></tr>
+                        var indent = e.Depth * 16;
+                        <tr class="@(e.IsSubtotal ? "table-light" : "")">
+                            <td style="padding-left: @(10 + indent)px;">
+                                @if (e.Depth > 0)
+                                {
+                                    <span class="text-muted me-1">@(e.IsSubtotal ? "├─" : "└─")</span>
+                                }
+                                <span class="@(e.IsSubtotal ? "fw-bold" : "")">@e.AccountCode - @e.AccountName</span>
+                            </td>
+                            <td class="text-end @(e.IsSubtotal ? "fw-bold" : "")">@e.Amount.ToString("N2")</td>
+                        </tr>
                     }
                     <tr><td>Net Profit / (Loss)</td><td class="text-end">@Model.NetProfit.ToString("N2")</td></tr>
                     <tr class="fw-bold"><td>Total Liabilities + Equity</td><td class="text-end">@Model.TotalLiabilitiesEquity.ToString("N2")</td></tr>

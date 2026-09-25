@@ -144,7 +144,7 @@ public class JournalEntryController : Controller
     private async Task PopulateFormAsync(JournalEntryFormViewModel model)
     {
         ViewBag.Companies = new SelectList(await _companyService.GetAllAsync(), "Id", "Name", model.CompanyId);
-        var accounts = await _accountService.GetActiveAsync(model.CompanyId);
+        var accounts = await _accountService.GetPostableAsync(model.CompanyId);
         ViewBag.Accounts = new SelectList(accounts, "Id", "AccountDisplayLabel");
     }
 }

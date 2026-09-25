@@ -66,7 +66,7 @@ public class AccountingReportController : Controller
             await ParseDateAsync(fromDate),
             await ParseDateAsync(toDate),
             branchId);
-        ViewBag.Accounts = new SelectList(await _accountService.GetActiveAsync(companyId), "Id", "AccountDisplayLabel", accountId);
+        ViewBag.Accounts = new SelectList(await _accountService.GetPostableAsync(companyId), "Id", "AccountDisplayLabel", accountId);
         ViewBag.Branches = new SelectList(
             (await _branchService.GetAllAsync()).Where(b => b.CompanyId == companyId),
             "Id", "Name", branchId);

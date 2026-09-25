@@ -49,40 +49,56 @@ public class AccountingReportService : IAccountingReportService
         return rows.Select(d => (d, d.Account!, d.JournalEntry!)).ToList();
     }
 
-    private static decimal PositionAmount(List<(decimal Debit, decimal Credit)> rows, AccountNormalBalance normal)
-    {
-        var net = rows.Sum(r => r.Debit - r.Credit);
-        return normal == AccountNormalBalance.Debit ? net : -net;
-    }
-
     public async Task<TrialBalanceViewModel> GetTrialBalanceAsync(int companyId, DateTime? fromDate = null, DateTime? toDate = null)
     {
         var rows = await GetDetailsAsync(companyId, fromDate, toDate);
-        var lines = new List<TrialBalanceLineViewModel>();
+        var postings = rows.Select(r => (r.D.Debit, r.D.Credit, r.D.AccountId)).ToList();
+        var roots = await BuildReportTreeAsync(companyId, postings);
 
-        foreach (var group in rows.GroupBy(r => r.Account.Id))
+        var lines = new List<TrialBalanceLineViewModel>();
+        var totalDebit = 0m;
+        var totalCredit = 0m;
+
+        foreach (var root in roots)
         {
-            var account = group.First().Account;
-            lines.Add(new TrialBalanceLineViewModel
-            {
-                AccountId = account.Id,
-                AccountCode = account.AccountCode,
-                AccountName = account.AccountName,
-                AccountType = account.AccountType,
-                Debit = Math.Round(group.Sum(g => g.D.Debit), 2),
-                Credit = Math.Round(group.Sum(g => g.D.Credit), 2)
-            });
+            AppendTbNode(root, 0);
         }
 
         var vm = new TrialBalanceViewModel
         {
-            Lines = lines
-                .OrderBy(l => l.AccountCode)
-                .ToList(),
-            TotalDebit = Math.Round(lines.Sum(l => l.Debit), 2),
-            TotalCredit = Math.Round(lines.Sum(l => l.Credit), 2)
+            Lines = lines,
+            TotalDebit = Math.Round(totalDebit, 2),
+            TotalCredit = Math.Round(totalCredit, 2)
         };
         return vm;
+
+        void AppendTbNode(ReportAccountNode node, int depth)
+        {
+            var (debit, credit) = NodeTotals(node);
+            var isSubtotal = node.Children.Count > 0;
+            lines.Add(new TrialBalanceLineViewModel
+            {
+                AccountId = node.Account.Id,
+                AccountCode = node.Account.AccountCode,
+                AccountName = node.Account.AccountName,
+                AccountType = node.Account.AccountType,
+                Debit = Math.Round(debit, 2),
+                Credit = Math.Round(credit, 2),
+                Depth = depth,
+                IsSubtotal = isSubtotal
+            });
+
+            if (depth == 0)
+            {
+                totalDebit += debit;
+                totalCredit += credit;
+            }
+
+            foreach (var child in node.Children.OrderBy(c => c.Account.AccountCode))
+            {
+                AppendTbNode(child, depth + 1);
+            }
+        }
     }
 
     public async Task<LedgerViewModel> GetLedgerAsync(int companyId, int? accountId = null, DateTime? fromDate = null, DateTime? toDate = null, int? branchId = null)
@@ -225,82 +241,73 @@ public class AccountingReportService : IAccountingReportService
     public async Task<ProfitAndLossViewModel> GetProfitAndLossAsync(int companyId, DateTime? fromDate = null, DateTime? toDate = null)
     {
         var rows = await GetDetailsAsync(companyId, fromDate, toDate);
+        var postings = rows.Select(r => (r.D.Debit, r.D.Credit, r.D.AccountId)).ToList();
+        var roots = await BuildReportTreeAsync(companyId, postings);
+
         var vm = new ProfitAndLossViewModel { FromDate = fromDate, ToDate = toDate };
 
-        foreach (var group in rows.GroupBy(r => r.Account.Id))
+        foreach (var root in roots)
         {
-            var account = group.First().Account;
-            var rowsForAccount = group.Select(g => (g.D.Debit, g.D.Credit)).ToList();
-            var amount = PositionAmount(rowsForAccount, account.NormalBalance);
-
-            switch (account.AccountType)
-            {
-                case AccountType.Revenue:
-                    vm.Revenues.Add(new ProfitAndLossLineViewModel
-                    {
-                        AccountCode = account.AccountCode,
-                        AccountName = account.AccountName,
-                        Amount = Math.Round(amount, 2)
-                    });
-                    break;
-
-                case AccountType.Expense:
-                    vm.Expenses.Add(new ProfitAndLossLineViewModel
-                    {
-                        AccountCode = account.AccountCode,
-                        AccountName = account.AccountName,
-                        Amount = Math.Round(amount, 2)
-                    });
-                    break;
-            }
+            AppendPnlNode(root, 0, vm.Revenues, AccountType.Revenue);
+            AppendPnlNode(root, 0, vm.Expenses, AccountType.Expense);
         }
 
         vm.Revenues = vm.Revenues.OrderBy(r => r.AccountCode).ToList();
         vm.Expenses = vm.Expenses.OrderBy(e => e.AccountCode).ToList();
-        vm.TotalRevenue = Math.Round(vm.Revenues.Sum(r => r.Amount), 2);
-        vm.TotalExpense = Math.Round(vm.Expenses.Sum(e => e.Amount), 2);
+
+        var revenueRoot = roots.FirstOrDefault(r => r.Account.AccountType == AccountType.Revenue);
+        var expenseRoot = roots.FirstOrDefault(r => r.Account.AccountType == AccountType.Expense);
+        vm.TotalRevenue = Math.Round(revenueRoot is null ? 0 : NodeAmount(revenueRoot), 2);
+        vm.TotalExpense = Math.Round(expenseRoot is null ? 0 : NodeAmount(expenseRoot), 2);
         return vm;
+
+        void AppendPnlNode(ReportAccountNode node, int depth, List<ProfitAndLossLineViewModel> target, AccountType wantedType)
+        {
+            var include = node.Account.AccountType == wantedType;
+            if (include)
+            {
+                target.Add(new ProfitAndLossLineViewModel
+                {
+                    AccountCode = node.Account.AccountCode,
+                    AccountName = node.Account.AccountName,
+                    Amount = Math.Round(NodeAmount(node), 2),
+                    Depth = depth,
+                    IsSubtotal = node.Children.Count > 0
+                });
+            }
+
+            foreach (var child in node.Children.OrderBy(c => c.Account.AccountCode))
+            {
+                AppendPnlNode(child, include ? depth + 1 : depth, target, wantedType);
+            }
+        }
     }
 
     public async Task<BalanceSheetViewModel> GetBalanceSheetAsync(int companyId, DateTime? asOfDate = null)
     {
         var rows = await GetDetailsAsync(companyId, null, asOfDate);
-        var accounts = await _db.ChartOfAccounts
-            .AsNoTracking()
-            .Where(a => a.CompanyId == companyId)
-            .ToListAsync();
-
-        // P&L totals across the whole period up to the as-of date.
-        var pnl = await GetProfitAndLossAsync(companyId, null, asOfDate);
+        var postings = rows.Select(r => (r.D.Debit, r.D.Credit, r.D.AccountId)).ToList();
+        var roots = await BuildReportTreeAsync(companyId, postings);
 
         var vm = new BalanceSheetViewModel { AsOfDate = asOfDate };
-        var groupSets = rows.GroupBy(r => r.Account.Id);
 
-        foreach (var account in accounts.OrderBy(a => a.AccountCode))
+        foreach (var root in roots)
         {
-            var group = groupSets.FirstOrDefault(g => g.Key == account.Id);
-            var rowsForAccount = group?.Select(g => (g.D.Debit, g.D.Credit)).ToList() ?? [];
-
-            // Opening balance is stored signed (negative for credit-normal accounts).
-            var net = rowsForAccount.Sum(r => r.Debit - r.Credit);
-            var amount = account.NormalBalance == AccountNormalBalance.Debit
-                ? Math.Round(account.OpeningBalance + net, 2)
-                : Math.Round(-(account.OpeningBalance + net), 2);
-
-            switch (account.AccountType)
+            var amount = Math.Round(NodeAmount(root), 2);
+            switch (root.Account.AccountType)
             {
                 case AccountType.Asset:
-                    vm.Assets.Add(new BalanceSheetLineViewModel { AccountCode = account.AccountCode, AccountName = account.AccountName, Amount = amount });
+                    AppendBsNode(root, 0, vm.Assets);
                     vm.TotalAssets += amount;
                     break;
 
                 case AccountType.Liability:
-                    vm.Liabilities.Add(new BalanceSheetLineViewModel { AccountCode = account.AccountCode, AccountName = account.AccountName, Amount = amount });
+                    AppendBsNode(root, 0, vm.Liabilities);
                     vm.TotalLiabilities += amount;
                     break;
 
                 case AccountType.Equity:
-                    vm.Equity.Add(new BalanceSheetLineViewModel { AccountCode = account.AccountCode, AccountName = account.AccountName, Amount = amount });
+                    AppendBsNode(root, 0, vm.Equity);
                     vm.TotalEquity += amount;
                     break;
             }
@@ -309,8 +316,26 @@ public class AccountingReportService : IAccountingReportService
         vm.TotalAssets = Math.Round(vm.TotalAssets, 2);
         vm.TotalLiabilities = Math.Round(vm.TotalLiabilities, 2);
         vm.TotalEquity = Math.Round(vm.TotalEquity, 2);
+        var pnl = await GetProfitAndLossAsync(companyId, null, asOfDate);
         vm.NetProfit = pnl.NetProfit;
         return vm;
+
+        void AppendBsNode(ReportAccountNode node, int depth, List<BalanceSheetLineViewModel> target)
+        {
+            target.Add(new BalanceSheetLineViewModel
+            {
+                AccountCode = node.Account.AccountCode,
+                AccountName = node.Account.AccountName,
+                Amount = Math.Round(NodeAmount(node), 2),
+                Depth = depth,
+                IsSubtotal = node.Children.Count > 0
+            });
+
+            foreach (var child in node.Children.OrderBy(c => c.Account.AccountCode))
+            {
+                AppendBsNode(child, depth + 1, target);
+            }
+        }
     }
 
     public async Task<ReceivablesPayablesViewModel> GetReceivablesPayablesAsync(int companyId)
@@ -356,5 +381,109 @@ public class AccountingReportService : IAccountingReportService
         vm.TotalReceivables = Math.Round(vm.TotalReceivables, 2);
         vm.TotalPayables = Math.Round(vm.TotalPayables, 2);
         return vm;
+    }
+
+    private sealed class ReportAccountNode
+    {
+        public ChartOfAccount Account { get; init; } = null!;
+        public List<ReportAccountNode> Children { get; } = [];
+        public List<(decimal Debit, decimal Credit)> Postings { get; } = [];
+        public int Depth { get; set; }
+    }
+
+    private async Task<List<ReportAccountNode>> BuildReportTreeAsync(int companyId, List<(decimal Debit, decimal Credit, int AccountId)> postings)
+    {
+        var accounts = await _db.ChartOfAccounts
+            .AsNoTracking()
+            .Where(a => a.CompanyId == companyId)
+            .ToListAsync();
+
+        var idSet = accounts.Select(a => a.Id).ToHashSet();
+        var nodes = accounts.ToDictionary(a => a.Id, a => new ReportAccountNode { Account = a });
+
+        foreach (var (debit, credit, accountId) in postings)
+        {
+            if (nodes.TryGetValue(accountId, out var node))
+            {
+                node.Postings.Add((debit, credit));
+            }
+        }
+
+        foreach (var account in accounts)
+        {
+            if (account.ParentId.HasValue && idSet.Contains(account.ParentId.Value))
+            {
+                nodes[account.ParentId.Value].Children.Add(nodes[account.Id]);
+            }
+        }
+
+        var roots = accounts
+            .Where(a => !a.ParentId.HasValue || !idSet.Contains(a.ParentId!.Value))
+            .OrderBy(a => a.AccountCode)
+            .Select(a => nodes[a.Id])
+            .ToList();
+
+        foreach (var root in roots)
+        {
+            AssignDepth(root, 0);
+        }
+
+        return roots;
+
+        void AssignDepth(ReportAccountNode node, int depth)
+        {
+            node.Depth = depth;
+            foreach (var child in node.Children)
+            {
+                AssignDepth(child, depth + 1);
+            }
+        }
+    }
+
+    private static (decimal Debit, decimal Credit) NodeTotals(ReportAccountNode node)
+    {
+        var debit = node.Postings.Sum(p => p.Debit);
+        var credit = node.Postings.Sum(p => p.Credit);
+        foreach (var child in node.Children)
+        {
+            var (d, c) = NodeTotals(child);
+            debit += d;
+            credit += c;
+        }
+
+        return (debit, credit);
+    }
+
+    private static decimal NodeAmount(ReportAccountNode node)
+    {
+        var isDebitNormal = node.Account.NormalBalance == AccountNormalBalance.Debit;
+
+        var net = node.Postings.Sum(p => p.Debit - p.Credit);
+        decimal amount;
+        if (node.Children.Count == 0)
+        {
+            amount = isDebitNormal
+                ? node.Account.OpeningBalance + net
+                : -(node.Account.OpeningBalance + net);
+        }
+        else
+        {
+            amount = 0m;
+            if (isDebitNormal)
+            {
+                amount += node.Account.OpeningBalance;
+            }
+            else
+            {
+                amount -= node.Account.OpeningBalance;
+            }
+
+            foreach (var child in node.Children)
+            {
+                amount += NodeAmount(child);
+            }
+        }
+
+        return amount;
     }
 }

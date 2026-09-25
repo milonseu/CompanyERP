@@ -42,6 +42,13 @@
                     <span asp-validation-for="NormalBalance" class="text-danger"></span>
                 </div>
                 <div class="col-md-4">
+                    <label asp-for="ParentId" class="form-label"></label>
+                    <select asp-for="ParentId" asp-items="ViewBag.Parents" class="form-select">
+                        <option value="">-- Root / Top Level --</option>
+                    </select>
+                    <span asp-validation-for="ParentId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
                     <label asp-for="OpeningBalance" class="form-label"></label>
                     <input asp-for="OpeningBalance" type="number" step="0.01" class="form-control" />
                     <span asp-validation-for="OpeningBalance" class="text-danger"></span>

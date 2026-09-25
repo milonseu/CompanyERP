@@ -39,6 +39,19 @@ public class ChartOfAccount : BaseEntity
     [Display(Name = "Active")]
     public new bool IsActive { get; set; } = true;
 
+    [Display(Name = "Parent Account")]
+    public int? ParentId { get; set; }
+
+    [Display(Name = "Postable")]
+    public bool IsPostable { get; set; } = true;
+
+    [Display(Name = "Leaf Account")]
+    public bool IsLeaf { get; set; } = true;
+
+    public ChartOfAccount? Parent { get; set; }
+
+    public virtual ICollection<ChartOfAccount> Children { get; set; } = [];
+
     public CompanyProfile? Company { get; set; }
 
     public string AccountDisplayLabel => $"{AccountCode} - {AccountName}";

@@ -1,4 +1,4 @@
-@model List<ChartOfAccount>
+@model List<(CompanyERP.Entities.Accounting.ChartOfAccount Account, int Depth)>
 @{
     ViewData["Title"] = "Chart of Accounts";
 }
@@ -28,23 +28,31 @@
                         <th>Type</th>
                         <th>Normal Balance</th>
                         <th>Opening</th>
-                        <th>Active</th>
+                        <th>Postable</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var account in Model)
+                    @foreach (var item in Model)
                     {
-                        <tr>
-                            <td>@account.AccountCode</td>
-                            <td>@account.AccountName</td>
-                            <td>@account.AccountType</td>
-                            <td>@account.NormalBalance</td>
-                            <td class="text-end">@account.OpeningBalance.ToString("N2")</td>
-                            <td>@(account.IsActive ? "Yes" : "No")</td>
+                        var n = item.Account;
+                        var indent = item.Depth * 20;
+                        <tr class="@(n.IsLeaf ? "" : "table-light")">
+                            <td class="text-nowrap">@n.AccountCode</td>
+                            <td style="padding-left: @(10 + indent)px;">
+                                @if (item.Depth > 0)
+                                {
+                                    <span class="text-muted me-1">@(n.IsLeaf ? "└─" : "├─")</span>
+                                }
+                                <span class="@(n.IsLeaf ? "" : "fw-bold")">@n.AccountName</span>
+                            </td>
+                            <td>@n.AccountType</td>
+                            <td>@n.NormalBalance</td>
+                            <td class="text-end">@n.OpeningBalance.ToString("N2")</td>
+                            <td>@(n.IsPostable ? "Yes" : "No")</td>
                             <td class="text-end">
-                                <a asp-action="Edit" asp-route-id="@account.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                <a asp-action="Delete" asp-route-id="@account.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                <a asp-action="Edit" asp-route-id="@n.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@n.Id" class="btn btn-sm btn-outline-danger">Delete</a>
                             </td>
                         </tr>
                     }

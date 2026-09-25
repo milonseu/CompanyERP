@@ -30,12 +30,19 @@
                 <tbody>
                     @foreach (var line in Model.Lines)
                     {
-                        <tr>
-                            <td>@line.AccountCode</td>
-                            <td>@line.AccountName</td>
+                        var indent = line.Depth * 16;
+                        <tr class="@(line.IsSubtotal ? "table-light" : "")">
+                            <td class="text-nowrap">@line.AccountCode</td>
+                            <td style="padding-left: @(10 + indent)px;">
+                                @if (line.Depth > 0)
+                                {
+                                    <span class="text-muted me-1">@(line.IsSubtotal ? "├─" : "└─")</span>
+                                }
+                                <span class="@(line.IsSubtotal ? "fw-bold" : "")">@line.AccountName</span>
+                            </td>
                             <td>@line.AccountType</td>
-                            <td class="text-end">@line.Debit.ToString("N2")</td>
-                            <td class="text-end">@line.Credit.ToString("N2")</td>
+                            <td class="text-end @(line.IsSubtotal ? "fw-bold" : "")">@line.Debit.ToString("N2")</td>
+                            <td class="text-end @(line.IsSubtotal ? "fw-bold" : "")">@line.Credit.ToString("N2")</td>
                         </tr>
                     }
                 </tbody>

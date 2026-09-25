@@ -22,7 +22,17 @@
                 <table class="table table-sm mb-0">
                     @foreach (var r in Model.Revenues)
                     {
-                        <tr><td>@r.AccountCode - @r.AccountName</td><td class="text-end">@r.Amount.ToString("N2")</td></tr>
+                        var indent = r.Depth * 16;
+                        <tr class="@(r.IsSubtotal ? "table-light" : "")">
+                            <td style="padding-left: @(10 + indent)px;">
+                                @if (r.Depth > 0)
+                                {
+                                    <span class="text-muted me-1">@(r.IsSubtotal ? "├─" : "└─")</span>
+                                }
+                                <span class="@(r.IsSubtotal ? "fw-bold" : "")">@r.AccountCode - @r.AccountName</span>
+                            </td>
+                            <td class="text-end @(r.IsSubtotal ? "fw-bold" : "")">@r.Amount.ToString("N2")</td>
+                        </tr>
                     }
                     <tr class="fw-bold"><td>Total Revenue</td><td class="text-end">@Model.TotalRevenue.ToString("N2")</td></tr>
                 </table>
@@ -36,7 +46,17 @@
                 <table class="table table-sm mb-0">
                     @foreach (var e in Model.Expenses)
                     {
-                        <tr><td>@e.AccountCode - @e.AccountName</td><td class="text-end">@e.Amount.ToString("N2")</td></tr>
+                        var indent = e.Depth * 16;
+                        <tr class="@(e.IsSubtotal ? "table-light" : "")">
+                            <td style="padding-left: @(10 + indent)px;">
+                                @if (e.Depth > 0)
+                                {
+                                    <span class="text-muted me-1">@(e.IsSubtotal ? "├─" : "└─")</span>
+                                }
+                                <span class="@(e.IsSubtotal ? "fw-bold" : "")">@e.AccountCode - @e.AccountName</span>
+                            </td>
+                            <td class="text-end @(e.IsSubtotal ? "fw-bold" : "")">@e.Amount.ToString("N2")</td>
+                        </tr>
                     }
                     <tr class="fw-bold"><td>Total Expenses</td><td class="text-end">@Model.TotalExpense.ToString("N2")</td></tr>
                 </table>

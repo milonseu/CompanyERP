@@ -51,29 +51,80 @@ public class TransactionPostingService : ITransactionPostingService
     private const string GainOnDisposal = "5400";
     private const string LossOnDisposal = "5410";
 
-    // Default chart of accounts seeded per company so every posting always resolves.
-    private static readonly List<(string Code, string Name, AccountType Type, AccountNormalBalance Balance)> DefaultAccounts =
+    // Default 4-layer chart of accounts seeded per company so every posting always resolves.
+    // Codes stay on ROWS; parents are named explicitly. Parent-first ordering matters only
+    // for readability here; EnsureDefaultsAsync resolves by code so any order is safe.
+    // (code, name, type, normalBalance, parentCode)
+    private static readonly List<(string Code, string Name, AccountType Type, AccountNormalBalance Balance, string? ParentCode)> DefaultAccountTree =
     [
-        (Cash, "Cash", AccountType.Asset, AccountNormalBalance.Debit),
-        (Bank, "Bank", AccountType.Asset, AccountNormalBalance.Debit),
-        (AccountsReceivable, "Accounts Receivable", AccountType.Asset, AccountNormalBalance.Debit),
-        (Inventory, "Inventory", AccountType.Asset, AccountNormalBalance.Debit),
-        (FixedAssets, "Fixed Assets", AccountType.Asset, AccountNormalBalance.Debit),
-        (AccumulatedDepreciation, "Accumulated Depreciation", AccountType.Asset, AccountNormalBalance.Credit),
-        (AccountsPayable, "Accounts Payable", AccountType.Liability, AccountNormalBalance.Credit),
-        (ExpensePayable, "Expense Payable", AccountType.Liability, AccountNormalBalance.Credit),
-        (SalaryPayable, "Salary Payable", AccountType.Liability, AccountNormalBalance.Credit),
-        (AssetPayable, "Asset Payable", AccountType.Liability, AccountNormalBalance.Credit),
-        (Equity, "Opening Balance Equity", AccountType.Equity, AccountNormalBalance.Credit),
-        (ProductRevenue, "Product Sales Revenue", AccountType.Revenue, AccountNormalBalance.Credit),
-        (SoftwareRevenue, "Software Revenue", AccountType.Revenue, AccountNormalBalance.Credit),
-        (ServiceRevenue, "Service Revenue", AccountType.Revenue, AccountNormalBalance.Credit),
-        (GainOnDisposal, "Gain on Asset Disposal", AccountType.Revenue, AccountNormalBalance.Credit),
-        (CostOfGoodsSold, "Cost of Goods Sold", AccountType.Expense, AccountNormalBalance.Debit),
-        (SalaryExpense, "Salary Expense", AccountType.Expense, AccountNormalBalance.Debit),
-        (DepreciationExpense, "Depreciation Expense", AccountType.Expense, AccountNormalBalance.Debit),
-        (OperatingExpense, "Operating Expenses", AccountType.Expense, AccountNormalBalance.Debit),
-        (LossOnDisposal, "Loss on Asset Disposal", AccountType.Expense, AccountNormalBalance.Debit)
+        // Level 1 - Class
+        ("1", "Assets", AccountType.Asset, AccountNormalBalance.Debit, null),
+        ("2", "Liabilities", AccountType.Liability, AccountNormalBalance.Credit, null),
+        ("3", "Equity", AccountType.Equity, AccountNormalBalance.Credit, null),
+        ("4", "Revenue", AccountType.Revenue, AccountNormalBalance.Credit, null),
+        ("5", "Expenses", AccountType.Expense, AccountNormalBalance.Debit, null),
+
+        // Level 2 - Group
+        ("10", "Cash & Bank", AccountType.Asset, AccountNormalBalance.Debit, "1"),
+        ("11", "Accounts Receivable", AccountType.Asset, AccountNormalBalance.Debit, "1"),
+        ("12", "Inventory", AccountType.Asset, AccountNormalBalance.Debit, "1"),
+        ("13", "Fixed Assets", AccountType.Asset, AccountNormalBalance.Debit, "1"),
+        ("20", "Accounts Payable", AccountType.Liability, AccountNormalBalance.Credit, "2"),
+        ("21", "Other Payables", AccountType.Liability, AccountNormalBalance.Credit, "2"),
+        ("30", "Opening Balance Equity", AccountType.Equity, AccountNormalBalance.Credit, "3"),
+        ("40", "Product Sales", AccountType.Revenue, AccountNormalBalance.Credit, "4"),
+        ("41", "Software Sales", AccountType.Revenue, AccountNormalBalance.Credit, "4"),
+        ("42", "Service Sales", AccountType.Revenue, AccountNormalBalance.Credit, "4"),
+        ("43", "Other Income", AccountType.Revenue, AccountNormalBalance.Credit, "4"),
+        ("50", "Cost of Goods Sold", AccountType.Expense, AccountNormalBalance.Debit, "5"),
+        ("51", "Operating Expenses", AccountType.Expense, AccountNormalBalance.Debit, "5"),
+        ("52", "Employee Costs", AccountType.Expense, AccountNormalBalance.Debit, "5"),
+        ("53", "Depreciation", AccountType.Expense, AccountNormalBalance.Debit, "5"),
+        ("54", "Other Expenses", AccountType.Expense, AccountNormalBalance.Debit, "5"),
+
+        // Level 3 - Sub-Group
+        ("100", "Cash Accounts", AccountType.Asset, AccountNormalBalance.Debit, "10"),
+        ("110", "Bank Accounts", AccountType.Asset, AccountNormalBalance.Debit, "10"),
+        ("120", "Trade Receivables", AccountType.Asset, AccountNormalBalance.Debit, "11"),
+        ("130", "Inventory", AccountType.Asset, AccountNormalBalance.Debit, "12"),
+        ("140", "Fixed Assets", AccountType.Asset, AccountNormalBalance.Debit, "13"),
+        ("141", "Accumulated Depreciation", AccountType.Asset, AccountNormalBalance.Credit, "13"),
+        ("200", "Trade Payables", AccountType.Liability, AccountNormalBalance.Credit, "20"),
+        ("210", "Accrued Expenses", AccountType.Liability, AccountNormalBalance.Credit, "20"),
+        ("220", "Payroll Liabilities", AccountType.Liability, AccountNormalBalance.Credit, "20"),
+        ("230", "Asset Financing", AccountType.Liability, AccountNormalBalance.Credit, "21"),
+        ("300", "Opening Equity", AccountType.Equity, AccountNormalBalance.Credit, "30"),
+        ("400", "Product Sales", AccountType.Revenue, AccountNormalBalance.Credit, "40"),
+        ("410", "Software Sales", AccountType.Revenue, AccountNormalBalance.Credit, "41"),
+        ("420", "Service Sales", AccountType.Revenue, AccountNormalBalance.Credit, "42"),
+        ("430", "Other Income", AccountType.Revenue, AccountNormalBalance.Credit, "43"),
+        ("500", "Cost of Goods Sold", AccountType.Expense, AccountNormalBalance.Debit, "50"),
+        ("510", "Employee Costs", AccountType.Expense, AccountNormalBalance.Debit, "52"),
+        ("520", "Depreciation", AccountType.Expense, AccountNormalBalance.Debit, "53"),
+        ("530", "General & Administrative", AccountType.Expense, AccountNormalBalance.Debit, "51"),
+        ("540", "Other Expenses", AccountType.Expense, AccountNormalBalance.Debit, "54"),
+
+        // Level 4 - Leaf (postable accounts keep the module posting codes)
+        (Cash, "Cash", AccountType.Asset, AccountNormalBalance.Debit, "100"),
+        (Bank, "Bank", AccountType.Asset, AccountNormalBalance.Debit, "110"),
+        (AccountsReceivable, "Accounts Receivable", AccountType.Asset, AccountNormalBalance.Debit, "120"),
+        (Inventory, "Inventory", AccountType.Asset, AccountNormalBalance.Debit, "130"),
+        (FixedAssets, "Fixed Assets", AccountType.Asset, AccountNormalBalance.Debit, "140"),
+        (AccumulatedDepreciation, "Accumulated Depreciation", AccountType.Asset, AccountNormalBalance.Credit, "141"),
+        (AccountsPayable, "Accounts Payable", AccountType.Liability, AccountNormalBalance.Credit, "200"),
+        (ExpensePayable, "Expense Payable", AccountType.Liability, AccountNormalBalance.Credit, "210"),
+        (SalaryPayable, "Salary Payable", AccountType.Liability, AccountNormalBalance.Credit, "220"),
+        (AssetPayable, "Asset Payable", AccountType.Liability, AccountNormalBalance.Credit, "230"),
+        (Equity, "Opening Balance Equity", AccountType.Equity, AccountNormalBalance.Credit, "300"),
+        (ProductRevenue, "Product Sales Revenue", AccountType.Revenue, AccountNormalBalance.Credit, "400"),
+        (SoftwareRevenue, "Software Revenue", AccountType.Revenue, AccountNormalBalance.Credit, "410"),
+        (ServiceRevenue, "Service Revenue", AccountType.Revenue, AccountNormalBalance.Credit, "420"),
+        (CostOfGoodsSold, "Cost of Goods Sold", AccountType.Expense, AccountNormalBalance.Debit, "500"),
+        (SalaryExpense, "Salary Expense", AccountType.Expense, AccountNormalBalance.Debit, "510"),
+        (DepreciationExpense, "Depreciation Expense", AccountType.Expense, AccountNormalBalance.Debit, "520"),
+        (OperatingExpense, "Operating Expenses", AccountType.Expense, AccountNormalBalance.Debit, "530"),
+        (GainOnDisposal, "Gain on Asset Disposal", AccountType.Revenue, AccountNormalBalance.Credit, "430"),
+        (LossOnDisposal, "Loss on Asset Disposal", AccountType.Expense, AccountNormalBalance.Debit, "540")
     ];
 
     public async Task<(bool Success, string Error)> EnsureDefaultsAsync(int companyId)
@@ -83,12 +134,27 @@ public class TransactionPostingService : ITransactionPostingService
             return (false, "Company does not exist.");
         }
 
-        foreach (var (code, name, type, normal) in DefaultAccounts)
+        var existing = await _db.ChartOfAccounts
+            .Where(a => a.CompanyId == companyId)
+            .ToListAsync();
+        var byCode = existing.ToDictionary(a => a.AccountCode, a => a);
+
+        foreach (var (code, name, type, normal, parentCode) in DefaultAccountTree)
         {
-            var exists = await _db.ChartOfAccounts.AnyAsync(a => a.CompanyId == companyId && a.AccountCode == code);
-            if (!exists)
+            if (byCode.TryGetValue(code, out var account))
             {
-                _db.ChartOfAccounts.Add(new ChartOfAccount
+                account.AccountName = name;
+                account.AccountType = type;
+                account.NormalBalance = normal;
+                account.IsActive = true;
+                if (string.IsNullOrWhiteSpace(account.Description))
+                {
+                    account.Description = null;
+                }
+            }
+            else
+            {
+                account = new ChartOfAccount
                 {
                     CompanyId = companyId,
                     AccountCode = code,
@@ -96,8 +162,65 @@ public class TransactionPostingService : ITransactionPostingService
                     AccountType = type,
                     NormalBalance = normal,
                     IsActive = true
-                });
+                };
+                _db.ChartOfAccounts.Add(account);
+                byCode.Add(code, account);
             }
+        }
+
+        // Link parents via the navigation so relationship fixup works for newly added rows.
+        foreach (var (code, _, _, _, parentCode) in DefaultAccountTree)
+        {
+            if (parentCode is null || !byCode.TryGetValue(code, out var account))
+            {
+                continue;
+            }
+
+            if (byCode.TryGetValue(parentCode, out var parent))
+            {
+                account.Parent = parent;
+            }
+        }
+
+        // Recompute postable/leaf flags for every company account from the full child map
+        // (covers seeded hierarchy plus UI-created parents). Unsaved parents share Id=0,
+        // so reference-keyed links are used for them; persisted parents use their id.
+        var allAccounts = existing.Concat(_db.ChartOfAccounts.Local)
+            .DistinctBy(a => new { a.Id, a.AccountCode })
+            .ToList();
+
+        var childrenByRef = new Dictionary<ChartOfAccount, List<ChartOfAccount>>();
+        var childrenById = new Dictionary<int, List<ChartOfAccount>>();
+        foreach (var account in allAccounts)
+        {
+            var parent = account.Parent;
+            if (parent is not null)
+            {
+                if (!childrenByRef.TryGetValue(parent, out var children))
+                {
+                    children = [];
+                    childrenByRef[parent] = children;
+                }
+
+                children.Add(account);
+            }
+            else if (account.ParentId.HasValue && account.ParentId.Value != 0)
+            {
+                if (!childrenById.TryGetValue(account.ParentId.Value, out var children))
+                {
+                    children = [];
+                    childrenById[account.ParentId.Value] = children;
+                }
+
+                children.Add(account);
+            }
+        }
+
+        foreach (var account in allAccounts)
+        {
+            var isParent = (account.Id != 0 && childrenById.ContainsKey(account.Id)) || childrenByRef.ContainsKey(account);
+            account.IsPostable = !isParent;
+            account.IsLeaf = !isParent;
         }
 
         return (true, string.Empty);
@@ -457,6 +580,11 @@ public class TransactionPostingService : ITransactionPostingService
                 return (false, $"Chart of Accounts entry '{code}' is missing for this company.");
             }
 
+            if (!account.IsPostable)
+            {
+                return (false, $"Account '{code}' is a parent/group account and cannot receive postings.");
+            }
+
             accountIds.Add((account.Id, Math.Round(debit, 2), Math.Round(credit, 2), note));
         }
 
@@ -492,6 +620,11 @@ public class TransactionPostingService : ITransactionPostingService
             if (!await _db.ChartOfAccounts.AnyAsync(a => a.Id == line.AccountId && a.CompanyId == companyId))
             {
                 return (false, "One or more selected accounts do not belong to the company.");
+            }
+
+            if (!await _db.ChartOfAccounts.AnyAsync(a => a.Id == line.AccountId && a.IsPostable))
+            {
+                return (false, "Parent/group accounts cannot receive postings. Select a postable (leaf) account.");
             }
         }
 

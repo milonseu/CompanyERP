@@ -10,6 +10,8 @@ public class TrialBalanceLineViewModel
     public AccountType AccountType { get; set; }
     public decimal Debit { get; set; }
     public decimal Credit { get; set; }
+    public int Depth { get; set; }
+    public bool IsSubtotal { get; set; }
 }
 
 public class TrialBalanceViewModel
@@ -73,6 +75,8 @@ public class ProfitAndLossLineViewModel
     public string AccountCode { get; set; } = string.Empty;
     public string AccountName { get; set; } = string.Empty;
     public decimal Amount { get; set; }
+    public int Depth { get; set; }
+    public bool IsSubtotal { get; set; }
 }
 
 public class ProfitAndLossViewModel
@@ -91,6 +95,8 @@ public class BalanceSheetLineViewModel
     public string AccountCode { get; set; } = string.Empty;
     public string AccountName { get; set; } = string.Empty;
     public decimal Amount { get; set; }
+    public int Depth { get; set; }
+    public bool IsSubtotal { get; set; }
 }
 
 public class BalanceSheetViewModel
