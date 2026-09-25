@@ -8,16 +8,19 @@ namespace CompanyERP.Services.Purchase;
 public class PurchaseInvoiceService : IPurchaseInvoiceService
 {
     private readonly ApplicationDbContext _db;
+    private readonly ITransactionPostingService _postingService;
 
-    public PurchaseInvoiceService(ApplicationDbContext db)
+    public PurchaseInvoiceService(ApplicationDbContext db, ITransactionPostingService postingService)
     {
         _db = db;
+        _postingService = postingService;
     }
 
     public async Task<List<PurchaseInvoice>> GetAllAsync()
     {
         return await _db.PurchaseInvoices
             .Include(i => i.Company)
+            .Include(i => i.Branch)
             .Include(i => i.Supplier)
             .Include(i => i.PurchaseOrder)
             .Include(i => i.Lines).ThenInclude(l => l.Product)
@@ -30,6 +33,7 @@ public class PurchaseInvoiceService : IPurchaseInvoiceService
     {
         return await _db.PurchaseInvoices
             .Include(i => i.Company)
+            .Include(i => i.Branch)
             .Include(i => i.Supplier)
             .Include(i => i.PurchaseOrder).ThenInclude(o => o != null ? o.Warehouse : null)
             .Include(i => i.Lines).ThenInclude(l => l.Product)
@@ -55,6 +59,7 @@ public class PurchaseInvoiceService : IPurchaseInvoiceService
         var invoice = new PurchaseInvoice
         {
             CompanyId = order.CompanyId,
+            BranchId = order.BranchId,
             SupplierId = order.SupplierId,
             PurchaseOrderId = order.Id,
             InvoiceNo = invoiceNo,
@@ -69,6 +74,14 @@ public class PurchaseInvoiceService : IPurchaseInvoiceService
                 UnitPrice = l.UnitCost
             }).ToList()
         };
+
+        // NOTE: Accounting effect is created during Accounting module integration:
+        // Debit Inventory, Credit Accounts Payable.
+        var post = await _postingService.PostPurchaseInvoiceAsync(invoice);
+        if (!post.Success)
+        {
+            return (false, post.Error);
+        }
 
         _db.PurchaseInvoices.Add(invoice);
         await _db.SaveChangesAsync();

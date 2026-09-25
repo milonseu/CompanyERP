@@ -163,7 +163,7 @@ public class AccountingPeriodService : IAccountingPeriodService
         return (true, string.Empty);
     }
 
-    public async Task<(bool Success, string Error)> DeleteAsync(int id)
+public async Task<(bool Success, string Error)> DeleteAsync(int id)
     {
         var period = await _db.AccountingPeriods.FindAsync(id);
         if (period is null)
@@ -172,6 +172,44 @@ public class AccountingPeriodService : IAccountingPeriodService
         }
 
         _db.AccountingPeriods.Remove(period);
+        await _db.SaveChangesAsync();
+        return (true, string.Empty);
+    }
+
+    public async Task<(bool Success, string Error)> CloseAsync(int id)
+    {
+        var period = await _db.AccountingPeriods.FindAsync(id);
+        if (period is null)
+        {
+            return (false, "Accounting period not found.");
+        }
+
+        if (period.Status == AccountingPeriodStatus.Closed)
+        {
+            return (false, "Accounting period is already closed.");
+        }
+
+        period.Status = AccountingPeriodStatus.Closed;
+        _db.AccountingPeriods.Update(period);
+        await _db.SaveChangesAsync();
+        return (true, string.Empty);
+    }
+
+    public async Task<(bool Success, string Error)> ReopenAsync(int id)
+    {
+        var period = await _db.AccountingPeriods.FindAsync(id);
+        if (period is null)
+        {
+            return (false, "Accounting period not found.");
+        }
+
+        if (period.Status == AccountingPeriodStatus.Open)
+        {
+            return (false, "Accounting period is already open.");
+        }
+
+        period.Status = AccountingPeriodStatus.Open;
+        _db.AccountingPeriods.Update(period);
         await _db.SaveChangesAsync();
         return (true, string.Empty);
     }

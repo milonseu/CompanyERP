@@ -1,0 +1,48 @@
+@model CompanyERP.ViewModels.Security.MenuFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control" placeholder="e.g. SECURITY_USERS" />
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" placeholder="e.g. Users" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Controller" class="form-label"></label>
+        <input asp-for="Controller" class="form-control" placeholder="e.g. User" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Action" class="form-label"></label>
+        <input asp-for="Action" class="form-control" placeholder="e.g. Index" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Icon" class="form-label"></label>
+        <input asp-for="Icon" class="form-control" placeholder="e.g. bi-person" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ParentId" class="form-label"></label>
+        <select asp-for="ParentId" class="form-select">
+            <option value="">-- None (Top Level) --</option>
+            @foreach (var parent in Model.AllMenus)
+            {
+                <option value="@parent.Id">@parent.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DisplayOrder" class="form-label"></label>
+        <input asp-for="DisplayOrder" class="form-control" type="number" />
+        <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="IsActive" class="form-label"></label>
+        <select asp-for="IsActive" class="form-select">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+    </div>
+</div>

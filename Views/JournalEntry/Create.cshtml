@@ -1,0 +1,112 @@
+@model JournalEntryFormViewModel
+@{
+    ViewData["Title"] = "New Journal Entry";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">New Journal Entry</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post" id="journalForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="CompanyId" class="form-label"></label>
+                    <select asp-for="CompanyId" asp-items="ViewBag.Companies" class="form-select">
+                        <option value="">-- Select Company --</option>
+                    </select>
+                    <span asp-validation-for="CompanyId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="EntryDate" class="form-label"></label>
+                    <input asp-for="EntryDate" type="date" class="form-control" />
+                    <span asp-validation-for="EntryDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="EntryNo" class="form-label"></label>
+                    <input asp-for="EntryNo" class="form-control" readonly />
+                    <span asp-validation-for="EntryNo" class="text-danger"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Description" class="form-label"></label>
+                    <input asp-for="Description" class="form-control" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mt-3 table-responsive">
+                <table class="table align-middle" id="linesTable">
+                    <thead>
+                        <tr>
+                            <th style="width:45%;">Account</th>
+                            <th style="width:20%;">Debit</th>
+                            <th style="width:20%;">Credit</th>
+                            <th style="width:15%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Lines.Count; i++)
+                        {
+                            <tr class="line-row">
+                                <td>
+                                    <select asp-for="Lines[i].AccountId" asp-items="ViewBag.Accounts" class="form-select account-select">
+                                        <option value="">-- Select Debit/Credit Account --</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input asp-for="Lines[i].Debit" type="number" step="0.01" min="0" class="form-control text-end debit-input" />
+                                </td>
+                                <td>
+                                    <input asp-for="Lines[i].Credit" type="number" step="0.01" min="0" class="form-control text-end credit-input" />
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-line">Remove</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="addLine">Add Line</button>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Post Entry</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var table = document.getElementById('linesTable');
+            var accountsHtml = '@Html.Raw(string.Join("", ViewBag.Accounts != null ? ((IEnumerable<SelectListItem>)ViewBag.Accounts).Select(a => "<option value=\"" + a.Value + "\">" + System.Net.WebUtility.HtmlEncode(a.Text) + "</option>") : Enumerable.Empty<string>()))';
+
+            function bindRemove(btn) {
+                btn.addEventListener('click', function () {
+                    var row = btn.closest('tr');
+                    if (table.rows.length > 2) { row.parentNode.removeChild(row); }
+                });
+            }
+            document.querySelectorAll('.remove-line').forEach(bindRemove);
+
+            document.getElementById('addLine').addEventListener('click', function () {
+                var tr = document.createElement('tr');
+                tr.className = 'line-row';
+                var rowIndex = table.rows.length - 1;
+                tr.innerHTML =
+                    '<td><select class="form-select account-select" name="Lines[' + rowIndex + '].AccountId"><option value="">-- Select Debit/Credit Account --</option>' + accountsHtml + '</select></td>' +
+                    '<td><input type="number" step="0.01" min="0" class="form-control text-end debit-input" name="Lines[' + rowIndex + '].Debit" /></td>' +
+                    '<td><input type="number" step="0.01" min="0" class="form-control text-end credit-input" name="Lines[' + rowIndex + '].Credit" /></td>' +
+                    '<td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger remove-line">Remove</button></td>';
+                table.querySelector('tbody').appendChild(tr);
+                bindRemove(tr.querySelector('.remove-line'));
+            });
+        })();
+    </script>
+}

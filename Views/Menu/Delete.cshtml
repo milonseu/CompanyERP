@@ -1,0 +1,49 @@
+@model CompanyERP.Entities.Security.Menu
+@{
+    ViewData["Title"] = "Delete Menu";
+    var hasChildren = ViewBag.HasChildren as bool? ?? false;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Delete Menu</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm border-danger">
+    <div class="card-body">
+        <div class="alert alert-danger">
+            Are you sure you want to delete <strong>@Model.Name</strong>? This action cannot be undone.
+        </div>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Menu Code</dt>
+            <dd class="col-sm-9"><span class="badge bg-light text-dark">@Model.Code</span></dd>
+
+            <dt class="col-sm-3">Menu</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Route</dt>
+            <dd class="col-sm-9">@(Model.Controller != null ? $"{Model.Controller}/{Model.Action}" : "-")</dd>
+        </dl>
+
+        @if (hasChildren)
+        {
+            <div class="alert alert-warning mt-3 mb-0">
+                This menu has sub menus and cannot be deleted.
+            </div>
+        }
+
+        @if (Model.IsSystem)
+        {
+            <div class="alert alert-warning mt-3 mb-0">
+                This is a system menu and cannot be deleted.
+            </div>
+        }
+
+        <form asp-action="Delete" method="post" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger" @(hasChildren || Model.IsSystem ? "disabled" : "")>Delete</button>
+            <a asp-action="Index" class="btn btn-link">Cancel</a>
+        </form>
+    </div>
+</div>

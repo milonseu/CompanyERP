@@ -319,6 +319,130 @@
                                 </li>
                             </ul>
                         </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-cash-coin"></i> Payment Management
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="PaymentMethod" asp-action="Index">
+                                        <i class="bi bi-icons"></i> Payment Method
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="CashAccount" asp-action="Index">
+                                        <i class="bi bi-wallet2"></i> Cash Account
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="BankAccount" asp-action="Index">
+                                        <i class="bi bi-bank"></i> Bank Account
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Payment" asp-action="Index">
+                                        <i class="bi bi-cash-stack"></i> Payments
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-journal-text"></i> Accounting
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ChartOfAccount" asp-action="Index">
+                                        <i class="bi bi-list-columns"></i> Chart of Accounts
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="JournalEntry" asp-action="Index">
+                                        <i class="bi bi-journal-text"></i> Journal Entries
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="AccountingPeriod" asp-action="Index">
+                                        <i class="bi bi-calendar2-week"></i> Accounting Periods
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="AccountingReport" asp-action="Index">
+                                        <i class="bi bi-graph-up"></i> Reports
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-shield-lock"></i> Security
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="User" asp-action="Index">
+                                            <i class="bi bi-person"></i> Users
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Role" asp-action="Index">
+                                            <i class="bi bi-person-badge"></i> Roles
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Permission" asp-action="Index">
+                                            <i class="bi bi-key"></i> Permissions
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Menu" asp-action="Index">
+                                            <i class="bi bi-menu-button-wide"></i> Menus
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="ActivityLog" asp-action="Index">
+                                            <i class="bi bi-clock-history"></i> Activity Log
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="LoginHistory" asp-action="Index">
+                                            <i class="bi bi-box-arrow-in-right"></i> Login History
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <span class="navbar-text me-2">
+                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-link nav-link">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

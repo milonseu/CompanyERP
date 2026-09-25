@@ -8,10 +8,12 @@ namespace CompanyERP.Services.Asset;
 public class AssetDepreciationService : IAssetDepreciationService
 {
     private readonly ApplicationDbContext _db;
+    private readonly ITransactionPostingService _postingService;
 
-    public AssetDepreciationService(ApplicationDbContext db)
+    public AssetDepreciationService(ApplicationDbContext db, ITransactionPostingService postingService)
     {
         _db = db;
+        _postingService = postingService;
     }
 
     public async Task<List<AssetDepreciation>> GetAllAsync(int companyId, string? periodKey = null)
@@ -90,6 +92,14 @@ public class AssetDepreciationService : IAssetDepreciationService
             total += amount;
         }
 
+        // NOTE: Accounting effect is created during Accounting module integration:
+        // Debit Depreciation Expense, Credit Accumulated Depreciation.
+        var post = await _postingService.PostAssetDepreciationAsync(companyId, periodKey, Math.Round(total, 2), note ?? $"Depreciation for {periodKey}");
+        if (!post.Success)
+        {
+            return (false, post.Error, count, Math.Round(total, 2));
+        }
+
         await _db.SaveChangesAsync();
         return (true, string.Empty, count, Math.Round(total, 2));
     }
@@ -136,6 +146,14 @@ public class AssetDepreciationService : IAssetDepreciationService
         });
         asset.AccumulatedDepreciation = accumulatedAfter;
         _db.AssetRegisters.Update(asset);
+
+        // NOTE: Accounting effect is created during Accounting module integration.
+        var post = await _postingService.PostAssetDepreciationAsync(asset.CompanyId, periodKey, Math.Round(amount, 2), note ?? $"Depreciation for {periodKey}");
+        if (!post.Success)
+        {
+            return (false, post.Error, 0, 0);
+        }
+
         await _db.SaveChangesAsync();
         return (true, string.Empty, 1, Math.Round(amount, 2));
     }

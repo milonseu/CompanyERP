@@ -8,10 +8,12 @@ namespace CompanyERP.Services.Customer;
 public class CustomerService : ICustomerService
 {
     private readonly ApplicationDbContext _db;
+    private readonly ITransactionPostingService _postingService;
 
-    public CustomerService(ApplicationDbContext db)
+    public CustomerService(ApplicationDbContext db, ITransactionPostingService postingService)
     {
         _db = db;
+        _postingService = postingService;
     }
 
     public async Task<List<Entities.Customer.Customer>> GetAllAsync()
@@ -62,9 +64,17 @@ public class CustomerService : ICustomerService
             return (false, $"Customer code already exists for company {customer.CompanyId}.");
         }
 
-        if (customer.OpeningReceivable < 0)
+if (customer.OpeningReceivable < 0)
         {
             return (false, "Opening receivable cannot be negative.");
+        }
+
+        // NOTE: Accounting effect is created during Accounting module integration:
+        // Debit Accounts Receivable, Credit Opening Balance Equity.
+        var post = await _postingService.PostCustomerOpeningAsync(customer, customer.OpeningReceivable);
+        if (!post.Success)
+        {
+            return (false, post.Error);
         }
 
         _db.Customers.Add(customer);

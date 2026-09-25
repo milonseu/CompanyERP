@@ -7,11 +7,13 @@ namespace CompanyERP.Services.Employee;
 
 public class EmployeeService : IEmployeeService
 {
-    private readonly ApplicationDbContext _db;
+private readonly ApplicationDbContext _db;
+    private readonly ITransactionPostingService _postingService;
 
-    public EmployeeService(ApplicationDbContext db)
+    public EmployeeService(ApplicationDbContext db, ITransactionPostingService postingService)
     {
         _db = db;
+        _postingService = postingService;
     }
 
     public async Task<List<CompanyERP.Entities.Employee.Employee>> GetAllAsync()
@@ -254,14 +256,24 @@ public class EmployeeService : IEmployeeService
             return (false, "A salary payment for this month already exists for the employee.");
         }
 
-        if (payment.Status == SalaryPaymentStatus.Paid && payment.PaymentMode is null)
+if (payment.Status == SalaryPaymentStatus.Paid && payment.PaymentMode is null)
         {
             return (false, "Select a payment mode (Cash or Bank) when paying salary.");
         }
 
+        var employee = await _db.Employees.FirstOrDefaultAsync(e => e.Id == payment.EmployeeId);
+
         // NOTE: Accounting effect is created during Accounting module integration:
         // Paid   -> Debit Salary Expense, Credit Cash/Bank
         // Pending-> Debit Salary Expense, Credit Salary Payable
+
+        var post = payment.Status == SalaryPaymentStatus.Paid
+            ? await _postingService.PostSalaryDirectAsync(employee?.CompanyId ?? 0, payment, employee?.DefaultBranchId)
+            : await _postingService.PostSalaryAccrualAsync(employee?.CompanyId ?? 0, payment, employee?.DefaultBranchId);
+        if (!post.Success)
+        {
+            return (false, post.Error);
+        }
 
         _db.SalaryPayments.Add(payment);
         await _db.SaveChangesAsync();

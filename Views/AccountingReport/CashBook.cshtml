@@ -1,0 +1,58 @@
+@model CashBookViewModel
+@{
+    ViewData["Title"] = "Cash Book";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Cash Book</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Reports</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3"><input type="date" name="fromDate" class="form-control" value="@(Context.Request.Query["fromDate"])" /></div>
+    <div class="col-md-3"><input type="date" name="toDate" class="form-control" value="@(Context.Request.Query["toDate"])" /></div>
+    <div class="col-md-3"><button class="btn btn-outline-primary" type="submit">Filter</button></div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-3 mb-3">
+            <div><strong>Account:</strong> @Model.AccountCode - @Model.AccountName</div>
+            <div><strong>Opening:</strong> @Model.OpeningBalance.ToString("N2")</div>
+            <div><strong>Total In:</strong> @Model.TotalIn.ToString("N2")</div>
+            <div><strong>Total Out:</strong> @Model.TotalOut.ToString("N2")</div>
+            <div><strong>Closing:</strong> @Model.ClosingBalance.ToString("N2")</div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-sm">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Entry No</th>
+                        <th>Source</th>
+                        <th>Reference</th>
+                        <th>Description</th>
+                        <th class="text-end">In (Debit)</th>
+                        <th class="text-end">Out (Credit)</th>
+                        <th class="text-end">Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var line in Model.Lines)
+                    {
+                        <tr>
+                            <td>@line.Date.ToString("yyyy-MM-dd")</td>
+                            <td>@line.EntryNo</td>
+                            <td>@line.SourceModule</td>
+                            <td>@line.SourceReference</td>
+                            <td>@line.Description</td>
+                            <td class="text-end">@line.Debit.ToString("N2")</td>
+                            <td class="text-end">@line.Credit.ToString("N2")</td>
+                            <td class="text-end">@line.Balance.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -8,10 +8,12 @@ namespace CompanyERP.Services.Supplier;
 public class SupplierService : ISupplierService
 {
     private readonly ApplicationDbContext _db;
+    private readonly ITransactionPostingService _postingService;
 
-    public SupplierService(ApplicationDbContext db)
+    public SupplierService(ApplicationDbContext db, ITransactionPostingService postingService)
     {
         _db = db;
+        _postingService = postingService;
     }
 
     public async Task<List<Entities.Supplier.Supplier>> GetAllAsync()
@@ -62,9 +64,17 @@ public class SupplierService : ISupplierService
             return (false, $"Supplier code already exists for company {supplier.CompanyId}.");
         }
 
-        if (supplier.OpeningPayable < 0)
+if (supplier.OpeningPayable < 0)
         {
             return (false, "Opening payable cannot be negative.");
+        }
+
+        // NOTE: Accounting effect is created during Accounting module integration:
+        // Debit Opening Balance Equity, Credit Accounts Payable.
+        var post = await _postingService.PostSupplierOpeningAsync(supplier, supplier.OpeningPayable);
+        if (!post.Success)
+        {
+            return (false, post.Error);
         }
 
         _db.Suppliers.Add(supplier);

@@ -1,3 +1,4 @@
+using CompanyERP.Entities.Accounting;
 using CompanyERP.Entities.Asset;
 using CompanyERP.Entities.Common;
 using CompanyERP.Entities.Company;
@@ -7,8 +8,10 @@ using CompanyERP.Entities.Employee;
 using CompanyERP.Entities.Expense;
 using CompanyERP.Entities.Inventory;
 using CompanyERP.Entities.MasterData;
+using CompanyERP.Entities.Payment;
 using CompanyERP.Entities.Purchase;
 using CompanyERP.Entities.Sales;
+using CompanyERP.Entities.Security;
 using CompanyERP.Entities.Supplier;
 using Microsoft.EntityFrameworkCore;
 
@@ -91,6 +94,25 @@ public class ApplicationDbContext : DbContext
     public DbSet<ServiceDelivery> ServiceDeliveries => Set<ServiceDelivery>();
     public DbSet<SalesReturn> SalesReturns => Set<SalesReturn>();
     public DbSet<SalesReturnLine> SalesReturnLines => Set<SalesReturnLine>();
+
+    public DbSet<PaymentMethod> PaymentMethods => Set<PaymentMethod>();
+    public DbSet<CashAccount> CashAccounts => Set<CashAccount>();
+    public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<ChartOfAccount> ChartOfAccounts => Set<ChartOfAccount>();
+    public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
+    public DbSet<JournalEntryDetail> JournalEntryDetails => Set<JournalEntryDetail>();
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<Menu> Menus => Set<Menu>();
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+    public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
+    public DbSet<LoginHistory> LoginHistories => Set<LoginHistory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -10,11 +10,13 @@ public class PurchaseReturnService : IPurchaseReturnService
 {
     private readonly ApplicationDbContext _db;
     private readonly IInventoryService _inventoryService;
+    private readonly ITransactionPostingService _postingService;
 
-    public PurchaseReturnService(ApplicationDbContext db, IInventoryService inventoryService)
+    public PurchaseReturnService(ApplicationDbContext db, IInventoryService inventoryService, ITransactionPostingService postingService)
     {
         _db = db;
         _inventoryService = inventoryService;
+        _postingService = postingService;
     }
 
     public async Task<List<PurchaseReturn>> GetAllAsync()
@@ -133,6 +135,15 @@ public class PurchaseReturnService : IPurchaseReturnService
                     await tx.RollbackAsync();
                     return (false, $"Stock-out failed: {result.Error}");
                 }
+            }
+
+            // NOTE: Accounting effect is created during Accounting module integration:
+            // Debit Accounts Payable, Credit Inventory.
+            var post = await _postingService.PostPurchaseReturnAsync(purchaseReturn);
+            if (!post.Success)
+            {
+                await tx.RollbackAsync();
+                return (false, post.Error);
             }
 
             purchaseReturn.Lines = active;

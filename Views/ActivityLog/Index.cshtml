@@ -1,0 +1,78 @@
+@model IEnumerable<CompanyERP.Entities.Security.ActivityLog>
+@{
+    ViewData["Title"] = "Activity Log";
+    var modules = ViewBag.Modules as ICollection<string> ?? new List<string>();
+    var selected = ViewBag.SelectedModule as string ?? "All";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Activity Log</h1>
+    <form method="get" class="d-flex gap-2">
+        <select name="module" class="form-select" onchange="this.form.submit()">
+            <option value="All" selected="@(selected == "All")">All Modules</option>
+            @foreach (var module in modules)
+            {
+                <option value="@module" selected="@(selected == module)">@module</option>
+            }
+        </select>
+    </form>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Module</th>
+                        <th>Entity</th>
+                        <th>Details</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No activity recorded.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-nowrap">@item.CreatedAt.ToString("g")</td>
+                                <td><span class="badge bg-light text-dark">@item.UserName</span></td>
+                                <td>
+                                    @switch (item.Action)
+                                    {
+                                        case "Create":
+                                            <span class="badge bg-success">@item.Action</span>
+                                            break;
+                                        case "Update":
+                                            <span class="badge bg-primary">@item.Action</span>
+                                            break;
+                                        case "Delete":
+                                            <span class="badge bg-danger">@item.Action</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">@item.Action</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>@(item.Module ?? "-")</td>
+                                <td>@(item.EntityName != null ? $"{item.EntityName}#{item.EntityId}" : "-")</td>
+                                <td>@item.Details</td>
+                                <td>@(item.IpAddress ?? "-")</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

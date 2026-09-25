@@ -1,0 +1,34 @@
+@{
+    ViewData["Title"] = "Accounting Reports";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Accounting Reports</h1>
+</div>
+
+<div class="row g-3">
+    @{
+        var reports = new (string Title, string Description, string Action)[]
+        {
+            ("Trial Balance", "Verify debits equal credits across all accounts", "TrialBalance"),
+            ("General Ledger", "Every account with transaction history and running balance", "Ledger"),
+            ("Cash Book", "All cash movements (account 1000)", "CashBook"),
+            ("Bank Book", "All bank movements (account 1100)", "BankBook"),
+            ("Profit & Loss", "Revenue, expenses and net profit", "ProfitAndLoss"),
+            ("Balance Sheet", "Assets, liabilities, equity and retained profit", "BalanceSheet"),
+            ("Accounts Receivable / Payable", "Outstanding receivables and payables", "ReceivablesPayables")
+        };
+    }
+    @foreach (var (title, description, action) in reports)
+    {
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5">@title</h2>
+                    <p class="text-muted small mb-3">@description</p>
+                    <a asp-action="@action" class="btn btn-sm btn-outline-primary">Open</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

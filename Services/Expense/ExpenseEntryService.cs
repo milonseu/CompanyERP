@@ -8,10 +8,12 @@ namespace CompanyERP.Services.Expense;
 public class ExpenseEntryService : IExpenseEntryService
 {
     private readonly ApplicationDbContext _db;
+    private readonly ITransactionPostingService _postingService;
 
-    public ExpenseEntryService(ApplicationDbContext db)
+    public ExpenseEntryService(ApplicationDbContext db, ITransactionPostingService postingService)
     {
         _db = db;
+        _postingService = postingService;
     }
 
     public async Task<List<ExpenseEntry>> GetAllAsync(int companyId, int? branchId = null, int? typeId = null)
@@ -111,6 +113,15 @@ public class ExpenseEntryService : IExpenseEntryService
         }
 
         entry.ExpenseDate = entry.ExpenseDate == default ? DateTime.Today : entry.ExpenseDate;
+
+        // NOTE: Accounting effect is created during Accounting module integration:
+        // Debit Operating Expense, Credit Cash/Bank or Expense Payable.
+        var post = await _postingService.PostExpenseEntryAsync(entry);
+        if (!post.Success)
+        {
+            return (false, post.Error);
+        }
+
         _db.ExpenseEntries.Add(entry);
         await _db.SaveChangesAsync();
         return (true, string.Empty);

@@ -1,0 +1,55 @@
+@model List<ChartOfAccount>
+@{
+    ViewData["Title"] = "Chart of Accounts";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Chart of Accounts</h1>
+    <a asp-action="Create" class="btn btn-primary">Add Account</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Normal Balance</th>
+                        <th>Opening</th>
+                        <th>Active</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var account in Model)
+                    {
+                        <tr>
+                            <td>@account.AccountCode</td>
+                            <td>@account.AccountName</td>
+                            <td>@account.AccountType</td>
+                            <td>@account.NormalBalance</td>
+                            <td class="text-end">@account.OpeningBalance.ToString("N2")</td>
+                            <td>@(account.IsActive ? "Yes" : "No")</td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@account.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@account.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

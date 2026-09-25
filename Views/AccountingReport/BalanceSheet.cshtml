@@ -1,0 +1,69 @@
+@model BalanceSheetViewModel
+@{
+    ViewData["Title"] = "Balance Sheet";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Balance Sheet</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Reports</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3"><input type="date" name="asOfDate" class="form-control" value="@(Context.Request.Query["asOfDate"])" /></div>
+    <div class="col-md-3"><button class="btn btn-outline-primary" type="submit">As Of</button></div>
+</form>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Assets</h2>
+                <table class="table table-sm mb-0">
+                    @foreach (var a in Model.Assets)
+                    {
+                        <tr><td>@a.AccountCode - @a.AccountName</td><td class="text-end">@a.Amount.ToString("N2")</td></tr>
+                    }
+                    <tr class="fw-bold"><td>Total Assets</td><td class="text-end">@Model.TotalAssets.ToString("N2")</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Liabilities</h2>
+                <table class="table table-sm mb-0">
+                    @foreach (var l in Model.Liabilities)
+                    {
+                        <tr><td>@l.AccountCode - @l.AccountName</td><td class="text-end">@l.Amount.ToString("N2")</td></tr>
+                    }
+                    <tr class="fw-bold"><td>Total Liabilities</td><td class="text-end">@Model.TotalLiabilities.ToString("N2")</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Equity</h2>
+                <table class="table table-sm mb-0">
+                    @foreach (var e in Model.Equity)
+                    {
+                        <tr><td>@e.AccountCode - @e.AccountName</td><td class="text-end">@e.Amount.ToString("N2")</td></tr>
+                    }
+                    <tr><td>Net Profit / (Loss)</td><td class="text-end">@Model.NetProfit.ToString("N2")</td></tr>
+                    <tr class="fw-bold"><td>Total Liabilities + Equity</td><td class="text-end">@Model.TotalLiabilitiesEquity.ToString("N2")</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <span class="fw-bold">Difference (Assets - Liabilities - Equity - Profit)</span>
+            <span class="@(Math.Abs(Model.Difference) < 0.005m ? "text-success" : "text-danger") fw-bold">@Model.Difference.ToString("N2")</span>
+        </div>
+    </div>
+</div>

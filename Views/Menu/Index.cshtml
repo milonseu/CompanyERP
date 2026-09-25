@@ -1,0 +1,98 @@
+@model IEnumerable<CompanyERP.Entities.Security.Menu>
+@{
+    ViewData["Title"] = "Menus";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Menus</h1>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Menu</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Menu</th>
+                    <th>Code</th>
+                    <th>Route</th>
+                    <th>Parent</th>
+                    <th class="text-center">Order</th>
+                    <th class="text-center">Active</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">No menu found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var parent in Model.Where(m => m.ParentId == null).OrderBy(m => m.DisplayOrder))
+                    {
+                        <tr class="table-light">
+                            <td>
+                                <i class="bi bi-folder2-open text-primary"></i> @parent.Name
+                                @if (parent.IsSystem)
+                                {
+                                    <i class="bi bi-lock-fill text-secondary" title="System menu"></i>
+                                }
+                            </td>
+                            <td><span class="badge bg-light text-dark">@parent.Code</span></td>
+                            <td>@(parent.Controller ?? "-")</td>
+                            <td>-</td>
+                            <td class="text-center">@parent.DisplayOrder</td>
+                            <td class="text-center">
+                                @if (parent.IsActive)
+                                {
+                                    <span class="badge bg-success">Yes</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@parent.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@parent.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </td>
+                        </tr>
+                        @foreach (var child in Model.Where(m => m.ParentId == parent.Id).OrderBy(m => m.DisplayOrder))
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <i class="bi bi-dash"></i> @child.Name
+                                    @if (child.IsSystem)
+                                    {
+                                        <i class="bi bi-lock-fill text-secondary" title="System menu"></i>
+                                    }
+                                </td>
+                                <td><span class="badge bg-light text-dark">@child.Code</span></td>
+                                <td>@(child.Controller != null ? $"{child.Controller}/{child.Action}" : "-")</td>
+                                <td>@parent.Name</td>
+                                <td class="text-center">@child.DisplayOrder</td>
+                                <td class="text-center">
+                                    @if (child.IsActive)
+                                    {
+                                        <span class="badge bg-success">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">No</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@child.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <a asp-action="Delete" asp-route-id="@child.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

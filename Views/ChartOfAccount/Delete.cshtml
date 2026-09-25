@@ -1,0 +1,18 @@
+@model ChartOfAccount
+@{
+    ViewData["Title"] = "Delete Account";
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="h3 mb-3">Delete Account</h1>
+        <p>Are you sure you want to delete <strong>@Model.AccountCode - @Model.AccountName</strong>?</p>
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Delete</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

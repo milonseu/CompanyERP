@@ -1,0 +1,54 @@
+@model CompanyERP.ViewModels.Security.UserFormViewModel
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">User @Model.UserName</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">User Name</dt>
+            <dd class="col-sm-9">@Model.UserName</dd>
+
+            <dt class="col-sm-3">Full Name</dt>
+            <dd class="col-sm-9">@(Model.FullName ?? "-")</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@(Model.Email ?? "-")</dd>
+
+            <dt class="col-sm-3">Phone</dt>
+            <dd class="col-sm-9">@(Model.Phone ?? "-")</dd>
+
+            <dt class="col-sm-3">Roles</dt>
+            <dd class="col-sm-9">
+                @foreach (var role in Model.AllRoles)
+                {
+                    <span class="badge bg-primary me-1">@role.Name</span>
+                }
+                @if (!Model.AllRoles.Any())
+                {
+                    <span class="text-muted">None</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Active</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">No</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Last Login</dt>
+            <dd class="col-sm-9">@(Model.LastLoginAt?.ToString("g") ?? "-")</dd>
+        </dl>
+    </div>
+</div>

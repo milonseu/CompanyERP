@@ -12,6 +12,10 @@ public class PurchaseInvoice : BaseEntity
     [Display(Name = "Company")]
     public int CompanyId { get; set; }
 
+    [Required(ErrorMessage = "Branch is required.")]
+    [Display(Name = "Branch")]
+    public int BranchId { get; set; }
+
     [Required(ErrorMessage = "Supplier is required.")]
     [Display(Name = "Supplier")]
     public int SupplierId { get; set; }
@@ -40,6 +44,7 @@ public class PurchaseInvoice : BaseEntity
     public string? Note { get; set; }
 
     public CompanyProfile? Company { get; set; }
+    public CompanyBranch.Branch? Branch { get; set; }
     public SupplierEntity? Supplier { get; set; }
     public PurchaseOrder? PurchaseOrder { get; set; }
     public List<PurchaseInvoiceLine> Lines { get; set; } = new();

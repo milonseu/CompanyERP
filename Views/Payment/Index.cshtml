@@ -1,0 +1,117 @@
+@model IEnumerable<Payment>
+@{
+    ViewData["Title"] = "Payments";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Payments</h1>
+    <a asp-action="Create" class="btn btn-primary">New Payment</a>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Category</label>
+            </div>
+            <div class="col-auto">
+                <select name="category" asp-items="ViewBag.Categories" class="form-select form-select-sm">
+                    <option value="">All</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-outline-primary">Filter</button>
+            </div>
+            <div class="col-auto">
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Payment No</th>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Party / Source</th>
+                    <th>Method</th>
+                    <th class="text-end">Amount</th>
+                    <th>Account</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">No payment found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.PaymentNo</td>
+                            <td>@item.PaymentDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <span class="badge text-bg-secondary">@item.Category</span>
+                            </td>
+                            <td>
+                                @switch (item.Category)
+                                {
+                                    case PaymentCategory.Customer:
+                                        <span>@item.Customer?.Name</span>
+                                        break;
+                                    case PaymentCategory.Supplier:
+                                        <span>@item.Supplier?.Name</span>
+                                        break;
+                                    case PaymentCategory.Expense:
+                                        <span>@item.ExpenseEntry?.ExpenseNo</span>
+                                        break;
+                                    case PaymentCategory.Salary:
+                                        <span>@item.SalaryPayment?.Employee?.Name</span>
+                                        break;
+                                    case PaymentCategory.Asset:
+                                        <span>@item.AssetRegister?.AssetNo</span>
+                                        break;
+                                }
+                                <div class="text-muted small">@item.SourceReferenceNo</div>
+                            </td>
+                            <td>@item.PaymentMethod?.Name</td>
+                            <td class="text-end">@item.Amount.ToString("N2")</td>
+                            <td>
+                                @if (item.AccountType == PaymentAccountType.Cash)
+                                {
+                                    <span>Cash: @item.CashAccount?.AccountName</span>
+                                }
+                                else
+                                {
+                                    <span>Bank: @item.BankAccount?.AccountName</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Status == PaymentStatus.Posted)
+                                {
+                                    <span class="badge text-bg-success">Posted</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-secondary">Void</span>
+                                }
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Details</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

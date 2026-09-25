@@ -12,5 +12,7 @@ public interface IAccountingPeriodService
     Task<bool> HasOverlapAsync(int financialYearId, DateTime startDate, DateTime endDate, int? excludeId = null);
     Task<(bool Success, string Error)> CreateAsync(AccountingPeriod period);
     Task<(bool Success, string Error)> UpdateAsync(AccountingPeriod period);
+    Task<(bool Success, string Error)> CloseAsync(int id);
+    Task<(bool Success, string Error)> ReopenAsync(int id);
     Task<(bool Success, string Error)> DeleteAsync(int id);
 }

@@ -140,7 +140,7 @@ public class AccountingPeriodController : Controller
         return View(period);
     }
 
-    [HttpPost, ActionName("Delete")]
+[HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
@@ -152,6 +152,40 @@ public class AccountingPeriodController : Controller
         else
         {
             TempData["Success"] = "Accounting period deleted.";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Close(int id)
+    {
+        var result = await _accountingPeriodService.CloseAsync(id);
+        if (!result.Success)
+        {
+            TempData["Error"] = result.Error;
+        }
+        else
+        {
+            TempData["Success"] = "Accounting period closed successfully.";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Reopen(int id)
+    {
+        var result = await _accountingPeriodService.ReopenAsync(id);
+        if (!result.Success)
+        {
+            TempData["Error"] = result.Error;
+        }
+        else
+        {
+            TempData["Success"] = "Accounting period reopened successfully.";
         }
 
         return RedirectToAction(nameof(Index));

@@ -8,10 +8,12 @@ namespace CompanyERP.Services.Asset;
 public class AssetDisposalService : IAssetDisposalService
 {
     private readonly ApplicationDbContext _db;
+    private readonly ITransactionPostingService _postingService;
 
-    public AssetDisposalService(ApplicationDbContext db)
+    public AssetDisposalService(ApplicationDbContext db, ITransactionPostingService postingService)
     {
         _db = db;
+        _postingService = postingService;
     }
 
     public async Task<List<AssetDisposal>> GetAllAsync(int companyId)
@@ -79,6 +81,15 @@ public class AssetDisposalService : IAssetDisposalService
         _db.AssetDisposals.Add(disposal);
         asset.Status = AssetStatus.Disposed;
         _db.AssetRegisters.Update(asset);
+
+        // NOTE: Accounting effect is created during Accounting module integration:
+        // remove the asset from the books and recognize the gain/loss.
+        var post = await _postingService.PostAssetDisposalAsync(asset, disposal);
+        if (!post.Success)
+        {
+            return (false, post.Error);
+        }
+
         await _db.SaveChangesAsync();
         return (true, string.Empty);
     }

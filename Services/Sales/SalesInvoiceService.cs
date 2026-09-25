@@ -10,11 +10,13 @@ public class SalesInvoiceService : ISalesInvoiceService
 {
     private readonly ApplicationDbContext _db;
     private readonly IInventoryService _inventoryService;
+    private readonly ITransactionPostingService _postingService;
 
-    public SalesInvoiceService(ApplicationDbContext db, IInventoryService inventoryService)
+    public SalesInvoiceService(ApplicationDbContext db, IInventoryService inventoryService, ITransactionPostingService postingService)
     {
         _db = db;
         _inventoryService = inventoryService;
+        _postingService = postingService;
     }
 
     public async Task<List<SalesInvoice>> GetAllAsync()
@@ -149,6 +151,16 @@ public class SalesInvoiceService : ISalesInvoiceService
                     await tx.RollbackAsync();
                     return (false, result.Error);
                 }
+            }
+
+            // NOTE: Accounting effect is created during Accounting module integration:
+            // Debit Cash/Bank/AR, Credit Product/Software/Service Revenue;
+            // Debit Cost of Goods Sold, Credit Inventory.
+            var post = await _postingService.PostSalesInvoiceAsync(invoice, products);
+            if (!post.Success)
+            {
+                await tx.RollbackAsync();
+                return (false, post.Error);
             }
 
             _db.SalesInvoices.Add(invoice);

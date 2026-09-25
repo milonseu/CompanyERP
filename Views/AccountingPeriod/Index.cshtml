@@ -71,6 +71,20 @@
                             <td class="text-end">
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Details</a>
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                                @if (item.Status == CompanyERP.Entities.Company.AccountingPeriodStatus.Open)
+                                {
+                                    <form asp-action="Close" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">Close</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Reopen" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Reopen</button>
+                                    </form>
+                                }
                                 <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
                             </td>
                         </tr>

@@ -1,0 +1,65 @@
+@model CompanyERP.ViewModels.Security.RoleFormViewModel
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control" placeholder="e.g. SUPERVISOR" />
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" placeholder="e.g. Supervisor" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="IsActive" class="form-label"></label>
+        <select asp-for="IsActive" class="form-select">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+    </div>
+    <div class="col-12">
+        @if (Model.IsSystem)
+        {
+            <small class="text-muted">System role permissions are managed centrally and cannot be changed here.</small>
+        }
+        else
+        {
+            <label class="form-label">Permissions</label>
+            <div class="accordion" id="rolePermissions">
+                @foreach (var module in Model.Modules)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading-@module.Replace(" ", "-")">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse-@module.Replace(" ", "-")" aria-expanded="false">
+                                @module
+                            </button>
+                        </h2>
+                        <div id="collapse-@module.Replace(" ", "-")" class="accordion-collapse collapse"
+                             data-bs-parent="#rolePermissions">
+                            <div class="accordion-body">
+                                @foreach (var permission in Model.AllPermissions.Where(p => p.Module == module))
+                                {
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="SelectedPermissionIds" value="@permission.Id"
+                                               @(Model.SelectedPermissionIds.Contains(permission.Id) ? "checked" : "") id="permission-@permission.Id" />
+                                        <label class="form-check-label" for="permission-@permission.Id">@permission.Name</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (!Model.Modules.Any())
+                {
+                    <span class="text-muted">No permissions available.</span>
+                }
+            </div>
+        }
+    </div>
+</div>

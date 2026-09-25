@@ -1,0 +1,49 @@
+@model CompanyERP.Entities.Security.Role
+@{
+    ViewData["Title"] = "Role Details";
+    var permissions = ViewBag.Permissions as ICollection<CompanyERP.Entities.Security.Permission> ?? new List<CompanyERP.Entities.Security.Permission>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Role @Model.Name</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Role Code</dt>
+            <dd class="col-sm-9"><span class="badge bg-light text-dark">@Model.Code</span></dd>
+
+            <dt class="col-sm-3">Role</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Description</dt>
+            <dd class="col-sm-9">@(Model.Description ?? "-")</dd>
+
+            <dt class="col-sm-3">Active</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">No</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Permissions</dt>
+            <dd class="col-sm-9">
+                @foreach (var permission in permissions.OrderBy(p => p.Module))
+                {
+                    <span class="badge bg-light text-dark mb-1">@permission.Code</span>
+                }
+                @if (!permissions.Any())
+                {
+                    <span class="text-muted">None</span>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>

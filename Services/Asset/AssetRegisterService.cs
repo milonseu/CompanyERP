@@ -8,10 +8,12 @@ namespace CompanyERP.Services.Asset;
 public class AssetRegisterService : IAssetRegisterService
 {
     private readonly ApplicationDbContext _db;
+    private readonly ITransactionPostingService _postingService;
 
-    public AssetRegisterService(ApplicationDbContext db)
+    public AssetRegisterService(ApplicationDbContext db, ITransactionPostingService postingService)
     {
         _db = db;
+        _postingService = postingService;
     }
 
     public async Task<List<AssetRegister>> GetAllAsync(int companyId, int? branchId = null, AssetStatus? status = null, string? search = null)
@@ -152,6 +154,14 @@ public class AssetRegisterService : IAssetRegisterService
         asset.Acquisition = acquisition;
         asset.Status = AssetStatus.Registered;
         asset.AccumulatedDepreciation = 0;
+
+        // NOTE: Accounting effect is created during Accounting module integration:
+        // Debit Fixed Assets, Credit Cash/Bank or Asset Payable.
+        var post = await _postingService.PostAssetAcquisitionAsync(asset, acquisition);
+        if (!post.Success)
+        {
+            return (false, post.Error);
+        }
 
         _db.AssetRegisters.Add(asset);
         await _db.SaveChangesAsync();

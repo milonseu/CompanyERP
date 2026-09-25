@@ -10,11 +10,13 @@ public class SalesReturnService : ISalesReturnService
 {
     private readonly ApplicationDbContext _db;
     private readonly IInventoryService _inventoryService;
+    private readonly ITransactionPostingService _postingService;
 
-    public SalesReturnService(ApplicationDbContext db, IInventoryService inventoryService)
+    public SalesReturnService(ApplicationDbContext db, IInventoryService inventoryService, ITransactionPostingService postingService)
     {
         _db = db;
         _inventoryService = inventoryService;
+        _postingService = postingService;
     }
 
     public async Task<List<SalesReturn>> GetAllAsync()
@@ -131,6 +133,15 @@ public class SalesReturnService : ISalesReturnService
                     await tx.RollbackAsync();
                     return (false, result.Error);
                 }
+            }
+
+            // NOTE: Accounting effect is created during Accounting module integration:
+            // reverse the revenue (Debit Revenue, Credit AR) and the COGS/Inventory.
+            var post = await _postingService.PostSalesReturnAsync(salesReturn, invoice, products);
+            if (!post.Success)
+            {
+                await tx.RollbackAsync();
+                return (false, post.Error);
             }
 
             _db.SalesReturns.Add(salesReturn);

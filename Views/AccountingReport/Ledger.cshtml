@@ -1,0 +1,73 @@
+@model LedgerViewModel
+@{
+    ViewData["Title"] = "General Ledger";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">General Ledger</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Reports</a>
+</div>
+
+<form method="get" class="row g-2 mb-3 align-items-end">
+    <div class="col-md-3">
+        <label class="form-label small">Account</label>
+        <select name="accountId" asp-items="ViewBag.Accounts" class="form-select">
+            <option value="">-- All Accounts --</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label small">Branch</label>
+        <select name="branchId" asp-items="ViewBag.Branches" class="form-select">
+            <option value="">-- All Branches --</option>
+        </select>
+    </div>
+    <div class="col-md-2"><input type="date" name="fromDate" class="form-control" value="@(Context.Request.Query["fromDate"])" /></div>
+    <div class="col-md-2"><input type="date" name="toDate" class="form-control" value="@(Context.Request.Query["toDate"])" /></div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Filter</button></div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-3 mb-3">
+            <div><strong>Opening Balance:</strong> @Model.OpeningBalance.ToString("N2")</div>
+            <div><strong>Total Debit:</strong> @Model.TotalDebit.ToString("N2")</div>
+            <div><strong>Total Credit:</strong> @Model.TotalCredit.ToString("N2")</div>
+            <div><strong>Closing Balance:</strong> @Model.ClosingBalance.ToString("N2")</div>
+            @if (!string.IsNullOrWhiteSpace(Model.BranchName))
+            {
+                <div><strong>Branch:</strong> @Model.BranchName</div>
+            }
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-sm">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Entry No</th>
+                        <th>Source</th>
+                        <th>Reference</th>
+                        <th>Description</th>
+                        <th class="text-end">Debit</th>
+                        <th class="text-end">Credit</th>
+                        <th class="text-end">Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var line in Model.Lines)
+                    {
+                        <tr>
+                            <td>@line.Date.ToString("yyyy-MM-dd")</td>
+                            <td>@line.EntryNo</td>
+                            <td>@line.SourceModule</td>
+                            <td>@line.SourceReference</td>
+                            <td>@line.Description</td>
+                            <td class="text-end">@line.Debit.ToString("N2")</td>
+                            <td class="text-end">@line.Credit.ToString("N2")</td>
+                            <td class="text-end">@line.Balance.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

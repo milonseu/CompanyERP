@@ -145,4 +145,29 @@
             </div>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-cash-coin text-success"></i> Payment Management
+                </h5>
+                <p class="card-text text-muted">Payment methods, cash and bank accounts, customer/supplier/expense/salary/asset payments.</p>
+                <a asp-controller="PaymentMethod" asp-action="Index" class="btn btn-sm btn-outline-success">Payment Method</a>
+                <a asp-controller="Payment" asp-action="Index" class="btn btn-sm btn-outline-success">Payments</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-journal-text text-warning"></i> Accounting Management
+                </h5>
+                <p class="card-text text-muted">Chart of accounts, journal entries, accounting periods, period closing and financial reports.</p>
+                <a asp-controller="ChartOfAccount" asp-action="Index" class="btn btn-sm btn-outline-warning">Chart of Accounts</a>
+                <a asp-controller="JournalEntry" asp-action="Index" class="btn btn-sm btn-outline-warning">Journal Entries</a>
+                <a asp-controller="AccountingReport" asp-action="Index" class="btn btn-sm btn-outline-warning">Reports</a>
+            </div>
+        </div>
+    </div>
 </div>
