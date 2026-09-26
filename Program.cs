@@ -5,6 +5,7 @@ using CompanyERP.Services.Asset;
 using CompanyERP.Services.Company;
 using CompanyERP.Services.CompanyBranch;
 using CompanyERP.Services.Customer;
+using CompanyERP.Services.Dashboard;
 using CompanyERP.Services.Employee;
 using CompanyERP.Services.Expense;
 using CompanyERP.Services.Inventory;
@@ -128,6 +129,7 @@ builder.Services.AddScoped<IExpenseReportService, ExpenseReportService>();
 builder.Services.AddScoped<IHrReportService, HrReportService>();
 builder.Services.AddScoped<ISalesReportService, SalesReportService>();
 builder.Services.AddScoped<IPurchaseReportService, PurchaseReportService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var app = builder.Build();
 

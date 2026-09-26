@@ -19,4 +19,7 @@ html {
 
 body {
   margin-bottom: 60px;
-}
+}.bg-teal  { background-color: #20c997 !important; }
+.text-teal { color: #20c997 !important; }
+.bg-purple { background-color: #6f42c1 !important; }
+.text-purple { color: #6f42c1 !important; }

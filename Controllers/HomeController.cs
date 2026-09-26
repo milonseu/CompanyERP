@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using CompanyERP.Interfaces.Services;
 using CompanyERP.Models;
 
 namespace CompanyERP.Controllers;
@@ -7,15 +8,19 @@ namespace CompanyERP.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly IDashboardService _dashboard;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, IDashboardService dashboard)
     {
         _logger = logger;
+        _dashboard = dashboard;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
+        var companyId = await _dashboard.GetFirstCompanyIdAsync();
+        var model = await _dashboard.GetDashboardAsync(companyId);
+        return View(model);
     }
 
     public IActionResult Privacy()
