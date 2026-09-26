@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Aging Reports";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Aging Reports</h1>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5"><i class="bi bi-arrow-down-up"></i> Accounts Receivable Aging</h2>
+                <p class="text-muted small mb-3">Outstanding customer invoices grouped by days past due.</p>
+                <a asp-action="Receivables" class="btn btn-sm btn-outline-primary">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5"><i class="bi bi-arrow-up-down"></i> Accounts Payable Aging</h2>
+                <p class="text-muted small mb-3">Outstanding supplier invoices grouped by days past due.</p>
+                <a asp-action="Payables" class="btn btn-sm btn-outline-primary">Open</a>
+            </div>
+        </div>
+    </div>
+</div>

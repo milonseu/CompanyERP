@@ -1,0 +1,51 @@
+@model DisposalSummaryViewModel
+@{
+    ViewData["Title"] = "Disposal Summary";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Disposal Summary</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Asset Reports</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-sm mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Asset No</th>
+                    <th>Asset</th>
+                    <th>Disposal Date</th>
+                    <th class="text-end">Sale Value</th>
+                    <th class="text-end">Book Value</th>
+                    <th class="text-end">Gain / Loss</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Rows)
+                {
+                    <tr>
+                        <td>@r.AssetNo</td>
+                        <td>@r.Asset</td>
+                        <td>@r.DisposalDate.ToString("dd MMM yyyy")</td>
+                        <td class="text-end">@r.SaleValue.ToString("N2")</td>
+                        <td class="text-end">@r.BookValue.ToString("N2")</td>
+                        <td class="text-end fw-semibold">@r.GainLoss.ToString("N2")</td>
+                    </tr>
+                }
+                @if (Model.Rows.Count == 0)
+                {
+                    <tr><td colspan="6" class="text-center text-muted">No disposals recorded</td></tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold">
+                    <td colspan="3">Total</td>
+                    <td class="text-end">@Model.TotalSaleValue.ToString("N2")</td>
+                    <td class="text-end">@Model.TotalBookValue.ToString("N2")</td>
+                    <td class="text-end">@Model.TotalGainLoss.ToString("N2")</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

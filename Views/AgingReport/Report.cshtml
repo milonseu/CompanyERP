@@ -1,0 +1,158 @@
+@model AgingReportViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    var action = Model.IsReceivables ? "Receivables" : "Payables";
+    string BucketLabel(AgingBucket bucket) => bucket switch
+    {
+        AgingBucket.Current => "Current",
+        AgingBucket.Days1To30 => "1-30",
+        AgingBucket.Days31To60 => "31-60",
+        AgingBucket.Days61To90 => "61-90",
+        _ => "90+"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">@Model.Title</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Aging Reports</a>
+</div>
+
+<form method="get" asp-action="@action" class="card shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">As of Date</label>
+            <input type="date" name="asOfDate" class="form-control form-control-sm" value="@Model.AsOfDate.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Branch</label>
+            <select name="branchId" class="form-select form-select-sm">
+                <option value="">All Branches</option>
+                @foreach (var branch in ViewBag.Branches)
+                {
+                    <option value="@branch.Value" selected="@(branch.Value == Model.BranchId?.ToString())">@branch.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">@Model.PartyCaption</label>
+            <select name="partyId" class="form-select form-select-sm">
+                <option value="">All @Model.PartyCaption</option>
+                @foreach (var party in ViewBag.Parties)
+                {
+                    <option value="@party.Value" selected="@(party.Value == Model.PartyId?.ToString())">@party.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-primary">Show</button>
+            <a asp-action="@action" class="btn btn-sm btn-outline-secondary">Reset</a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>@Model.PartyCaption</th>
+                        <th class="text-end">Current</th>
+                        <th class="text-end">1-30</th>
+                        <th class="text-end">31-60</th>
+                        <th class="text-end">61-90</th>
+                        <th class="text-end">90+</th>
+                        <th class="text-end">Total Outstanding</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="@action" asp-route-asOfDate="@Model.AsOfDate.ToString("yyyy-MM-dd")"
+                                   asp-route-branchId="@Model.BranchId" asp-route-partyId="@row.PartyId">
+                                    @row.PartyName (@row.PartyCode)
+                                </a>
+                            </td>
+                            <td class="text-end">@row.Current.ToString("N2")</td>
+                            <td class="text-end">@row.Days1To30.ToString("N2")</td>
+                            <td class="text-end">@row.Days31To60.ToString("N2")</td>
+                            <td class="text-end">@row.Days61To90.ToString("N2")</td>
+                            <td class="text-end">@row.Days90Plus.ToString("N2")</td>
+                            <td class="text-end fw-semibold">@row.TotalOutstanding.ToString("N2")</td>
+                        </tr>
+                    }
+                    @if (Model.Rows.Count == 0)
+                    {
+                        <tr><td colspan="7" class="text-center text-muted">No outstanding balances.</td></tr>
+                    }
+                </tbody>
+                @if (Model.Rows.Count > 0)
+                {
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td>Total</td>
+                            <td class="text-end">@Model.TotalCurrent.ToString("N2")</td>
+                            <td class="text-end">@Model.TotalDays1To30.ToString("N2")</td>
+                            <td class="text-end">@Model.TotalDays31To60.ToString("N2")</td>
+                            <td class="text-end">@Model.TotalDays61To90.ToString("N2")</td>
+                            <td class="text-end">@Model.TotalDays90Plus.ToString("N2")</td>
+                            <td class="text-end">@Model.TotalOutstanding.ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (Model.PartyId.HasValue)
+{
+    <div class="card shadow-sm mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Detail &mdash; @Model.Rows.FirstOrDefault()?.PartyName</span>
+            <a asp-action="@action" asp-route-asOfDate="@Model.AsOfDate.ToString("yyyy-MM-dd")" asp-route-branchId="@Model.BranchId"
+               class="btn btn-sm btn-outline-secondary">Back to All @Model.PartyCaption</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Type</th>
+                            <th>Effective Date</th>
+                            <th>Due Date</th>
+                            <th class="text-end">Days Overdue</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-end">Paid</th>
+                            <th class="text-end">Outstanding</th>
+                            <th class="text-end">Bucket</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var invoice in Model.Invoices)
+                        {
+                            <tr>
+                                <td>@invoice.Reference</td>
+                                <td>@invoice.SourceType</td>
+                                <td>@(invoice.EffectiveDate?.ToString("dd MMM yyyy"))</td>
+                                <td>@(invoice.DueDate?.ToString("dd MMM yyyy") ?? "&mdash;")</td>
+                                <td class="text-end">@(invoice.DaysOverdue > 0 ? invoice.DaysOverdue.ToString() : "&mdash;")</td>
+                                <td class="text-end">@invoice.Total.ToString("N2")</td>
+                                <td class="text-end">@invoice.Paid.ToString("N2")</td>
+                                <td class="text-end">@invoice.Outstanding.ToString("N2")</td>
+                                <td class="text-end">@BucketLabel(invoice.Bucket)</td>
+                            </tr>
+                        }
+                        @if (Model.Invoices.Count == 0)
+                        {
+                            <tr><td colspan="9" class="text-center text-muted">No outstanding invoices for this @Model.PartyCaption.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

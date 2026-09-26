@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Payment Reports";
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="h3 mb-3">Payment Reports</h1>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Payment Summary</h2>
+                        <p class="text-muted small">Payments by method, category and cash/bank account.</p>
+                        <a asp-action="Summary" class="btn btn-sm btn-outline-primary">Open</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Sales vs Payment</h2>
+                        <p class="text-muted small">Sales invoiced vs receipts received per customer.</p>
+                        <a asp-action="SalesVsPayment" class="btn btn-sm btn-outline-primary">Open</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Purchases vs Payment</h2>
+                        <p class="text-muted small">Purchases invoiced vs payments made per supplier.</p>
+                        <a asp-action="PurchasesVsPayment" class="btn btn-sm btn-outline-primary">Open</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

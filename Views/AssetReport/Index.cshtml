@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Asset Reports";
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="h3 mb-3">Asset Reports</h1>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Asset Register</h2>
+                        <p class="text-muted small">Cost, accumulated depreciation and book value of all assets.</p>
+                        <a asp-action="Register" class="btn btn-sm btn-outline-primary">Open</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Depreciation Schedule</h2>
+                        <p class="text-muted small">Depreciation amounts by period.</p>
+                        <a asp-action="Depreciation" class="btn btn-sm btn-outline-primary">Open</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Disposal Summary</h2>
+                        <p class="text-muted small">Disposed assets with sale value and gain/loss.</p>
+                        <a asp-action="Disposals" class="btn btn-sm btn-outline-primary">Open</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,80 @@
+@model AssetReportViewModel
+@{
+    ViewData["Title"] = "Asset Register";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Asset Register</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Asset Reports</a>
+</div>
+
+<form method="get" asp-action="Register" class="card shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">As Of</label>
+            <input type="date" name="asOfDate" class="form-control form-control-sm" value="@(Model.AsOfDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Asset Type</label>
+            <select name="assetTypeId" class="form-select form-select-sm">
+                <option value="">All</option>
+                @foreach (var t in ViewBag.AssetTypes)
+                {
+                    <option value="@t.Value" selected="@(t.Value == Model.AssetTypeId.ToString() ? "selected" : null)">@t.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-sm btn-primary">Show</button>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-sm mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Asset No</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Branch</th>
+                    <th>Purchase Date</th>
+                    <th class="text-end">Cost</th>
+                    <th class="text-end">Accum. Dep.</th>
+                    <th class="text-end">Book Value</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Rows)
+                {
+                    <tr>
+                        <td>@r.AssetNo</td>
+                        <td>@r.Name</td>
+                        <td>@r.Type</td>
+                        <td>@r.Branch</td>
+                        <td>@r.PurchaseDate.ToString("dd MMM yyyy")</td>
+                        <td class="text-end">@r.Cost.ToString("N2")</td>
+                        <td class="text-end">@r.AccumulatedDepreciation.ToString("N2")</td>
+                        <td class="text-end fw-semibold">@r.BookValue.ToString("N2")</td>
+                        <td>@r.Status</td>
+                    </tr>
+                }
+                @if (Model.Rows.Count == 0)
+                {
+                    <tr><td colspan="9" class="text-center text-muted">No assets on record</td></tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold">
+                    <td colspan="5">Total</td>
+                    <td class="text-end">@Model.TotalCost.ToString("N2")</td>
+                    <td class="text-end">@Model.TotalAccumulatedDepreciation.ToString("N2")</td>
+                    <td class="text-end">@Model.TotalBookValue.ToString("N2")</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

@@ -11,6 +11,7 @@ using CompanyERP.Services.Inventory;
 using CompanyERP.Services.MasterData;
 using CompanyERP.Services.Payments;
 using CompanyERP.Services.Purchase;
+using CompanyERP.Services.Reports;
 using CompanyERP.Services.Sales;
 using CompanyERP.Services.Security;
 using CompanyERP.Services.Supplier;
@@ -116,6 +117,8 @@ builder.Services.AddScoped<IChartOfAccountService, ChartOfAccountService>();
 builder.Services.AddScoped<IJournalEntryService, JournalEntryService>();
 builder.Services.AddScoped<ITransactionPostingService, TransactionPostingService>();
 builder.Services.AddScoped<IAccountingReportService, AccountingReportService>();
+builder.Services.AddScoped<IAgingReportService, AgingReportService>();
+builder.Services.AddScoped<IStatementReportService, StatementReportService>();
 
 var app = builder.Build();
 

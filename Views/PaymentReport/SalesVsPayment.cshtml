@@ -1,0 +1,63 @@
+@model SalesVsPaymentViewModel
+@{
+    ViewData["Title"] = "Sales vs Payment";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Sales vs Payment</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Payment Reports</a>
+</div>
+
+<form method="get" asp-action="SalesVsPayment" class="card shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">From</label>
+            <input type="date" name="fromDate" class="form-control form-control-sm" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">To</label>
+            <input type="date" name="toDate" class="form-control form-control-sm" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-sm btn-primary">Show</button>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-sm mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th class="text-end">Sales</th>
+                    <th class="text-end">Payment Received</th>
+                    <th class="text-end">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Rows)
+                {
+                    <tr>
+                        <td>@r.Customer</td>
+                        <td class="text-end">@r.Sales.ToString("N2")</td>
+                        <td class="text-end">@r.Paid.ToString("N2")</td>
+                        <td class="text-end fw-semibold">@r.Balance.ToString("N2")</td>
+                    </tr>
+                }
+                @if (Model.Rows.Count == 0)
+                {
+                    <tr><td colspan="4" class="text-center text-muted">No sales or payments in period</td></tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold">
+                    <td>Total</td>
+                    <td class="text-end">@Model.TotalSales.ToString("N2")</td>
+                    <td class="text-end">@Model.TotalPaid.ToString("N2")</td>
+                    <td class="text-end">@Model.TotalBalance.ToString("N2")</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

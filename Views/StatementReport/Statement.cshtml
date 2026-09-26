@@ -1,0 +1,98 @@
+@model StatementViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    var action = Model.IsCustomer ? "Customer" : "Supplier";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">@Model.Title</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Statements</a>
+</div>
+
+<form method="get" asp-action="@action" class="card shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">@Model.PartyCaption</label>
+            <select name="partyId" class="form-select form-select-sm">
+                @foreach (var party in ViewBag.Parties)
+                {
+                    <option value="@party.Value" selected="@(party.Value == Model.PartyId.ToString() ? "selected" : null)">@party.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">From Date</label>
+            <input type="date" name="fromDate" class="form-control form-control-sm"
+                   value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">To Date</label>
+            <input type="date" name="toDate" class="form-control form-control-sm"
+                   value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-primary">Show</button>
+            <a asp-action="@action" asp-route-partyId="@Model.PartyId" class="btn btn-sm btn-outline-secondary">Reset Dates</a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>
+            <strong>@Model.PartyCode</strong> - @Model.PartyName
+            @if (Model.FromDate.HasValue)
+            {
+                <span class="text-muted">(@Model.FromDate.Value.ToString("dd MMM yyyy") to @(Model.ToDate?.ToString("dd MMM yyyy") ?? "today"))</span>
+            }
+        </span>
+        <span class="text-muted small">@Model.PartyCaption statement</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Reference</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th class="text-end">Invoice</th>
+                        <th class="text-end">Payment</th>
+                        <th class="text-end">Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var line in Model.Lines)
+                    {
+                        <tr>
+                            <td>@line.Date.ToString("dd MMM yyyy")</td>
+                            <td>@line.Reference</td>
+                            <td><span class="badge bg-light text-dark">@line.Type</span></td>
+                            <td>@line.Description</td>
+                            <td class="text-end">@(line.Invoice > 0 ? line.Invoice.ToString("N2") : "")</td>
+                            <td class="text-end">@(line.Payment > 0 ? line.Payment.ToString("N2") : "")</td>
+                            <td class="text-end">@line.Balance.ToString("N2")</td>
+                        </tr>
+                    }
+                    @if (Model.Lines.Count == 0)
+                    {
+                        <tr><td colspan="7" class="text-center text-muted">No transactions in the selected period.</td></tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="4">Total</td>
+                        <td class="text-end">@Model.TotalInvoice.ToString("N2")</td>
+                        <td class="text-end">@Model.TotalPayment.ToString("N2")</td>
+                        <td class="text-end">@Model.ClosingBalance.ToString("N2")</td>
+                    </tr>
+                    <tr class="fw-bold">
+                        <td colspan="6">Closing Balance</td>
+                        <td class="text-end fw-semibold">@Model.ClosingBalance.ToString("N2")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
