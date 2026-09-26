@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CompanyERP.Entities.Security;
 using CompanyERP.Interfaces.Services;
 using CompanyERP.ViewModels.Security;
 using Microsoft.AspNetCore.Authentication;
@@ -11,10 +12,12 @@ namespace CompanyERP.Controllers;
 public class AccountController : Controller
 {
     private readonly IAuthService _authService;
+    private readonly IUserService _userService;
 
-    public AccountController(IAuthService authService)
+    public AccountController(IAuthService authService, IUserService userService)
     {
         _authService = authService;
+        _userService = userService;
     }
 
     [HttpGet]
@@ -92,5 +95,52 @@ public class AccountController : Controller
     public IActionResult AccessDenied()
     {
         return View();
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult Register()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        return View(new RegisterViewModel());
+    }
+
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(RegisterViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        if (await _userService.UserNameExistsAsync(model.UserName))
+        {
+            ModelState.AddModelError(nameof(model.UserName), "That user name is already taken.");
+            return View(model);
+        }
+
+        var user = new User
+        {
+            UserName = model.UserName,
+            FullName = model.FullName,
+            Email = model.Email,
+            IsSystem = false
+        };
+
+        var createResult = await _userService.CreateAsync(user, model.Password);
+        if (!createResult.Success)
+        {
+            TempData["Error"] = createResult.Error;
+            return View(model);
+        }
+
+        TempData["Success"] = "Registration successful. Please log in.";
+        return RedirectToAction("Login", "Account");
     }
 }

@@ -10,521 +10,320 @@
     <link rel="stylesheet" href="~/CompanyERP.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CompanyERP</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-house-door"></i> Home
-                            </a>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-building"></i> Company Management
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Company" asp-action="Index">
-                                        <i class="bi bi-building-check"></i> Company Profile
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="FinancialYear" asp-action="Index">
-                                        <i class="bi bi-calendar-range"></i> Financial Year
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AccountingPeriod" asp-action="Index">
-                                        <i class="bi bi-calendar2-week"></i> Accounting Period
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-columns-gap"></i> Branch Management
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="BranchType" asp-action="Index">
-                                        <i class="bi bi-tags"></i> Branch Type
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Branch" asp-action="Index">
-                                        <i class="bi bi-diagram-3"></i> Branch
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-people"></i> Employee Management
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Department" asp-action="Index">
-                                        <i class="bi bi-diagram-2"></i> Department
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Designation" asp-action="Index">
-                                        <i class="bi bi-person-badge"></i> Designation
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Employee" asp-action="Index">
-                                        <i class="bi bi-person-vcard"></i> Employee
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="HrReport" asp-action="Index">
-                                        <i class="bi bi-bar-chart"></i> Reports
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-truck"></i> Supplier Management
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Supplier" asp-action="Index">
-                                        <i class="bi bi-truck"></i> Supplier
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-lines-fill"></i> Customer Management
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Customer" asp-action="Index">
-                                        <i class="bi bi-person-lines-fill"></i> Customer
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-tags"></i> Master Data
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="CategoryType" asp-action="Index">
-                                        <i class="bi bi-tag"></i> Category Type
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Category" asp-action="Index">
-                                        <i class="bi bi-tags"></i> Category
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-box-seam"></i> Product &amp; Inventory
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="ProductCategory" asp-action="Index">
-                                        <i class="bi bi-tags"></i> Product Category
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Product" asp-action="Index">
-                                        <i class="bi bi-box"></i> Product
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Warehouse" asp-action="Index">
-                                        <i class="bi bi-building"></i> Warehouse
-                                    </a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider" />
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Inventory" asp-action="Balance">
-                                        <i class="bi bi-clipboard-check"></i> Stock Balance
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Inventory" asp-action="Transactions">
-                                        <i class="bi bi-list-check"></i> Stock Transactions
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Inventory" asp-action="Transfers">
-                                        <i class="bi bi-arrow-left-right"></i> Stock Transfers
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="InventoryReport" asp-action="Index">
-                                        <i class="bi bi-bar-chart"></i> Inventory Reports
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-cart4"></i> Purchase
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="PurchaseRequest" asp-action="Index">
-                                        <i class="bi bi-file-earmark-text"></i> Purchase Request
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="PurchaseQuotation" asp-action="Index">
-                                        <i class="bi bi-file-earmark-richtext"></i> Quotation
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="PurchaseOrder" asp-action="Index">
-                                        <i class="bi bi-receipt"></i> Purchase Order
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="PurchaseInvoice" asp-action="Index">
-                                        <i class="bi bi-credit-card"></i> Invoice
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="PurchaseReceiving" asp-action="Index">
-                                        <i class="bi bi-box-arrow-in-down"></i> Receiving
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="PurchaseReturn" asp-action="Index">
-                                        <i class="bi bi-arrow-return-left"></i> Return
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-truck"></i> Asset
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AssetCategory" asp-action="Index">
-                                        <i class="bi bi-tags"></i> Asset Category
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AssetType" asp-action="Index">
-                                        <i class="bi bi-diagram-3"></i> Asset Type
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Asset" asp-action="Index">
-                                        <i class="bi bi-box"></i> Asset Register
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AssetTransfer" asp-action="Index">
-                                        <i class="bi bi-arrow-left-right"></i> Asset Transfer
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AssetMaintenance" asp-action="Index">
-                                        <i class="bi bi-tools"></i> Asset Maintenance
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AssetDepreciation" asp-action="Index">
-                                        <i class="bi bi-percent"></i> Asset Depreciation
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AssetDisposal" asp-action="Index">
-                                        <i class="bi bi-trash3"></i> Asset Disposal
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AssetReport" asp-action="Index">
-                                        <i class="bi bi-bar-chart"></i> Asset Reports
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-cash-stack"></i> Expense
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="ExpenseCategory" asp-action="Index">
-                                        <i class="bi bi-tags"></i> Expense Category
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="ExpenseType" asp-action="Index">
-                                        <i class="bi bi-diagram-3"></i> Expense Type
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Expense" asp-action="Index">
-                                        <i class="bi bi-receipt-cutoff"></i> Expense Entry
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="ExpenseReport" asp-action="Index">
-                                        <i class="bi bi-bar-chart"></i> Expense Reports
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-cart"></i> Sales
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Service" asp-action="Index">
-                                        <i class="bi bi-boxes"></i> Service Catalog
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="SalesOrder" asp-action="Index">
-                                        <i class="bi bi-bag"></i> Sales Order
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="SalesInvoice" asp-action="Index">
-                                        <i class="bi bi-receipt"></i> Sales Invoice
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="ServiceOrder" asp-action="Index">
-                                        <i class="bi bi-tools"></i> Service Order
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="ServiceDelivery" asp-action="Index">
-                                        <i class="bi bi-truck"></i> Service Delivery
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="SalesReturn" asp-action="Index">
-                                        <i class="bi bi-arrow-return-left"></i> Sales Return
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-cash-coin"></i> Payment Management
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="PaymentMethod" asp-action="Index">
-                                        <i class="bi bi-icons"></i> Payment Method
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="CashAccount" asp-action="Index">
-                                        <i class="bi bi-wallet2"></i> Cash Account
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="BankAccount" asp-action="Index">
-                                        <i class="bi bi-bank"></i> Bank Account
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Payment" asp-action="Index">
-                                        <i class="bi bi-cash-stack"></i> Payments
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-journal-text"></i> Accounting
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="ChartOfAccount" asp-action="Index">
-                                        <i class="bi bi-list-columns"></i> Chart of Accounts
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="JournalEntry" asp-action="Index">
-                                        <i class="bi bi-journal-text"></i> Journal Entries
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AccountingPeriod" asp-action="Index">
-                                        <i class="bi bi-calendar2-week"></i> Accounting Periods
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AccountingReport" asp-action="Index">
-                                        <i class="bi bi-graph-up"></i> Reports
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="AgingReport" asp-action="Index">
-                                        <i class="bi bi-hourglass-split"></i> Receivable / Payable Aging
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="StatementReport" asp-action="Index">
-                                        <i class="bi bi-file-earmark-text"></i> Customer / Supplier Statement
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="PaymentReport" asp-action="Index">
-                                        <i class="bi bi-cash-coin"></i> Payment Reports
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="SalesReport" asp-action="Index">
-                                        <i class="bi bi-cart"></i> Sales Reports
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="PurchaseReport" asp-action="Index">
-                                        <i class="bi bi-bag"></i> Purchase Reports
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-shield-lock"></i> Security
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="User" asp-action="Index">
-                                            <i class="bi bi-person"></i> Users
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Role" asp-action="Index">
-                                            <i class="bi bi-person-badge"></i> Roles
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Permission" asp-action="Index">
-                                            <i class="bi bi-key"></i> Permissions
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Menu" asp-action="Index">
-                                            <i class="bi bi-menu-button-wide"></i> Menus
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="ActivityLog" asp-action="Index">
-                                            <i class="bi bi-clock-history"></i> Activity Log
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="LoginHistory" asp-action="Index">
-                                            <i class="bi bi-box-arrow-in-right"></i> Login History
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                <span class="navbar-text me-2">
-                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+    <div class="dash-layout">
+        <header class="topbar d-flex align-items-center px-3 gap-2">
+            <button class="btn btn-sm btn-outline-light d-lg-none border-0" type="button" id="sidebarToggle" aria-label="Toggle sidebar">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <a class="topbar-brand d-flex align-items-center gap-2 text-decoration-none" asp-area="" asp-controller="Home" asp-action="Index">
+                <span class="topbar-brand-logo d-inline-flex align-items-center justify-content-center">
+                    <i class="bi bi-building-gear"></i>
+                </span>
+                <span class="topbar-brand-name fw-bold">CompanyERP</span>
+            </a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle fs-5"></i>
+                            <span>@User.Identity.Name</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                            <li>
+                                <span class="dropdown-item-text small text-muted">
+                                    <i class="bi bi-person-badge"></i> Signed in as <strong>@User.Identity.Name</strong>
                                 </span>
                             </li>
-                            <li class="nav-item">
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-link nav-link">
+                                    <button type="submit" class="dropdown-item">
                                         <i class="bi bi-box-arrow-right"></i> Logout
                                     </button>
                                 </form>
                             </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">
-                                    <i class="bi bi-box-arrow-in-right"></i> Login
-                                </a>
-                            </li>
-                        }
-                    </ul>
-                </div>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <a class="topbar-link d-flex align-items-center gap-1" asp-controller="Account" asp-action="Register">
+                        <i class="bi bi-person-plus"></i> Register
+                    </a>
+                    <a class="topbar-link d-flex align-items-center gap-1" asp-controller="Account" asp-action="Login">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                }
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        @if (TempData["Success"] is not null)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                @TempData["Success"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </header>
+
+        <div class="side-overlay" id="sideOverlay"></div>
+
+        <aside class="sidebar" id="siteSidebar">
+            <nav class="sidebar-nav p-2">
+                <ul class="list-unstyled mb-0">
+                    <li>
+                        <a class="side-link" asp-area="" asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseCompany" role="button" aria-expanded="false">
+                            <i class="bi bi-building"></i><span>Company Management</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseCompany">
+                            <li><a class="side-sub" asp-controller="Company" asp-action="Index"><i class="bi bi-building-check"></i> Company Profile</a></li>
+                            <li><a class="side-sub" asp-controller="FinancialYear" asp-action="Index"><i class="bi bi-calendar-range"></i> Financial Year</a></li>
+                            <li><a class="side-sub" asp-controller="AccountingPeriod" asp-action="Index"><i class="bi bi-calendar2-week"></i> Accounting Period</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseBranch" role="button" aria-expanded="false">
+                            <i class="bi bi-columns-gap"></i><span>Branch Management</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseBranch">
+                            <li><a class="side-sub" asp-controller="BranchType" asp-action="Index"><i class="bi bi-tags"></i> Branch Type</a></li>
+                            <li><a class="side-sub" asp-controller="Branch" asp-action="Index"><i class="bi bi-diagram-3"></i> Branch</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseEmployee" role="button" aria-expanded="false">
+                            <i class="bi bi-people"></i><span>Employee Management</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseEmployee">
+                            <li><a class="side-sub" asp-controller="Department" asp-action="Index"><i class="bi bi-diagram-2"></i> Department</a></li>
+                            <li><a class="side-sub" asp-controller="Designation" asp-action="Index"><i class="bi bi-person-badge"></i> Designation</a></li>
+                            <li><a class="side-sub" asp-controller="Employee" asp-action="Index"><i class="bi bi-person-vcard"></i> Employee</a></li>
+                            <li><a class="side-sub" asp-controller="HrReport" asp-action="Index"><i class="bi bi-bar-chart"></i> Reports</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseSupplier" role="button" aria-expanded="false">
+                            <i class="bi bi-truck"></i><span>Supplier Management</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseSupplier">
+                            <li><a class="side-sub" asp-controller="Supplier" asp-action="Index"><i class="bi bi-truck"></i> Supplier</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseCustomer" role="button" aria-expanded="false">
+                            <i class="bi bi-person-lines-fill"></i><span>Customer Management</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseCustomer">
+                            <li><a class="side-sub" asp-controller="Customer" asp-action="Index"><i class="bi bi-person-lines-fill"></i> Customer</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseMaster" role="button" aria-expanded="false">
+                            <i class="bi bi-tags"></i><span>Master Data</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseMaster">
+                            <li><a class="side-sub" asp-controller="CategoryType" asp-action="Index"><i class="bi bi-tag"></i> Category Type</a></li>
+                            <li><a class="side-sub" asp-controller="Category" asp-action="Index"><i class="bi bi-tags"></i> Category</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseInventory" role="button" aria-expanded="false">
+                            <i class="bi bi-box-seam"></i><span>Product &amp; Inventory</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseInventory">
+                            <li><a class="side-sub" asp-controller="ProductCategory" asp-action="Index"><i class="bi bi-tags"></i> Product Category</a></li>
+                            <li><a class="side-sub" asp-controller="Product" asp-action="Index"><i class="bi bi-box"></i> Product</a></li>
+                            <li><a class="side-sub" asp-controller="Warehouse" asp-action="Index"><i class="bi bi-building"></i> Warehouse</a></li>
+                            <li><a class="side-sub" asp-controller="Inventory" asp-action="Balance"><i class="bi bi-clipboard-check"></i> Stock Balance</a></li>
+                            <li><a class="side-sub" asp-controller="Inventory" asp-action="Transactions"><i class="bi bi-list-check"></i> Stock Transactions</a></li>
+                            <li><a class="side-sub" asp-controller="Inventory" asp-action="Transfers"><i class="bi bi-arrow-left-right"></i> Stock Transfers</a></li>
+                            <li><a class="side-sub" asp-controller="InventoryReport" asp-action="Index"><i class="bi bi-bar-chart"></i> Inventory Reports</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapsePurchase" role="button" aria-expanded="false">
+                            <i class="bi bi-cart4"></i><span>Purchase</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapsePurchase">
+                            <li><a class="side-sub" asp-controller="PurchaseRequest" asp-action="Index"><i class="bi bi-file-earmark-text"></i> Purchase Request</a></li>
+                            <li><a class="side-sub" asp-controller="PurchaseQuotation" asp-action="Index"><i class="bi bi-file-earmark-richtext"></i> Quotation</a></li>
+                            <li><a class="side-sub" asp-controller="PurchaseOrder" asp-action="Index"><i class="bi bi-receipt"></i> Purchase Order</a></li>
+                            <li><a class="side-sub" asp-controller="PurchaseInvoice" asp-action="Index"><i class="bi bi-credit-card"></i> Invoice</a></li>
+                            <li><a class="side-sub" asp-controller="PurchaseReceiving" asp-action="Index"><i class="bi bi-box-arrow-in-down"></i> Receiving</a></li>
+                            <li><a class="side-sub" asp-controller="PurchaseReturn" asp-action="Index"><i class="bi bi-arrow-return-left"></i> Return</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseAsset" role="button" aria-expanded="false">
+                            <i class="bi bi-truck"></i><span>Asset</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseAsset">
+                            <li><a class="side-sub" asp-controller="AssetCategory" asp-action="Index"><i class="bi bi-tags"></i> Asset Category</a></li>
+                            <li><a class="side-sub" asp-controller="AssetType" asp-action="Index"><i class="bi bi-diagram-3"></i> Asset Type</a></li>
+                            <li><a class="side-sub" asp-controller="Asset" asp-action="Index"><i class="bi bi-box"></i> Asset Register</a></li>
+                            <li><a class="side-sub" asp-controller="AssetTransfer" asp-action="Index"><i class="bi bi-arrow-left-right"></i> Asset Transfer</a></li>
+                            <li><a class="side-sub" asp-controller="AssetMaintenance" asp-action="Index"><i class="bi bi-tools"></i> Asset Maintenance</a></li>
+                            <li><a class="side-sub" asp-controller="AssetDepreciation" asp-action="Index"><i class="bi bi-percent"></i> Asset Depreciation</a></li>
+                            <li><a class="side-sub" asp-controller="AssetDisposal" asp-action="Index"><i class="bi bi-trash3"></i> Asset Disposal</a></li>
+                            <li><a class="side-sub" asp-controller="AssetReport" asp-action="Index"><i class="bi bi-bar-chart"></i> Asset Reports</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseExpense" role="button" aria-expanded="false">
+                            <i class="bi bi-cash-stack"></i><span>Expense</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseExpense">
+                            <li><a class="side-sub" asp-controller="ExpenseCategory" asp-action="Index"><i class="bi bi-tags"></i> Expense Category</a></li>
+                            <li><a class="side-sub" asp-controller="ExpenseType" asp-action="Index"><i class="bi bi-diagram-3"></i> Expense Type</a></li>
+                            <li><a class="side-sub" asp-controller="Expense" asp-action="Index"><i class="bi bi-receipt-cutoff"></i> Expense Entry</a></li>
+                            <li><a class="side-sub" asp-controller="ExpenseReport" asp-action="Index"><i class="bi bi-bar-chart"></i> Expense Reports</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseSales" role="button" aria-expanded="false">
+                            <i class="bi bi-cart"></i><span>Sales</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseSales">
+                            <li><a class="side-sub" asp-controller="Service" asp-action="Index"><i class="bi bi-boxes"></i> Service Catalog</a></li>
+                            <li><a class="side-sub" asp-controller="SalesOrder" asp-action="Index"><i class="bi bi-bag"></i> Sales Order</a></li>
+                            <li><a class="side-sub" asp-controller="SalesInvoice" asp-action="Index"><i class="bi bi-receipt"></i> Sales Invoice</a></li>
+                            <li><a class="side-sub" asp-controller="ServiceOrder" asp-action="Index"><i class="bi bi-tools"></i> Service Order</a></li>
+                            <li><a class="side-sub" asp-controller="ServiceDelivery" asp-action="Index"><i class="bi bi-truck"></i> Service Delivery</a></li>
+                            <li><a class="side-sub" asp-controller="SalesReturn" asp-action="Index"><i class="bi bi-arrow-return-left"></i> Sales Return</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapsePayment" role="button" aria-expanded="false">
+                            <i class="bi bi-cash-coin"></i><span>Payment Management</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapsePayment">
+                            <li><a class="side-sub" asp-controller="PaymentMethod" asp-action="Index"><i class="bi bi-icons"></i> Payment Method</a></li>
+                            <li><a class="side-sub" asp-controller="CashAccount" asp-action="Index"><i class="bi bi-wallet2"></i> Cash Account</a></li>
+                            <li><a class="side-sub" asp-controller="BankAccount" asp-action="Index"><i class="bi bi-bank"></i> Bank Account</a></li>
+                            <li><a class="side-sub" asp-controller="Payment" asp-action="Index"><i class="bi bi-cash-stack"></i> Payments</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseAccounting" role="button" aria-expanded="false">
+                            <i class="bi bi-journal-text"></i><span>Accounting</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+                        <ul class="collapse sub-menu" id="collapseAccounting">
+                            <li><a class="side-sub" asp-controller="ChartOfAccount" asp-action="Index"><i class="bi bi-list-columns"></i> Chart of Accounts</a></li>
+                            <li><a class="side-sub" asp-controller="JournalEntry" asp-action="Index"><i class="bi bi-journal-text"></i> Journal Entries</a></li>
+                            <li><a class="side-sub" asp-controller="AccountingReport" asp-action="Index"><i class="bi bi-graph-up"></i> Reports</a></li>
+                            <li><a class="side-sub" asp-controller="AgingReport" asp-action="Index"><i class="bi bi-hourglass-split"></i> Receivable / Payable Aging</a></li>
+                            <li><a class="side-sub" asp-controller="StatementReport" asp-action="Index"><i class="bi bi-file-earmark-text"></i> Customer / Supplier Statement</a></li>
+                            <li><a class="side-sub" asp-controller="PaymentReport" asp-action="Index"><i class="bi bi-cash-coin"></i> Payment Reports</a></li>
+                            <li><a class="side-sub" asp-controller="SalesReport" asp-action="Index"><i class="bi bi-cart"></i> Sales Reports</a></li>
+                            <li><a class="side-sub" asp-controller="PurchaseReport" asp-action="Index"><i class="bi bi-bag"></i> Purchase Reports</a></li>
+                        </ul>
+                    </li>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li>
+                            <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseSecurity" role="button" aria-expanded="false">
+                                <i class="bi bi-shield-lock"></i><span>Security</span>
+                                <i class="bi bi-chevron-down ms-auto"></i>
+                            </a>
+                            <ul class="collapse sub-menu" id="collapseSecurity">
+                                <li><a class="side-sub" asp-controller="User" asp-action="Index"><i class="bi bi-person"></i> Users</a></li>
+                                <li><a class="side-sub" asp-controller="Role" asp-action="Index"><i class="bi bi-person-badge"></i> Roles</a></li>
+                                <li><a class="side-sub" asp-controller="Permission" asp-action="Index"><i class="bi bi-key"></i> Permissions</a></li>
+                                <li><a class="side-sub" asp-controller="Menu" asp-action="Index"><i class="bi bi-menu-button-wide"></i> Menus</a></li>
+                                <li><a class="side-sub" asp-controller="ActivityLog" asp-action="Index"><i class="bi bi-clock-history"></i> Activity Log</a></li>
+                                <li><a class="side-sub" asp-controller="LoginHistory" asp-action="Index"><i class="bi bi-box-arrow-in-right"></i> Login History</a></li>
+                            </ul>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div class="container-fluid px-3 px-lg-4 py-3">
+                @if (TempData["Success"] is not null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                @if (TempData["Error"] is not null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                @RenderBody()
             </div>
-        }
-        @if (TempData["Error"] is not null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                @TempData["Error"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-        <main role="main" class="pb-3">
-            @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
+    <footer class="app-footer text-muted">
+        <div class="container-fluid px-3 px-lg-4">
             &copy; 2026 - CompanyERP
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            var sidebar = document.getElementById('siteSidebar');
+            var overlay = document.getElementById('sideOverlay');
+            var toggleBtn = document.getElementById('sidebarToggle');
+
+            if (!sidebar || !toggleBtn) return;
+
+            function setSidebar(open) {
+                sidebar.classList.toggle('show', open);
+                document.body.classList.toggle('side-open', open);
+            }
+
+            toggleBtn.addEventListener('click', function () {
+                setSidebar(!sidebar.classList.contains('show'));
+            });
+
+            if (overlay) {
+                overlay.addEventListener('click', function () { setSidebar(false); });
+            }
+
+            function anchorClick(e) {
+                var t = e.target.closest('a.side-sub');
+                if (t && window.innerWidth < 992) {
+                    setSidebar(false);
+                }
+            }
+
+            document.querySelector('.sidebar-nav').addEventListener('click', anchorClick);
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
