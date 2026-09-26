@@ -1,0 +1,42 @@
+@model PaymentVoucherViewModel
+@{
+    ViewData["Title"] = "Payment Voucher";
+}
+
+<div class="d-print-none mb-3 d-flex justify-content-between align-items-center">
+    <h1 class="h3 mb-0">Payment Voucher</h1>
+    <div>
+        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">Print</button>
+        <a asp-action="BankCashSummary" class="btn btn-sm btn-outline-secondary">Back to Bank &amp; Cash Summary</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row border-bottom pb-2 mb-3">
+            <div class="col-6">
+                <div><strong>Voucher No:</strong> @Model.PaymentNo</div>
+                <div><strong>Date:</strong> @Model.PaymentDate.ToString("dd-MMM-yyyy")</div>
+                <div><strong>Branch:</strong> @(string.IsNullOrEmpty(Model.Branch) ? "-" : Model.Branch)</div>
+                <div><strong>Category:</strong> @Model.Category</div>
+            </div>
+            <div class="col-6 text-end">
+                <div><strong>Party:</strong> @Model.Party</div>
+                <div><strong>Method:</strong> @Model.Method</div>
+                <div><strong>Account:</strong> @Model.Account</div>
+                <div><strong>Reference:</strong> @(string.IsNullOrEmpty(Model.ReferenceNo) ? "-" : Model.ReferenceNo)</div>
+            </div>
+        </div>
+        <table class="table table-sm table-bordered mb-3 align-middle">
+            <tbody>
+                <tr><td><strong>Pay to / Received from:</strong> @Model.Party</td><td style="width:40%"><strong class="text-end d-block">Amount: @Model.Amount.ToString("N2")</strong></td></tr>
+                <tr><td colspan="2"><strong>Narration:</strong> @(string.IsNullOrEmpty(Model.Note) ? "-" : Model.Note)</td></tr>
+            </tbody>
+        </table>
+        <div class="row mt-4">
+            <div class="col-4 text-center mt-5">Prepared By</div>
+            <div class="col-4 text-center mt-5">Approved By</div>
+            <div class="col-4 text-center mt-5">Received By</div>
+        </div>
+    </div>
+</div>

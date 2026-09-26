@@ -37,4 +37,18 @@ public class PurchaseReportController : Controller
         var vm = await _reportService.GetSummaryAsync(await GetCompanyIdAsync(), ParseDate(fromDate), ParseDate(toDate));
         return View(vm);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> Aging()
+    {
+        var vm = await _reportService.GetProcurementAgingAsync(await GetCompanyIdAsync());
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> TopSuppliers(string? fromDate, string? toDate, int top = 10)
+    {
+        var vm = await _reportService.GetTopSuppliersAsync(await GetCompanyIdAsync(), ParseDate(fromDate), ParseDate(toDate), top);
+        return View(vm);
+    }
 }

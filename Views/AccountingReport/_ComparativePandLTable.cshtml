@@ -1,0 +1,24 @@
+@model List<ComparativePandLRow>
+<table class="table table-sm mb-0 align-middle">
+    <thead>
+        <tr>
+            <th>Account</th>
+            <th class="text-end">@(ViewData["MonthLabel"] as string ?? "Current")</th>
+            <th class="text-end">@(ViewData["PrevMonthLabel"] as string ?? "Previous")</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Label</td>
+                <td class="text-end">@r.Current.ToString("N2")</td>
+                <td class="text-end">@r.Previous.ToString("N2")</td>
+            </tr>
+        }
+        @if (Model.Count == 0)
+        {
+            <tr><td colspan="3" class="text-center text-muted">No activity</td></tr>
+        }
+    </tbody>
+</table>

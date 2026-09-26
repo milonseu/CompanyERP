@@ -67,3 +67,38 @@
         </div>
     </div>
 </div>
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header"><strong>Product-wise Opening / In / Out / Closing</strong></div>
+    <div class="table-responsive">
+        <table class="table table-sm mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Product</th>
+                    <th class="text-end">Opening</th>
+                    <th class="text-end">In</th>
+                    <th class="text-end">Out</th>
+                    <th class="text-end">Closing</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Products)
+                {
+                    <tr>
+                        <td>@p.Code</td>
+                        <td>@p.Product</td>
+                        <td class="text-end">@p.OpeningQty.ToString("N2")</td>
+                        <td class="text-end">@p.In.ToString("N2")</td>
+                        <td class="text-end">@p.Out.ToString("N2")</td>
+                        <td class="text-end">@p.ClosingQty.ToString("N2")</td>
+                    </tr>
+                }
+                @if (Model.Products.Count == 0)
+                {
+                    <tr><td colspan="6" class="text-center text-muted">No products</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

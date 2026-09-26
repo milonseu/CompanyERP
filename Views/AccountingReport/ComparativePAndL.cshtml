@@ -1,0 +1,72 @@
+@model ComparativePandLViewModel
+@{
+    ViewData["Title"] = "Comparative Profit & Loss";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Comparative Profit &amp; Loss</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Accounting Reports</a>
+</div>
+
+<form method="get" asp-action="ComparativePAndL" class="card shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Month</label>
+            <input type="month" name="month" class="form-control form-control-sm" value="@(Model.CurrentMonth?.ToString("yyyy-MM"))" />
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-sm btn-primary">Show</button>
+        </div>
+    </div>
+</form>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <div class="text-muted small">@(Model.CurrentMonth?.ToString("MMM yyyy")) Revenue</div>
+                <div class="fs-5 fw-bold">@Model.CurrentRevenue.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <div class="text-muted small">@(Model.CurrentMonth?.ToString("MMM yyyy")) Expense</div>
+                <div class="fs-5 fw-bold">@Model.CurrentExpense.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <div class="text-muted small">@(Model.CurrentMonth?.ToString("MMM yyyy")) Net</div>
+                <div class="fs-5 fw-bold">@Model.CurrentNet.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <div class="text-muted small">@(Model.PreviousMonth?.ToString("MMM yyyy")) Net</div>
+                <div class="fs-5 fw-bold">@Model.PreviousNet.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>Revenue</strong></div>
+            @{ ViewData["MonthLabel"] = Model.CurrentMonth?.ToString("MMM yyyy"); ViewData["PrevMonthLabel"] = Model.PreviousMonth?.ToString("MMM yyyy"); }
+            @await Html.PartialAsync("_ComparativePandLTable", Model.Revenues)
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>Expenses</strong></div>
+            @await Html.PartialAsync("_ComparativePandLTable", Model.Expenses)
+        </div>
+    </div>
+</div>

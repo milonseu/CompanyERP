@@ -60,4 +60,22 @@ public class InventoryReportController : Controller
         var vm = await _reportService.GetStockMovementAsync(await GetCompanyIdAsync(), ParseDate(fromDate), ParseDate(toDate));
         return View(vm);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> LowStock(int? categoryId)
+    {
+        var companyId = await GetCompanyIdAsync();
+        var vm = await _reportService.GetLowStockAsync(companyId, categoryId);
+        ViewBag.Categories = new SelectList(
+            (await _categoryService.GetAllAsync()).Where(c => c.CompanyId == companyId),
+            "Id", "Name", categoryId);
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> WarehouseStock()
+    {
+        var vm = await _reportService.GetWarehouseStockAsync(await GetCompanyIdAsync());
+        return View(vm);
+    }
 }

@@ -1,0 +1,50 @@
+@model EmployeeListViewModel
+@{
+    ViewData["Title"] = "Department-wise Employee List";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Department-wise Employee List</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">HR Reports</a>
+</div>
+
+<form method="get" asp-action="EmployeeList" class="card shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Department</label>
+            <select name="departmentId" class="form-select form-select-sm">
+                <option value="">All</option>
+                @foreach (var d in ViewBag.Departments)
+                {
+                    <option value="@d.Value" selected="@(d.Value == Model.DepartmentId.ToString() ? "selected" : null)">@d.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-sm btn-primary">Show</button>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <table class="table table-sm table-hover mb-0 align-middle">
+        <thead>
+            <tr>
+                <th>Department</th><th>Emp Code</th><th>Employee</th><th>Designation</th><th>Joining Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.Rows)
+            {
+                <tr>
+                    <td>@r.Department</td><td>@r.EmployeeCode</td><td>@r.Name</td>
+                    <td>@r.Designation</td><td>@r.JoiningDate.ToString("dd-MMM-yyyy")</td>
+                </tr>
+            }
+            @if (Model.Rows.Count == 0)
+            {
+                <tr><td colspan="5" class="text-center text-muted">No data</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

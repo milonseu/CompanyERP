@@ -9,15 +9,18 @@ public class ExpenseReportController : Controller
     private readonly IExpenseReportService _reportService;
     private readonly ICompanyProfileService _companyService;
     private readonly IExpenseTypeService _expenseTypeService;
+    private readonly ISupplierService _supplierService;
 
     public ExpenseReportController(
         IExpenseReportService reportService,
         ICompanyProfileService companyService,
-        IExpenseTypeService expenseTypeService)
+        IExpenseTypeService expenseTypeService,
+        ISupplierService supplierService)
     {
         _reportService = reportService;
         _companyService = companyService;
         _expenseTypeService = expenseTypeService;
+        _supplierService = supplierService;
     }
 
     [HttpGet]
@@ -43,8 +46,26 @@ public class ExpenseReportController : Controller
         var companyId = await GetCompanyIdAsync();
         var vm = await _reportService.GetSummaryAsync(companyId, ParseDate(fromDate), ParseDate(toDate), expenseTypeId);
         ViewBag.ExpenseTypes = new SelectList(
-            (await _expenseTypeService.GetAllAsync()).Where(e => e.CompanyId == companyId),
+            (await _expenseTypeService.GetAllAsync(companyId)),
             "Id", "Name", expenseTypeId);
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Trend()
+    {
+        var vm = await _reportService.GetTrendAsync(await GetCompanyIdAsync());
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Register(string? fromDate, string? toDate, int? branchId, int? supplierId)
+    {
+        var companyId = await GetCompanyIdAsync();
+        var vm = await _reportService.GetRegisterAsync(companyId, ParseDate(fromDate), ParseDate(toDate), branchId, supplierId);
+        ViewBag.Suppliers = new SelectList(
+            (await _supplierService.GetAllAsync()).Where(s => s.CompanyId == companyId),
+            "Id", "Name", supplierId);
         return View(vm);
     }
 }

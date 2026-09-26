@@ -1,0 +1,51 @@
+@model OutstandingReceivableViewModel
+@{
+    ViewData["Title"] = "Outstanding Receivable vs Invoice";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Outstanding Receivable vs Invoice</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Sales Reports</a>
+</div>
+
+<form method="get" asp-action="Outstanding" class="card shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">As of</label>
+            <input type="date" name="asOfDate" class="form-control form-control-sm" value="@(Model.AsOfDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-sm btn-primary">Show</button>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body d-flex justify-content-end">
+        <span class="fw-bold">Total Outstanding: @Model.TotalOutstanding.ToString("N2")</span>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <table class="table table-sm table-hover mb-0 align-middle">
+        <thead>
+            <tr>
+                <th>Customer</th><th class="text-end">Invoices</th><th class="text-end">Sales</th>
+                <th class="text-end">Paid</th><th class="text-end">Outstanding</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.Rows)
+            {
+                <tr>
+                    <td>@r.Customer</td><td class="text-end">@r.Invoices</td><td class="text-end">@r.Sales.ToString("N2")</td>
+                    <td class="text-end">@r.Paid.ToString("N2")</td><td class="text-end">@r.Outstanding.ToString("N2")</td>
+                </tr>
+            }
+            @if (Model.Rows.Count == 0)
+            {
+                <tr><td colspan="5" class="text-center text-muted">No outstanding receivables</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

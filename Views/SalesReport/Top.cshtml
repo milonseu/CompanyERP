@@ -1,0 +1,69 @@
+@model TopSalesViewModel
+@{
+    ViewData["Title"] = "Top Customers / Products";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Top Customers / Products</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Sales Reports</a>
+</div>
+
+<form method="get" asp-action="Top" class="card shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">From</label>
+            <input type="date" name="fromDate" class="form-control form-control-sm" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">To</label>
+            <input type="date" name="toDate" class="form-control form-control-sm" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Top</label>
+            <input type="number" name="top" class="form-control form-control-sm" value="@Model.Top" min="1" max="50" />
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-sm btn-primary">Show</button>
+        </div>
+    </div>
+</form>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>Top Customers</strong></div>
+            <table class="table table-sm mb-0 align-middle">
+                <thead><tr><th>#</th><th>Customer</th><th class="text-end">Amount</th><th class="text-end">%</th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model.Customers)
+                    {
+                        <tr><td>@r.Rank</td><td>@r.Customer</td><td class="text-end">@r.Amount.ToString("N2")</td><td class="text-end">@r.Percent.ToString("N2")</td></tr>
+                    }
+                    @if (Model.Customers.Count == 0)
+                    {
+                        <tr><td colspan="4" class="text-center text-muted">No data</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>Top Products</strong></div>
+            <table class="table table-sm mb-0 align-middle">
+                <thead><tr><th>#</th><th>Product</th><th class="text-end">Qty</th><th class="text-end">Amount</th><th class="text-end">%</th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model.Products)
+                    {
+                        <tr><td>@r.Rank</td><td>@r.Product</td><td class="text-end">@r.Quantity.ToString("N2")</td>
+                            <td class="text-end">@r.Amount.ToString("N2")</td><td class="text-end">@r.Percent.ToString("N2")</td></tr>
+                    }
+                    @if (Model.Products.Count == 0)
+                    {
+                        <tr><td colspan="5" class="text-center text-muted">No data</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

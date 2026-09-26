@@ -1,0 +1,43 @@
+@model AssetGroupSummaryViewModel
+@{
+    ViewData["Title"] = "Assets by Status / Type / Branch";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Assets by Status / Type / Branch</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Asset Reports</a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="card shadow-sm text-center">
+            <div class="card-body"><div class="text-muted small">Total Cost</div><div class="fs-5 fw-bold">@Model.TotalCost.ToString("N2")</div></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm text-center">
+            <div class="card-body"><div class="text-muted small">Total Book Value</div><div class="fs-5 fw-bold">@Model.TotalBookValue.ToString("N2")</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>By Status</strong></div>
+            @await Html.PartialAsync("_AssetGroupTable", Model.ByStatus)
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>By Type</strong></div>
+            @await Html.PartialAsync("_AssetGroupTable", Model.ByType)
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>By Branch</strong></div>
+            @await Html.PartialAsync("_AssetGroupTable", Model.ByBranch)
+        </div>
+    </div>
+</div>

@@ -1,0 +1,54 @@
+@model ProcurementAgingViewModel
+@{
+    ViewData["Title"] = "PR / PO Aging";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">PR / PO Aging</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Purchase Reports</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>Pending Purchase Requests (@Model.PendingRequestCount)</strong></div>
+            <table class="table table-sm mb-0 align-middle">
+                <thead><tr><th>Request No</th><th>Date</th><th class="text-end">Days</th><th>Status</th><th class="text-end">Lines</th><th class="text-end">Qty</th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model.Requests)
+                    {
+                        <tr>
+                            <td>@r.DocNo</td><td>@r.Date.ToString("dd-MMM-yyyy")</td><td class="text-end">@r.DaysOld</td>
+                            <td>@r.Status</td><td class="text-end">@r.LineCount</td><td class="text-end">@r.Quantity.ToString("N2")</td>
+                        </tr>
+                    }
+                    @if (Model.Requests.Count == 0)
+                    {
+                        <tr><td colspan="6" class="text-center text-muted">No pending requests</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>Open Purchase Orders (@Model.OpenOrderCount)</strong></div>
+            <table class="table table-sm mb-0 align-middle">
+                <thead><tr><th>Order No</th><th>Date</th><th class="text-end">Days</th><th>Status</th><th>Supplier</th><th class="text-end">Lines</th><th class="text-end">Qty</th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model.Orders)
+                    {
+                        <tr>
+                            <td>@r.DocNo</td><td>@r.Date.ToString("dd-MMM-yyyy")</td><td class="text-end">@r.DaysOld</td>
+                            <td>@r.Status</td><td>@r.Supplier</td><td class="text-end">@r.LineCount</td><td class="text-end">@r.Quantity.ToString("N2")</td>
+                        </tr>
+                    }
+                    @if (Model.Orders.Count == 0)
+                    {
+                        <tr><td colspan="7" class="text-center text-muted">No open orders</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

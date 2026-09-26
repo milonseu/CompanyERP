@@ -87,6 +87,12 @@
                                         <i class="bi bi-person-vcard"></i> Employee
                                     </a>
                                 </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="HrReport" asp-action="Index">
+                                        <i class="bi bi-bar-chart"></i> Reports
+                                    </a>
+                                </li>
                             </ul>
                         </li>
 
@@ -172,6 +178,12 @@
                                         <i class="bi bi-arrow-left-right"></i> Stock Transfers
                                     </a>
                                 </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="InventoryReport" asp-action="Index">
+                                        <i class="bi bi-bar-chart"></i> Inventory Reports
+                                    </a>
+                                </li>
                             </ul>
                         </li>
 
@@ -254,6 +266,12 @@
                                         <i class="bi bi-trash3"></i> Asset Disposal
                                     </a>
                                 </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="AssetReport" asp-action="Index">
+                                        <i class="bi bi-bar-chart"></i> Asset Reports
+                                    </a>
+                                </li>
                             </ul>
                         </li>
 
@@ -276,6 +294,12 @@
                                 <li>
                                     <a class="dropdown-item" asp-controller="Expense" asp-action="Index">
                                         <i class="bi bi-receipt-cutoff"></i> Expense Entry
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="ExpenseReport" asp-action="Index">
+                                        <i class="bi bi-bar-chart"></i> Expense Reports
                                     </a>
                                 </li>
                             </ul>
@@ -383,6 +407,21 @@
                                 <li>
                                     <a class="dropdown-item" asp-controller="StatementReport" asp-action="Index">
                                         <i class="bi bi-file-earmark-text"></i> Customer / Supplier Statement
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="PaymentReport" asp-action="Index">
+                                        <i class="bi bi-cash-coin"></i> Payment Reports
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="SalesReport" asp-action="Index">
+                                        <i class="bi bi-cart"></i> Sales Reports
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="PurchaseReport" asp-action="Index">
+                                        <i class="bi bi-bag"></i> Purchase Reports
                                     </a>
                                 </li>
                             </ul>

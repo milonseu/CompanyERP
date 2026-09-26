@@ -120,6 +120,15 @@ builder.Services.AddScoped<IAccountingReportService, AccountingReportService>();
 builder.Services.AddScoped<IAgingReportService, AgingReportService>();
 builder.Services.AddScoped<IStatementReportService, StatementReportService>();
 
+// Module: Report Modules
+builder.Services.AddScoped<IPaymentReportService, PaymentReportService>();
+builder.Services.AddScoped<IInventoryReportService, InventoryReportService>();
+builder.Services.AddScoped<IAssetReportService, AssetReportService>();
+builder.Services.AddScoped<IExpenseReportService, ExpenseReportService>();
+builder.Services.AddScoped<IHrReportService, HrReportService>();
+builder.Services.AddScoped<ISalesReportService, SalesReportService>();
+builder.Services.AddScoped<IPurchaseReportService, PurchaseReportService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

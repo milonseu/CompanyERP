@@ -47,4 +47,33 @@ public class HrReportController : Controller
             "Id", "Name", departmentId);
         return View(vm);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> SalaryRegister(string? fromDate, string? toDate, int? departmentId)
+    {
+        var companyId = await GetCompanyIdAsync();
+        var vm = await _reportService.GetSalaryRegisterAsync(companyId, ParseDate(fromDate), ParseDate(toDate), departmentId);
+        ViewBag.Departments = new SelectList(
+            (await _departmentService.GetAllAsync()).Where(d => d.CompanyId == companyId),
+            "Id", "Name", departmentId);
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AssetCustody()
+    {
+        var vm = await _reportService.GetAssetCustodyAsync(await GetCompanyIdAsync());
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EmployeeList(int? departmentId)
+    {
+        var companyId = await GetCompanyIdAsync();
+        var vm = await _reportService.GetEmployeeListAsync(companyId, departmentId);
+        ViewBag.Departments = new SelectList(
+            (await _departmentService.GetAllAsync()).Where(d => d.CompanyId == companyId),
+            "Id", "Name", departmentId);
+        return View(vm);
+    }
 }

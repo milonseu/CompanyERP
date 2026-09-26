@@ -118,4 +118,57 @@ public class AccountingReportController : Controller
         var vm = await _reportService.GetReceivablesPayablesAsync(await GetCompanyIdAsync());
         return View(vm);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GeneralJournal(string? fromDate, string? toDate, int? branchId)
+    {
+        var companyId = await GetCompanyIdAsync();
+        var vm = await _reportService.GetGeneralJournalAsync(companyId, await ParseDateAsync(fromDate), await ParseDateAsync(toDate), branchId);
+        ViewBag.Branches = new SelectList(
+            (await _branchService.GetAllAsync()).Where(b => b.CompanyId == companyId),
+            "Id", "Name", branchId);
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ComparativePAndL(string? month)
+    {
+        var vm = await _reportService.GetComparativePandLAsync(await GetCompanyIdAsync(), await ParseDateAsync(month));
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CashFlow(string? fromDate, string? toDate)
+    {
+        var vm = await _reportService.GetCashFlowAsync(await GetCompanyIdAsync(), await ParseDateAsync(fromDate), await ParseDateAsync(toDate));
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> BankCashSummary()
+    {
+        var vm = await _reportService.GetBankCashSummaryAsync(await GetCompanyIdAsync());
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CoaReport(string? fromDate, string? toDate)
+    {
+        var vm = await _reportService.GetCoaReportAsync(await GetCompanyIdAsync(), await ParseDateAsync(fromDate), await ParseDateAsync(toDate));
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> JournalVoucher(int id)
+    {
+        var vm = await _reportService.GetJournalVoucherAsync(await GetCompanyIdAsync(), id);
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> PaymentVoucher(int id)
+    {
+        var vm = await _reportService.GetPaymentVoucherAsync(await GetCompanyIdAsync(), id);
+        return View(vm);
+    }
 }

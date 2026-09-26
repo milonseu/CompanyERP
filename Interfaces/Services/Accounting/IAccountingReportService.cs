@@ -1,6 +1,7 @@
 using CompanyERP.Data;
 using CompanyERP.Entities.Accounting;
 using CompanyERP.ViewModels.Accounting;
+using CompanyERP.ViewModels.Reports;
 using Microsoft.EntityFrameworkCore;
 
 namespace CompanyERP.Interfaces.Services;

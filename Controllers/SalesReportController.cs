@@ -37,4 +37,32 @@ public class SalesReportController : Controller
         var vm = await _reportService.GetSummaryAsync(await GetCompanyIdAsync(), ParseDate(fromDate), ParseDate(toDate));
         return View(vm);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> ByProduct(string? fromDate, string? toDate)
+    {
+        var vm = await _reportService.GetByProductAsync(await GetCompanyIdAsync(), ParseDate(fromDate), ParseDate(toDate));
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Outstanding(string? asOfDate)
+    {
+        var vm = await _reportService.GetOutstandingAsync(await GetCompanyIdAsync(), ParseDate(asOfDate));
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Top(string? fromDate, string? toDate, int top = 10)
+    {
+        var vm = await _reportService.GetTopAsync(await GetCompanyIdAsync(), ParseDate(fromDate), ParseDate(toDate), top);
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ServiceCompletion(string? fromDate, string? toDate)
+    {
+        var vm = await _reportService.GetServiceCompletionAsync(await GetCompanyIdAsync(), ParseDate(fromDate), ParseDate(toDate));
+        return View(vm);
+    }
 }

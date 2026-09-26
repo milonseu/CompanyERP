@@ -6,7 +6,7 @@
     <div class="card-body">
         <h1 class="h3 mb-3">Inventory Reports</h1>
         <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body">
                         <h2 class="h5">Stock Report</h2>
@@ -15,12 +15,30 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body">
                         <h2 class="h5">Stock Movement</h2>
-                        <p class="text-muted small">In/out stock transactions with quantities and values.</p>
+                        <p class="text-muted small">In/out stock transactions with opening, closing and product summary.</p>
                         <a asp-action="Movement" class="btn btn-sm btn-outline-primary">Open</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Low Stock</h2>
+                        <p class="text-muted small">Items at or below their minimum stock level with shortfall.</p>
+                        <a asp-action="LowStock" class="btn btn-sm btn-outline-primary">Open</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Warehouse-wise Stock</h2>
+                        <p class="text-muted small">Stock quantity and value summarised per warehouse.</p>
+                        <a asp-action="WarehouseStock" class="btn btn-sm btn-outline-primary">Open</a>
                     </div>
                 </div>
             </div>

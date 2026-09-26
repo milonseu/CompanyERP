@@ -1,0 +1,74 @@
+@model SalaryRegisterViewModel
+@{
+    ViewData["Title"] = "Salary / Payroll Register";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Salary / Payroll Register</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">HR Reports</a>
+</div>
+
+<form method="get" asp-action="SalaryRegister" class="card shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">From</label>
+            <input type="date" name="fromDate" class="form-control form-control-sm" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">To</label>
+            <input type="date" name="toDate" class="form-control form-control-sm" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Department</label>
+            <select name="departmentId" class="form-select form-select-sm">
+                <option value="">All</option>
+                @foreach (var d in ViewBag.Departments)
+                {
+                    <option value="@d.Value" selected="@(d.Value == Model.DepartmentId.ToString() ? "selected" : null)">@d.Text</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-sm btn-primary">Show</button>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Emp Code</th><th>Employee</th><th>Dept</th><th>Month</th>
+                    <th class="text-end">Basic</th><th class="text-end">House Rent</th><th class="text-end">Medical</th>
+                    <th class="text-end">Conveyance</th><th class="text-end">Other</th><th class="text-end">Gross</th>
+                    <th class="text-end">PF</th><th class="text-end">Net</th><th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Rows)
+                {
+                    <tr>
+                        <td>@r.EmployeeCode</td><td>@r.Name</td><td>@r.Department</td><td>@r.ForMonth.ToString("MMM yyyy")</td>
+                        <td class="text-end">@r.Basic.ToString("N2")</td><td class="text-end">@r.HouseRent.ToString("N2")</td>
+                        <td class="text-end">@r.Medical.ToString("N2")</td><td class="text-end">@r.Conveyance.ToString("N2")</td>
+                        <td class="text-end">@r.Other.ToString("N2")</td><td class="text-end">@r.Gross.ToString("N2")</td>
+                        <td class="text-end">@r.Pf.ToString("N2")</td><td class="text-end">@r.Net.ToString("N2")</td>
+                        <td>@r.Status</td>
+                    </tr>
+                }
+                @if (Model.Rows.Count == 0)
+                {
+                    <tr><td colspan="13" class="text-center text-muted">No data</td></tr>
+                }
+                <tr class="fw-bold">
+                    <td colspan="9" class="text-end">Total</td>
+                    <td class="text-end">@Model.TotalGross.ToString("N2")</td>
+                    <td class="text-end">@Model.TotalPf.ToString("N2")</td>
+                    <td class="text-end">@Model.TotalNet.ToString("N2")</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

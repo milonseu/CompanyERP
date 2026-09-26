@@ -1,0 +1,52 @@
+@model VoucherViewModel
+@{
+    ViewData["Title"] = "Journal Voucher";
+}
+
+<div class="d-print-none mb-3 d-flex justify-content-between align-items-center">
+    <h1 class="h3 mb-0">Journal Voucher</h1>
+    <div>
+        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">Print</button>
+        <a asp-action="GeneralJournal" class="btn btn-sm btn-outline-secondary">Back to General Journal</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row border-bottom pb-2 mb-2">
+            <div class="col-6">
+                <div><strong>Voucher No:</strong> @Model.EntryNo</div>
+                <div><strong>Date:</strong> @Model.EntryDate.ToString("dd-MMM-yyyy")</div>
+                <div><strong>Branch:</strong> @(string.IsNullOrEmpty(Model.Branch) ? "-" : Model.Branch)</div>
+            </div>
+            <div class="col-6 text-end">
+                <div><strong>Module:</strong> @(string.IsNullOrEmpty(Model.SourceModule) ? "-" : Model.SourceModule)</div>
+                <div><strong>Reference:</strong> @(string.IsNullOrEmpty(Model.SourceReference) ? "-" : Model.SourceReference)</div>
+            </div>
+        </div>
+        <div class="mb-2"><strong>Description:</strong> @Model.Description</div>
+        <table class="table table-sm table-bordered mb-0 align-middle">
+            <thead>
+                <tr><th>#</th><th>Account</th><th>Note</th><th class="text-end">Debit</th><th class="text-end">Credit</th></tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Lines.Count; i++)
+                {
+                    var l = Model.Lines[i];
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@l.AccountCode - @l.AccountName</td>
+                        <td>@l.Note</td>
+                        <td class="text-end">@l.Debit.ToString("N2")</td>
+                        <td class="text-end">@l.Credit.ToString("N2")</td>
+                    </tr>
+                }
+                <tr class="fw-bold">
+                    <td colspan="3" class="text-end">Total</td>
+                    <td class="text-end">@Model.TotalDebit.ToString("N2")</td>
+                    <td class="text-end">@Model.TotalCredit.ToString("N2")</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

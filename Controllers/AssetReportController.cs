@@ -43,7 +43,7 @@ public class AssetReportController : Controller
         var companyId = await GetCompanyIdAsync();
         var vm = await _reportService.GetRegisterAsync(companyId, ParseDate(asOfDate), assetTypeId);
         ViewBag.AssetTypes = new SelectList(
-            (await _assetTypeService.GetAllAsync()).Where(t => t.CompanyId == companyId),
+            (await _assetTypeService.GetAllAsync(companyId)),
             "Id", "Name", assetTypeId);
         return View(vm);
     }
@@ -59,6 +59,13 @@ public class AssetReportController : Controller
     public async Task<IActionResult> Disposals()
     {
         var vm = await _reportService.GetDisposalsAsync(await GetCompanyIdAsync());
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Groups()
+    {
+        var vm = await _reportService.GetGroupSummaryAsync(await GetCompanyIdAsync());
         return View(vm);
     }
 }

@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Expense Reports";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Expense Reports</h1>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Home</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Expense</strong></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><a asp-action="Summary">Expense by Category / Type</a></li>
+                <li class="list-group-item"><a asp-action="Trend">Monthly Expense Trend</a></li>
+                <li class="list-group-item"><a asp-action="Register">Expense Register</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
