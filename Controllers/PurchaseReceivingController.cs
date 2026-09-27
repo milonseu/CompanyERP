@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Purchase.View")]
 public class PurchaseReceivingController : Controller
 {
     private readonly IPurchaseReceivingService _receivingService;
@@ -23,6 +24,7 @@ public class PurchaseReceivingController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create()
     {
         var orders = await _orderService.GetReceivableOrdersAsync();
@@ -55,6 +57,7 @@ public class PurchaseReceivingController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create(int orderId, DateTime receivedDate, string? referenceNo, string? note)
     {
         if (orderId <= 0)

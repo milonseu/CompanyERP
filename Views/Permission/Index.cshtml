@@ -8,6 +8,47 @@
     <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Permission</a>
 </div>
 
+@{
+    var missingGroups = ViewBag.MissingCatalog as IEnumerable<IGrouping<string, CompanyERP.Services.Security.SecurityDefs.CatalogItem>>;
+}
+
+@if (missingGroups is not null && missingGroups.Any())
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light py-2 d-flex align-items-center gap-2">
+            <i class="bi bi-stack"></i><span class="fw-semibold">Permission Catalog</span>
+            <span class="badge bg-warning text-dark">@missingGroups.Sum(g => g.Count()) not enabled yet</span>
+        </div>
+        <div class="card-body">
+            <p class="text-muted small mb-3">
+                These are the permission codes the application checks. Enable the ones you want to
+                assign to roles and users.
+            </p>
+            @foreach (var group in missingGroups)
+            {
+                <div class="mb-3">
+                    <div class="fw-semibold mb-1">@group.Key</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        @foreach (var item in group.OrderBy(i => i.Code))
+                        {
+                            <form asp-action="AddFromCatalog" method="post" class="m-0" style="display:inline-flex;">
+                                <input type="hidden" name="code" value="@item.Code" />
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-plus-circle"></i> @item.Code
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-success py-2"><i class="bi bi-check-circle"></i> All catalog permissions are enabled.</div>
+}
+
 <div class="card shadow-sm">
     <div class="card-body p-0">
         <table class="table table-hover align-middle mb-0">

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Accounting.View")]
 public class AccountingPeriodController : Controller
 {
     private readonly IAccountingPeriodService _accountingPeriodService;
@@ -26,6 +27,7 @@ public class AccountingPeriodController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Accounting.Create")]
     public async Task<IActionResult> Create(int? financialYearId)
     {
         var years = await _accountingPeriodService.GetFinancialYearsAsync();
@@ -41,6 +43,7 @@ public class AccountingPeriodController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Accounting.Create")]
     public async Task<IActionResult> Create(AccountingPeriodFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -62,6 +65,7 @@ public class AccountingPeriodController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Accounting.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -81,6 +85,7 @@ public class AccountingPeriodController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Accounting.Edit")]
     public async Task<IActionResult> Edit(int id, AccountingPeriodFormViewModel model)
     {
         if (id != model.Id)
@@ -124,6 +129,7 @@ public class AccountingPeriodController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Accounting.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -142,6 +148,7 @@ public class AccountingPeriodController : Controller
 
 [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Accounting.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _accountingPeriodService.DeleteAsync(id);
@@ -159,6 +166,7 @@ public class AccountingPeriodController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Accounting.Close")]
     public async Task<IActionResult> Close(int id)
     {
         var result = await _accountingPeriodService.CloseAsync(id);

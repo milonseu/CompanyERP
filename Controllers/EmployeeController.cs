@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Employee.View")]
 public class EmployeeController : Controller
 {
     private readonly IEmployeeService _employeeService;
@@ -38,6 +39,7 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Employee.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -60,6 +62,7 @@ public class EmployeeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Employee.Create")]
     public async Task<IActionResult> Create(EmployeeFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -81,6 +84,7 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Employee.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -100,6 +104,7 @@ public class EmployeeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Employee.Edit")]
     public async Task<IActionResult> Edit(int id, EmployeeFormViewModel model)
     {
         if (id != model.Id)
@@ -143,6 +148,7 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Employee.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -162,6 +168,7 @@ public class EmployeeController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Employee.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _employeeService.DeleteAsync(id);

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Expense.View")]
 public class ExpenseController : Controller
 {
     private readonly IExpenseEntryService _entryService;
@@ -48,6 +49,7 @@ public class ExpenseController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Expense.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -65,6 +67,7 @@ public class ExpenseController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Expense.Create")]
     public async Task<IActionResult> Create(ExpenseEntry model)
     {
         if (!ModelState.IsValid)
@@ -86,6 +89,7 @@ public class ExpenseController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Expense.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -105,6 +109,7 @@ public class ExpenseController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Expense.Edit")]
     public async Task<IActionResult> Edit(int id, ExpenseEntry model)
     {
         if (id != model.Id)
@@ -144,6 +149,7 @@ public class ExpenseController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Expense.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _entryService.DeleteAsync(id);

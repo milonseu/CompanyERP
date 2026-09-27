@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Supplier.View")]
 public class SupplierController : Controller
 {
     private readonly ISupplierService _supplierService;
@@ -26,6 +27,7 @@ public class SupplierController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Supplier.Create")]
     public async Task<IActionResult> Create()
     {
         if (!await HasCompaniesAsync())
@@ -40,6 +42,7 @@ public class SupplierController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Supplier.Create")]
     public async Task<IActionResult> Create(SupplierFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -61,6 +64,7 @@ public class SupplierController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Supplier.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -86,6 +90,7 @@ public class SupplierController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Supplier.Edit")]
     public async Task<IActionResult> Edit(int id, SupplierFormViewModel model)
     {
         if (id != model.Id)
@@ -129,6 +134,7 @@ public class SupplierController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Supplier.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -147,6 +153,7 @@ public class SupplierController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Supplier.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _supplierService.DeleteAsync(id);

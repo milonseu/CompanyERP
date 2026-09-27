@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Report.View")]
 public class AccountingReportController : Controller
 {
     private readonly IAccountingReportService _reportService;

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Expense.View")]
 public class ExpenseTypeController : Controller
 {
     private readonly IExpenseTypeService _typeService;
@@ -33,6 +34,7 @@ public class ExpenseTypeController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Expense.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -49,6 +51,7 @@ public class ExpenseTypeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Expense.Create")]
     public async Task<IActionResult> Create(ExpenseType model)
     {
         if (!ModelState.IsValid)
@@ -70,6 +73,7 @@ public class ExpenseTypeController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Expense.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -89,6 +93,7 @@ public class ExpenseTypeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Expense.Edit")]
     public async Task<IActionResult> Edit(int id, ExpenseType model)
     {
         if (id != model.Id)
@@ -115,6 +120,7 @@ public class ExpenseTypeController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Expense.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -128,6 +134,7 @@ public class ExpenseTypeController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Expense.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _typeService.DeleteAsync(id);

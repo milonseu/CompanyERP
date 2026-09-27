@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Accounting.View")]
 public class JournalEntryController : Controller
 {
     private readonly IJournalEntryService _journalEntryService;
@@ -65,6 +66,7 @@ public class JournalEntryController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Accounting.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -86,6 +88,7 @@ public class JournalEntryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Accounting.Create")]
     public async Task<IActionResult> Create(JournalEntryFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -134,6 +137,7 @@ public class JournalEntryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Accounting.Delete")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _journalEntryService.DeleteAsync(id);

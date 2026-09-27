@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Company.View")]
 public class FinancialYearController : Controller
 {
     private readonly IFinancialYearService _financialYearService;
@@ -27,6 +28,7 @@ public class FinancialYearController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Company.Create")]
     public IActionResult Create()
     {
         return View(new FinancialYearFormViewModel());
@@ -34,6 +36,7 @@ public class FinancialYearController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Company.Create")]
     public async Task<IActionResult> Create(FinancialYearFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -53,6 +56,7 @@ public class FinancialYearController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Company.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -71,6 +75,7 @@ public class FinancialYearController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Company.Edit")]
     public async Task<IActionResult> Edit(int id, FinancialYearFormViewModel model)
     {
         if (id != model.Id)
@@ -112,6 +117,7 @@ public class FinancialYearController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Company.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -130,6 +136,7 @@ public class FinancialYearController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Company.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _financialYearService.DeleteAsync(id);

@@ -185,4 +185,47 @@ public class UserService : IUserService
     {
         return _authService.UserNameExistsAsync(userName, excludeId);
     }
+
+    public Task<bool> AnyUserExistsAsync()
+    {
+        return _db.Users.AsNoTracking().AnyAsync();
+    }
+
+    public async Task<(bool Success, string Error)> CreateFirstSuperAdminAsync(User user, string password)
+    {
+        if (await _db.Users.AsNoTracking().AnyAsync())
+        {
+            return (false, "Registration is closed. The system already has a user account.");
+        }
+
+        var superAdmin = await _db.Roles.AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Code == SecurityDefs.SuperAdminRoleCode);
+        if (superAdmin is null)
+        {
+            _db.Roles.Add(new Role
+            {
+                Code = SecurityDefs.SuperAdminRoleCode,
+                Name = "Super Admin",
+                Description = "First registered user. Full system access.",
+                IsSystem = true
+            });
+            await _db.SaveChangesAsync();
+        }
+
+        var result = await CreateAsync(user, password);
+        if (!result.Success)
+        {
+            return result;
+        }
+
+        var created = await _db.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName);
+        var role = await _db.Roles.FirstOrDefaultAsync(r => r.Code == SecurityDefs.SuperAdminRoleCode);
+        if (created is not null && role is not null)
+        {
+            _db.UserRoles.Add(new UserRole { UserId = created.Id, RoleId = role.Id });
+            await _db.SaveChangesAsync();
+        }
+
+        return (true, string.Empty);
+    }
 }

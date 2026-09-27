@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Branch.View")]
 public class BranchController : Controller
 {
     private readonly IBranchService _branchService;
@@ -44,6 +45,7 @@ public class BranchController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Branch.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -66,6 +68,7 @@ public class BranchController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Branch.Create")]
     public async Task<IActionResult> Create(BranchFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -87,6 +90,7 @@ public class BranchController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Branch.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -106,6 +110,7 @@ public class BranchController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Branch.Edit")]
     public async Task<IActionResult> Edit(int id, BranchFormViewModel model)
     {
         if (id != model.Id)
@@ -149,6 +154,7 @@ public class BranchController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Branch.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -167,6 +173,7 @@ public class BranchController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Branch.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _branchService.DeleteAsync(id);

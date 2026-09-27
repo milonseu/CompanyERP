@@ -78,6 +78,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
@@ -99,11 +100,16 @@ public class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult Register()
+    public async Task<IActionResult> Register()
     {
         if (User.Identity?.IsAuthenticated == true)
         {
             return RedirectToAction("Index", "Home");
+        }
+
+        if (await _userService.AnyUserExistsAsync())
+        {
+            return RedirectToAction("Login", "Account");
         }
 
         return View(new RegisterViewModel());
@@ -114,6 +120,12 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
+        if (await _userService.AnyUserExistsAsync())
+        {
+            TempData["Error"] = "Registration is closed. The system already has a user account.";
+            return RedirectToAction("Login", "Account");
+        }
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -133,14 +145,14 @@ public class AccountController : Controller
             IsSystem = false
         };
 
-        var createResult = await _userService.CreateAsync(user, model.Password);
+        var createResult = await _userService.CreateFirstSuperAdminAsync(user, model.Password);
         if (!createResult.Success)
         {
             TempData["Error"] = createResult.Error;
             return View(model);
         }
 
-        TempData["Success"] = "Registration successful. Please log in.";
+        TempData["Success"] = "Registration successful. You are the Super Admin with full system access. Please log in.";
         return RedirectToAction("Login", "Account");
     }
 }

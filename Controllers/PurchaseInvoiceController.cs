@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Purchase.View")]
 public class PurchaseInvoiceController : Controller
 {
     private readonly IPurchaseInvoiceService _invoiceService;

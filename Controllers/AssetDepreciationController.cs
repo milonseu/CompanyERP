@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Asset.View")]
 public class AssetDepreciationController : Controller
 {
     private readonly IAssetDepreciationService _depreciationService;

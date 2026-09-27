@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Accounting.View")]
 public class ChartOfAccountController : Controller
 {
     private readonly IChartOfAccountService _accountService;
@@ -31,6 +32,7 @@ public class ChartOfAccountController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Accounting.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -47,6 +49,7 @@ public class ChartOfAccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Accounting.Create")]
     public async Task<IActionResult> Create(ChartOfAccount model)
     {
         if (!ModelState.IsValid)
@@ -68,6 +71,7 @@ public class ChartOfAccountController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Accounting.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -87,6 +91,7 @@ public class ChartOfAccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Accounting.Edit")]
     public async Task<IActionResult> Edit(int id, ChartOfAccount model)
     {
         if (id != model.Id)
@@ -113,6 +118,7 @@ public class ChartOfAccountController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Accounting.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -131,6 +137,7 @@ public class ChartOfAccountController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Accounting.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _accountService.DeleteAsync(id);

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Report.View")]
 public class AgingReportController : Controller
 {
     private readonly IAgingReportService _agingService;

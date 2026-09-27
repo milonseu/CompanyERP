@@ -5,7 +5,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Payments</h1>
-    <a asp-action="Create" class="btn btn-primary">New Payment</a>
+    @if (User.HasPermission("Payment.Create"))
+    {
+        <a asp-action="Create" class="btn btn-primary">New Payment</a>
+    }
 </div>
 
 <div class="card shadow-sm mb-3">

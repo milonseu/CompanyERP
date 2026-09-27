@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Sales.View")]
 public class SalesOrderController : Controller
 {
     private readonly ISalesOrderService _orderService;
@@ -37,6 +38,7 @@ public class SalesOrderController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -59,6 +61,7 @@ public class SalesOrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create(SalesOrder model, List<SalesOrderLine> lines)
     {
         if (!ModelState.IsValid)
@@ -80,6 +83,7 @@ public class SalesOrderController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -114,6 +118,7 @@ public class SalesOrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Edit")]
     public async Task<IActionResult> Edit(int id, SalesOrder model, List<SalesOrderLine> lines)
     {
         if (id != model.Id)
@@ -154,6 +159,7 @@ public class SalesOrderController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -167,6 +173,7 @@ public class SalesOrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _orderService.DeleteAsync(id);

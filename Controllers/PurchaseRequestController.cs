@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Purchase.View")]
 public class PurchaseRequestController : Controller
 {
     private readonly IPurchaseRequestService _requestService;
@@ -33,6 +34,7 @@ public class PurchaseRequestController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create()
     {
         if (!await HasCompaniesAsync())
@@ -51,6 +53,7 @@ public class PurchaseRequestController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create(PurchaseRequest model, List<PurchaseRequestLine> lines)
     {
         if (!ModelState.IsValid)
@@ -72,6 +75,7 @@ public class PurchaseRequestController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -97,6 +101,7 @@ public class PurchaseRequestController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Edit")]
     public async Task<IActionResult> Edit(int id, PurchaseRequest model, List<PurchaseRequestLine> lines)
     {
         if (id != model.Id)
@@ -140,6 +145,7 @@ public class PurchaseRequestController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -158,6 +164,7 @@ public class PurchaseRequestController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _requestService.DeleteAsync(id);
@@ -175,6 +182,7 @@ public class PurchaseRequestController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Approve")]
     public async Task<IActionResult> Approve(int id)
     {
         var result = await _requestService.UpdateStatusAsync(id, PurchaseRequestStatus.Approved);

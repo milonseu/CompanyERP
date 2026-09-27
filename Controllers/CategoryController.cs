@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("MasterData.View")]
 public class CategoryController : Controller
 {
     private readonly ICategoryService _categoryService;
@@ -45,6 +46,7 @@ public class CategoryController : Controller
     }
 
     [HttpGet]
+    [HasPermission("MasterData.Create")]
     public async Task<IActionResult> Create()
     {
         if (!await HasCompaniesAsync())
@@ -59,6 +61,7 @@ public class CategoryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("MasterData.Create")]
     public async Task<IActionResult> Create(Category model)
     {
         if (!ModelState.IsValid)
@@ -80,6 +83,7 @@ public class CategoryController : Controller
     }
 
     [HttpGet]
+    [HasPermission("MasterData.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -105,6 +109,7 @@ public class CategoryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("MasterData.Edit")]
     public async Task<IActionResult> Edit(int id, Category model)
     {
         if (id != model.Id)
@@ -131,6 +136,7 @@ public class CategoryController : Controller
     }
 
     [HttpGet]
+    [HasPermission("MasterData.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -149,6 +155,7 @@ public class CategoryController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("MasterData.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _categoryService.DeleteAsync(id);

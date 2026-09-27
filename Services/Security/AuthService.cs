@@ -75,7 +75,7 @@ public class AuthService : IAuthService
         }
 
         var codes = await GetPermissionCodesAsync(userId);
-        return codes.Contains(permissionCode);
+        return codes.Any(c => string.Equals(c, permissionCode, StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task<bool> IsSuperAdminAsync(int userId)

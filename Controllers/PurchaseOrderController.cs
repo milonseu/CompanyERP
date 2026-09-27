@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Purchase.View")]
 public class PurchaseOrderController : Controller
 {
     private readonly IPurchaseOrderService _orderService;
@@ -42,6 +43,7 @@ public class PurchaseOrderController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -64,6 +66,7 @@ public class PurchaseOrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create(PurchaseOrder model, List<PurchaseOrderLine> lines)
     {
         if (!ModelState.IsValid)
@@ -85,6 +88,7 @@ public class PurchaseOrderController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -110,6 +114,7 @@ public class PurchaseOrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Edit")]
     public async Task<IActionResult> Edit(int id, PurchaseOrder model, List<PurchaseOrderLine> lines)
     {
         if (id != model.Id)
@@ -153,6 +158,7 @@ public class PurchaseOrderController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -171,6 +177,7 @@ public class PurchaseOrderController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _orderService.DeleteAsync(id);
@@ -188,6 +195,7 @@ public class PurchaseOrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Approve")]
     public async Task<IActionResult> Approve(int id)
     {
         var result = await _orderService.UpdateStatusAsync(id, PurchaseOrderStatus.Approved);

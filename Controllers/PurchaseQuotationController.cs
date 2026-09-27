@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Purchase.View")]
 public class PurchaseQuotationController : Controller
 {
     private readonly IPurchaseQuotationService _quotationService;
@@ -36,6 +37,7 @@ public class PurchaseQuotationController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -59,6 +61,7 @@ public class PurchaseQuotationController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create(PurchaseQuotation model, List<PurchaseQuotationLine> lines)
     {
         if (!ModelState.IsValid)
@@ -80,6 +83,7 @@ public class PurchaseQuotationController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -105,6 +109,7 @@ public class PurchaseQuotationController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Edit")]
     public async Task<IActionResult> Edit(int id, PurchaseQuotation model, List<PurchaseQuotationLine> lines)
     {
         if (id != model.Id)
@@ -148,6 +153,7 @@ public class PurchaseQuotationController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -166,6 +172,7 @@ public class PurchaseQuotationController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _quotationService.DeleteAsync(id);

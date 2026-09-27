@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Payment.View")]
 public class CashAccountController : Controller
 {
     private readonly ICashAccountService _accountService;
@@ -32,6 +33,7 @@ public class CashAccountController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Payment.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -48,6 +50,7 @@ public class CashAccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Payment.Create")]
     public async Task<IActionResult> Create(CashAccount model)
     {
         if (!ModelState.IsValid)
@@ -69,6 +72,7 @@ public class CashAccountController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Payment.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -88,6 +92,7 @@ public class CashAccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Payment.Edit")]
     public async Task<IActionResult> Edit(int id, CashAccount model)
     {
         if (id != model.Id)
@@ -114,6 +119,7 @@ public class CashAccountController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Payment.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -127,6 +133,7 @@ public class CashAccountController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Payment.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _accountService.DeleteAsync(id);

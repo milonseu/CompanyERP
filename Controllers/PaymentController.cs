@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Payment.View")]
 public class PaymentController : Controller
 {
     private readonly IPaymentService _paymentService;
@@ -61,6 +62,7 @@ public class PaymentController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Payment.Create")]
     public async Task<IActionResult> Create(PaymentCategory? category)
     {
         var companies = await _companyService.GetAllAsync();
@@ -84,6 +86,7 @@ public class PaymentController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Payment.Create")]
     public async Task<IActionResult> Create(Payment model)
     {
         if (!ModelState.IsValid)
@@ -118,6 +121,7 @@ public class PaymentController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Payment.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _paymentService.DeleteAsync(id);

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CompanyERP.Interfaces.Services;
+using CompanyERP.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -33,10 +34,32 @@ public sealed class HasPermissionAttribute : TypeFilterAttribute
                 return;
             }
 
-            if (!await _authService.HasPermissionAsync(userId, _permissionCode))
+            var user = context.HttpContext.User;
+            if (user.HasClaim(PermissionClaimsTransformer.SuperAdminClaimType, "1")
+                || HasClaimIgnoreCase(user, PermissionClaimsTransformer.PermissionClaimType, _permissionCode))
             {
-                context.Result = new RedirectToActionResult("AccessDenied", "Account", null);
+                return;
             }
+
+            if (await _authService.HasPermissionAsync(userId, _permissionCode))
+            {
+                return;
+            }
+
+            context.Result = new RedirectToActionResult("AccessDenied", "Account", null);
+        }
+
+        private static bool HasClaimIgnoreCase(ClaimsPrincipal user, string type, string value)
+        {
+            foreach (var claim in user.FindAll(c => c.Type == type))
+            {
+                if (string.Equals(claim.Value, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

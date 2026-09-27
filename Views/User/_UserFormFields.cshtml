@@ -53,4 +53,39 @@
             <span class="text-muted">No roles available.</span>
         }
     </div>
+    <div class="col-12">
+        <hr />
+        <label class="form-label fw-semibold">Direct Permissions</label>
+        <p class="text-muted small mb-2">
+            Permissions given directly to this user (in addition to role permissions). The user
+            receives the union of role permissions and direct permissions.
+        </p>
+        @if (!Model.AllPermissions.Any())
+        {
+            <span class="text-muted">No permissions defined yet. Add permissions first.</span>
+        }
+        else
+        {
+            <div class="row g-2">
+                @foreach (var moduleGroup in Model.AllPermissions.GroupBy(p => p.Module ?? "General").OrderBy(g => g.Key))
+                {
+                    <div class="col-lg-6">
+                        <div class="border rounded p-2 h-100">
+                            <div class="fw-semibold small border-bottom pb-1 mb-1">@moduleGroup.Key</div>
+                            @foreach (var permission in moduleGroup.OrderBy(p => p.Code))
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="SelectedPermissionIds" value="@permission.Id"
+                                           @(Model.SelectedPermissionIds.Contains(permission.Id) ? "checked" : "") id="userperm-@permission.Id" />
+                                    <label class="form-check-label small" for="userperm-@permission.Id">
+                                        <span class="badge bg-light text-dark me-1">@permission.Code</span>@permission.Name
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
 </div>

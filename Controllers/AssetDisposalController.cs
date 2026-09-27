@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Asset.View")]
 public class AssetDisposalController : Controller
 {
     private readonly IAssetDisposalService _disposalService;
@@ -34,6 +35,7 @@ public class AssetDisposalController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Asset.Create")]
     public async Task<IActionResult> Create(int? assetId)
     {
         var companies = await _companyService.GetAllAsync();
@@ -51,6 +53,7 @@ public class AssetDisposalController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Asset.Create")]
     public async Task<IActionResult> Create(AssetDisposal model)
     {
         if (!ModelState.IsValid)
