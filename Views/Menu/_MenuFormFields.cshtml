@@ -16,6 +16,17 @@
         <input asp-for="Controller" class="form-control" placeholder="e.g. User" />
     </div>
     <div class="col-md-6">
+        <label asp-for="PermissionCode" class="form-label"></label>
+        <select asp-for="PermissionCode" class="form-select">
+            <option value="">-- All logged-in users --</option>
+            @foreach (var code in Model.AllPermissionCodes)
+            {
+                <option value="@code">@code</option>
+            }
+        </select>
+        <span class="text-muted small">Menu shows only to users having this permission.</span>
+    </div>
+    <div class="col-md-6">
         <label asp-for="Action" class="form-label"></label>
         <input asp-for="Action" class="form-control" placeholder="e.g. Index" />
     </div>

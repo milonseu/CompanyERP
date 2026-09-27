@@ -27,6 +27,10 @@ public class Menu : BaseEntity
     public string? Action { get; set; }
 
     [StringLength(60)]
+    [Display(Name = "Required Permission")]
+    public string? PermissionCode { get; set; }
+
+    [StringLength(60)]
     public string? Area { get; set; }
 
     [Display(Name = "Parent Menu")]

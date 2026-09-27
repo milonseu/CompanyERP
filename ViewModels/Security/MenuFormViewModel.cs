@@ -29,6 +29,10 @@ public class MenuFormViewModel
     public string? Action { get; set; }
 
     [StringLength(60)]
+    [Display(Name = "Required Permission")]
+    public string? PermissionCode { get; set; }
+
+    [StringLength(60)]
     public string? Area { get; set; }
 
     [Display(Name = "Parent Menu")]
@@ -46,6 +50,8 @@ public class MenuFormViewModel
 
     public List<Menu> AllMenus { get; set; } = [];
 
+    public List<string> AllPermissionCodes { get; set; } = [];
+
     public Menu ToEntity()
     {
         return new Menu
@@ -56,6 +62,7 @@ public class MenuFormViewModel
             Icon = Icon,
             Controller = Controller,
             Action = Action,
+            PermissionCode = PermissionCode,
             Area = Area,
             ParentId = ParentId,
             DisplayOrder = DisplayOrder,
@@ -74,6 +81,7 @@ public class MenuFormViewModel
             Icon = menu.Icon,
             Controller = menu.Controller,
             Action = menu.Action,
+            PermissionCode = menu.PermissionCode,
             Area = menu.Area,
             ParentId = menu.ParentId,
             DisplayOrder = menu.DisplayOrder,

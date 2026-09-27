@@ -1,5 +1,6 @@
-using CompanyERP.Entities.Security;
+﻿using CompanyERP.Entities.Security;
 using CompanyERP.Interfaces.Services;
+using CompanyERP.Services.Security;
 using CompanyERP.ViewModels.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,10 @@ public class MenuController : Controller
     public async Task<IActionResult> Index()
     {
         var menus = await _menuService.GetAllAsync();
+
+        var dbCodes = new HashSet<string>(menus.Select(m => m.Code), StringComparer.OrdinalIgnoreCase);
+        ViewBag.MissingCatalogCount = MenuCatalog.Items.Count(i => !dbCodes.Contains(i.Code));
+
         return View(menus);
     }
 
@@ -31,7 +36,8 @@ public class MenuController : Controller
     {
         var model = new MenuFormViewModel
         {
-            AllMenus = await _menuService.GetTopLevelAsync()
+            AllMenus = await _menuService.GetTopLevelAsync(),
+            AllPermissionCodes = SecurityDefs.Catalog.Select(c => c.Code).OrderBy(c => c).ToList()
         };
         return View(model);
     }
@@ -44,6 +50,7 @@ public class MenuController : Controller
         if (!ModelState.IsValid)
         {
             model.AllMenus = await _menuService.GetTopLevelAsync();
+            model.AllPermissionCodes = SecurityDefs.Catalog.Select(c => c.Code).OrderBy(c => c).ToList();
             return View(model);
         }
 
@@ -52,12 +59,70 @@ public class MenuController : Controller
         {
             ModelState.AddModelError(string.Empty, result.Error);
             model.AllMenus = await _menuService.GetTopLevelAsync();
+            model.AllPermissionCodes = SecurityDefs.Catalog.Select(c => c.Code).OrderBy(c => c).ToList();
             return View(model);
         }
 
         await _activityLogService.LogAsync(User.Identity?.Name ?? "System", "Create", "Security", nameof(Menu), null, $"Menu '{model.Code}' created.", HttpContext.Connection.RemoteIpAddress?.ToString());
 
         TempData["Success"] = "Menu created successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [HasPermission("Security.Create")]
+    public async Task<IActionResult> AddFromCatalog()
+    {
+        var added = 0;
+
+        foreach (var item in MenuCatalog.Items.Where(i => i.ParentCode is null))
+        {
+            if (await _menuService.CodeExistsAsync(item.Code)) continue;
+
+            var created = await _menuService.CreateAsync(new Menu
+            {
+                Code = item.Code,
+                Name = item.Name,
+                Icon = item.Icon,
+                Controller = item.Controller,
+                Action = item.Action,
+                PermissionCode = item.PermissionCode,
+                ParentId = null,
+                DisplayOrder = item.DisplayOrder,
+                IsActive = true,
+                IsSystem = false
+            });
+            if (created.Success) added++;
+        }
+
+        var existing = await _menuService.GetAllAsync();
+        foreach (var item in MenuCatalog.Items.Where(i => i.ParentCode is not null))
+        {
+            if (await _menuService.CodeExistsAsync(item.Code)) continue;
+
+            var parent = existing.FirstOrDefault(m => string.Equals(m.Code, item.ParentCode, StringComparison.OrdinalIgnoreCase));
+            if (parent is null) continue;
+
+            var created = await _menuService.CreateAsync(new Menu
+            {
+                Code = item.Code,
+                Name = item.Name,
+                Icon = item.Icon,
+                Controller = item.Controller,
+                Action = item.Action,
+                PermissionCode = item.PermissionCode,
+                ParentId = parent.Id,
+                DisplayOrder = item.DisplayOrder,
+                IsActive = true,
+                IsSystem = false
+            });
+            if (created.Success) added++;
+        }
+
+        await _activityLogService.LogAsync(User.Identity?.Name ?? "System", "Create", "Security", nameof(Menu), null, $"Added {added} standard menu(s) from catalog.", HttpContext.Connection.RemoteIpAddress?.ToString());
+
+        TempData["Success"] = $"{added} standard menu(s) added from catalog.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -75,8 +140,9 @@ public class MenuController : Controller
             return NotFound();
         }
 
-        var model = MenuFormViewModel.FromEntity(menu);
+var model = MenuFormViewModel.FromEntity(menu);
         model.AllMenus = await _menuService.GetTopLevelAsync();
+        model.AllPermissionCodes = SecurityDefs.Catalog.Select(c => c.Code).OrderBy(c => c).ToList();
         return View(model);
     }
 
@@ -93,6 +159,7 @@ public class MenuController : Controller
         if (!ModelState.IsValid)
         {
             model.AllMenus = await _menuService.GetTopLevelAsync();
+            model.AllPermissionCodes = SecurityDefs.Catalog.Select(c => c.Code).OrderBy(c => c).ToList();
             return View(model);
         }
 
