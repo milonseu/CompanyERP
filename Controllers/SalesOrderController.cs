@@ -70,6 +70,7 @@ public class SalesOrderController : Controller
             return View(model);
         }
 
+        model.OrderNo = await _orderService.GenerateNumberAsync(model.CompanyId, model.OrderDate);
         var result = await _orderService.CreateAsync(model, lines ?? new List<SalesOrderLine>());
         if (!result.Success)
         {

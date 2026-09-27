@@ -8,10 +8,12 @@ namespace CompanyERP.Entities.Inventory;
 public class Warehouse : BaseEntity
 {
     [Required(ErrorMessage = "Company is required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Company is required.")]
     [Display(Name = "Company")]
     public int CompanyId { get; set; }
 
     [Required(ErrorMessage = "Branch is required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Branch is required.")]
     [Display(Name = "Branch")]
     public int BranchId { get; set; }
 

@@ -68,6 +68,7 @@ public class ServiceOrderController : Controller
             return View(model);
         }
 
+        model.OrderNo = await _orderService.GenerateNumberAsync(model.CompanyId, model.OrderDate);
         var result = await _orderService.CreateAsync(model);
         if (!result.Success)
         {

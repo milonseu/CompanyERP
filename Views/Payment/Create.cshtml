@@ -55,7 +55,10 @@
                     </div>
                     <div class="col-md-6">
                         <label asp-for="SourceReferenceNo" class="form-label"></label>
-                        <input asp-for="SourceReferenceNo" class="form-control" placeholder="Invoice no / opening" />
+                        <select asp-for="SourceReferenceNo" class="form-select" id="customerInvoiceSelect" disabled>
+                            <option value="">-- Select Invoice --</option>
+                        </select>
+                        <span asp-validation-for="SourceReferenceNo" class="text-danger"></span>
                     </div>
                 </div>
             </div>
@@ -71,7 +74,10 @@
                     </div>
                     <div class="col-md-6">
                         <label asp-for="SourceReferenceNo" class="form-label"></label>
-                        <input asp-for="SourceReferenceNo" class="form-control" placeholder="Invoice no / opening" />
+                        <select asp-for="SourceReferenceNo" class="form-select" id="supplierInvoiceSelect" disabled>
+                            <option value="">-- Select Invoice --</option>
+                        </select>
+                        <span asp-validation-for="SourceReferenceNo" class="text-danger"></span>
                     </div>
                 </div>
             </div>
@@ -205,6 +211,41 @@
             }
             radios.forEach(function (r) { r.addEventListener('change', syncAccounts); });
             syncAccounts();
+
+            function loadInvoices(url, selectBox, partyId) {
+                selectBox.innerHTML = '<option value="">-- Select Invoice --</option>';
+                selectBox.disabled = true;
+                if (!partyId) return;
+                fetch(url + '&' + partyId)
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        (data.invoices || []).forEach(function (inv) {
+                            var opt = document.createElement('option');
+                            opt.value = inv.invoiceNo;
+                            opt.text = inv.invoiceNo + ' (due ' + inv.outstanding.toFixed(2) + ')';
+                            selectBox.appendChild(opt);
+                        });
+                        selectBox.disabled = selectBox.options.length === 1;
+                    })
+                    .catch(function () {
+                        selectBox.innerHTML = '<option value="">-- Select Invoice --</option>';
+                        selectBox.disabled = true;
+                    });
+            }
+            var customerSelect = document.querySelector('[name="CustomerId"]');
+            var customerInvoices = document.getElementById('customerInvoiceSelect');
+            var supplierSelect = document.querySelector('[name="SupplierId"]');
+            var supplierInvoices = document.getElementById('supplierInvoiceSelect');
+            if (customerSelect) {
+                customerSelect.addEventListener('change', function () {
+                    loadInvoices('@Url.Action("GetCustomerInvoices")?customerId=', customerInvoices, encodeURIComponent(customerSelect.value));
+                });
+            }
+            if (supplierSelect) {
+                supplierSelect.addEventListener('change', function () {
+                    loadInvoices('@Url.Action("GetSupplierInvoices")?supplierId=', supplierInvoices, encodeURIComponent(supplierSelect.value));
+                });
+            }
         })();
     </script>
 }

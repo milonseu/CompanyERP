@@ -75,6 +75,7 @@ public class PurchaseOrderController : Controller
             return View(model);
         }
 
+        model.OrderNo = await _orderService.GenerateNumberAsync(model.CompanyId, model.OrderDate);
         var result = await _orderService.CreateAsync(model, lines ?? new List<PurchaseOrderLine>());
         if (!result.Success)
         {

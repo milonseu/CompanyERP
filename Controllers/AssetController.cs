@@ -81,6 +81,7 @@ public class AssetController : Controller
             return View(asset);
         }
 
+        asset.AssetNo = await _assetService.GenerateAssetNoAsync(asset.CompanyId, asset.PurchaseDate);
         var result = await _assetService.CreateAsync(asset, acquisition ?? new AssetAcquisition());
         if (!result.Success)
         {

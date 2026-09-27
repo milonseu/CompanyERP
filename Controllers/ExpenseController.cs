@@ -76,6 +76,7 @@ public class ExpenseController : Controller
             return View(model);
         }
 
+        model.ExpenseNo = await _entryService.GenerateExpenseNoAsync(model.CompanyId, model.ExpenseDate);
         var result = await _entryService.CreateAsync(model);
         if (!result.Success)
         {

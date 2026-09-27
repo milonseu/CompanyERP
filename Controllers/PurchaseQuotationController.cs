@@ -70,6 +70,7 @@ public class PurchaseQuotationController : Controller
             return View(model);
         }
 
+        model.QuotationNo = await _quotationService.GenerateNumberAsync(model.CompanyId, model.QuotationDate);
         var result = await _quotationService.CreateAsync(model, lines ?? new List<PurchaseQuotationLine>());
         if (!result.Success)
         {

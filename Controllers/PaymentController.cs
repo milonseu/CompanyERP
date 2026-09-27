@@ -22,6 +22,8 @@ public class PaymentController : Controller
     private readonly ISupplierService _supplierService;
     private readonly IExpenseEntryService _expenseService;
     private readonly IAssetRegisterService _assetService;
+    private readonly ISalesInvoiceService _salesInvoiceService;
+    private readonly IPurchaseInvoiceService _purchaseInvoiceService;
 
     public PaymentController(
         IPaymentService paymentService,
@@ -33,7 +35,9 @@ public class PaymentController : Controller
         ICustomerService customerService,
         ISupplierService supplierService,
         IExpenseEntryService expenseService,
-        IAssetRegisterService assetService)
+        IAssetRegisterService assetService,
+        ISalesInvoiceService salesInvoiceService,
+        IPurchaseInvoiceService purchaseInvoiceService)
     {
         _paymentService = paymentService;
         _methodService = methodService;
@@ -45,6 +49,8 @@ public class PaymentController : Controller
         _supplierService = supplierService;
         _expenseService = expenseService;
         _assetService = assetService;
+        _salesInvoiceService = salesInvoiceService;
+        _purchaseInvoiceService = purchaseInvoiceService;
     }
 
     [HttpGet]
@@ -95,6 +101,7 @@ public class PaymentController : Controller
             return View(model);
         }
 
+        model.PaymentNo = await _paymentService.GeneratePaymentNoAsync(model.CompanyId, model.PaymentDate);
         var result = await _paymentService.CreateAsync(model);
         if (!result.Success)
         {
@@ -198,5 +205,57 @@ public class PaymentController : Controller
         ViewBag.AssetCandidates = assets
             .Select(a => new SelectListItem($"{a.AssetNo} - {a.Name}", a.Id.ToString(), model.AssetRegisterId == a.Id))
             .ToList();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetCustomerInvoices(int customerId)
+    {
+        var companies = await _companyService.GetAllAsync();
+        if (companies.Count == 0)
+        {
+            return Json(new { invoices = Array.Empty<object>() });
+        }
+
+        var companyId = companies.First().Id;
+        var invoices = (await _salesInvoiceService.GetByCustomerIdAsync(companyId, customerId))
+            .Select(i =>
+            {
+                var total = i.Lines.Sum(l => l.Quantity * l.UnitPrice);
+                return new { InvoiceNo = i.InvoiceNo, Total = total, Outstanding = Math.Max(0, total - i.AmountPaid) };
+            })
+            .Where(i => i.Outstanding > 0)
+            .OrderBy(i => i.InvoiceNo)
+            .ToList();
+
+        return Json(new { invoices });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetSupplierInvoices(int supplierId)
+    {
+        var companies = await _companyService.GetAllAsync();
+        if (companies.Count == 0)
+        {
+            return Json(new { invoices = Array.Empty<object>() });
+        }
+
+        var companyId = companies.First().Id;
+        var paidByInvoice = (await _paymentService.GetAllAsync(companyId, PaymentCategory.Supplier))
+            .Where(p => p.SupplierId == supplierId && !string.IsNullOrWhiteSpace(p.SourceReferenceNo))
+            .GroupBy(p => p.SourceReferenceNo!.Trim())
+            .ToDictionary(g => g.Key, g => g.Sum(p => p.Amount), StringComparer.OrdinalIgnoreCase);
+
+        var invoices = (await _purchaseInvoiceService.GetBySupplierIdAsync(companyId, supplierId))
+            .Select(i =>
+            {
+                var total = i.Lines.Sum(l => l.Quantity * l.UnitPrice);
+                var paid = paidByInvoice.TryGetValue(i.InvoiceNo.Trim(), out var p) ? p : 0;
+                return new { InvoiceNo = i.InvoiceNo, Total = total, Outstanding = Math.Max(0, total - paid) };
+            })
+            .Where(i => i.Outstanding > 0)
+            .OrderBy(i => i.InvoiceNo)
+            .ToList();
+
+        return Json(new { invoices });
     }
 }
