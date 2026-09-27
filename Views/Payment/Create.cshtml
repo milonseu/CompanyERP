@@ -1,4 +1,5 @@
 @model Payment
+@using CompanyERP.Services.Payments
 @{
     ViewData["Title"] = "New Payment";
 }
@@ -57,6 +58,7 @@
                         <label asp-for="SourceReferenceNo" class="form-label"></label>
                         <select asp-for="SourceReferenceNo" class="form-select" id="customerInvoiceSelect" disabled>
                             <option value="">-- Select Invoice --</option>
+                            <option value="@PaymentService.OpeningReference">Opening (no invoice)</option>
                         </select>
                         <span asp-validation-for="SourceReferenceNo" class="text-danger"></span>
                     </div>
@@ -76,6 +78,7 @@
                         <label asp-for="SourceReferenceNo" class="form-label"></label>
                         <select asp-for="SourceReferenceNo" class="form-select" id="supplierInvoiceSelect" disabled>
                             <option value="">-- Select Invoice --</option>
+                            <option value="@PaymentService.OpeningReference">Opening (no invoice)</option>
                         </select>
                         <span asp-validation-for="SourceReferenceNo" class="text-danger"></span>
                     </div>
@@ -225,7 +228,11 @@
                             opt.text = inv.invoiceNo + ' (due ' + inv.outstanding.toFixed(2) + ')';
                             selectBox.appendChild(opt);
                         });
-                        selectBox.disabled = selectBox.options.length === 1;
+                        var opening = document.createElement('option');
+                        opening.value = '@PaymentService.OpeningReference';
+                        opening.text = 'Opening (no invoice)';
+                        selectBox.appendChild(opening);
+                        selectBox.disabled = false;
                     })
                     .catch(function () {
                         selectBox.innerHTML = '<option value="">-- Select Invoice --</option>';

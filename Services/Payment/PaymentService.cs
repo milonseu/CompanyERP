@@ -14,6 +14,8 @@ namespace CompanyERP.Services.Payments;
 
 public class PaymentService : IPaymentService
 {
+    public const string OpeningReference = "Opening";
+
     private readonly ApplicationDbContext _db;
     private readonly ITransactionPostingService _postingService;
 
@@ -245,6 +247,9 @@ public class PaymentService : IPaymentService
         return (false, "Posted payments are financial records and cannot be deleted.");
     }
 
+    private static bool IsOpeningReference(string? sourceReferenceNo) =>
+        string.Equals(sourceReferenceNo?.Trim(), OpeningReference, StringComparison.OrdinalIgnoreCase);
+
     private async Task<(bool Success, string Error)> CreateCustomerPaymentAsync(Payment payment)
     {
         if (!payment.CustomerId.HasValue)
@@ -264,7 +269,7 @@ public class PaymentService : IPaymentService
         }
 
         var outstanding = await GetCustomerOutstandingAsync(customer.Id);
-        if (payment.Amount > outstanding)
+        if (payment.Amount > outstanding && !IsOpeningReference(payment.SourceReferenceNo))
         {
             return (false, $"Payment amount exceeds the customer's outstanding receivable of {outstanding:N2}.");
         }
@@ -300,7 +305,7 @@ public class PaymentService : IPaymentService
         }
 
         var outstanding = await GetSupplierOutstandingAsync(supplier.Id);
-        if (payment.Amount > outstanding)
+        if (payment.Amount > outstanding && !IsOpeningReference(payment.SourceReferenceNo))
         {
             return (false, $"Payment amount exceeds the supplier's outstanding payable of {outstanding:N2}.");
         }

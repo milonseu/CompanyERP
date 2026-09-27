@@ -42,6 +42,7 @@ public class ServiceDeliveryController : Controller
         }
 
         var companyId = companies.First().Id;
+        ViewData["CompanyId"] = companyId;
         ViewBag.Orders = new SelectList(
             (await _orderService.GetDeliveryEligibleAsync()).Where(o => o.CompanyId == companyId),
             "Id", "OrderNo");
@@ -61,6 +62,7 @@ public class ServiceDeliveryController : Controller
             TempData["Error"] = result.Error;
             var companies = await _companyService.GetAllAsync();
             var cid = companyId == 0 ? companies.First().Id : companyId;
+            ViewData["CompanyId"] = cid;
             ViewBag.Orders = new SelectList(
                 (await _orderService.GetDeliveryEligibleAsync()).Where(o => o.CompanyId == cid),
                 "Id", "OrderNo", serviceOrderId);
