@@ -7,22 +7,32 @@ namespace CompanyERP.Services.Security;
 
 public class SecuritySeederService : ISecuritySeederService
 {
+    public const string DefaultAdminUserName = "admin";
+    public const string DefaultAdminPassword = "Admin@123";
+
     private readonly ApplicationDbContext _db;
     private readonly IAuthService _authService;
+    private readonly ILogger<SecuritySeederService> _logger;
 
-    public SecuritySeederService(ApplicationDbContext db, IAuthService authService)
+    public SecuritySeederService(
+        ApplicationDbContext db,
+        IAuthService authService,
+        ILogger<SecuritySeederService> logger)
     {
         _db = db;
         _authService = authService;
+        _logger = logger;
     }
 
-    public async Task SeedAsync()
+    public async Task SeedAsync(string? adminUserName = null, string? adminPassword = null)
     {
         await SeedRolesAndSaveAsync();
         await SeedPermissionsAndSaveAsync();
         await SeedRolePermissionsAsync();
         await SeedMenusAndSaveAsync();
-        await SeedDefaultAdminAsync();
+        await SeedDefaultAdminAsync(
+            string.IsNullOrWhiteSpace(adminUserName) ? DefaultAdminUserName : adminUserName.Trim(),
+            string.IsNullOrWhiteSpace(adminPassword) ? DefaultAdminPassword : adminPassword);
         await _db.SaveChangesAsync();
     }
 
@@ -197,15 +207,21 @@ public class SecuritySeederService : ISecuritySeederService
         }
     }
 
-    private async Task SeedDefaultAdminAsync()
+    private async Task SeedDefaultAdminAsync(string adminUserName, string adminPassword)
     {
-        const string adminUserName = "admin";
-        const string adminPassword = "Admin@123";
         const string adminRoleCode = "SUPERADMIN";
 
         var admin = await _db.Users.FirstOrDefaultAsync(u => u.UserName == adminUserName);
         if (admin is null)
         {
+            if (adminPassword == DefaultAdminPassword)
+            {
+                _logger.LogWarning(
+                    "Seeding default administrator '{User}' with the well-known default password. " +
+                    "Set SeedSecurity:AdminPassword before first run in any shared environment.",
+                    adminUserName);
+            }
+
             admin = new User
             {
                 UserName = adminUserName,

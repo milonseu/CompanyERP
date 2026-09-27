@@ -37,6 +37,7 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<ILoginHistoryService, LoginHistoryService>();
+builder.Services.AddScoped<ISecuritySeederService, SecuritySeederService>();
 builder.Services.AddScoped<ActivityLogFilter>();
 builder.Services.AddScoped<IClaimsTransformation, PermissionClaimsTransformer>();
 
@@ -135,6 +136,27 @@ builder.Services.AddScoped<IPurchaseReportService, PurchaseReportService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var app = builder.Build();
+
+// First-run security seed: roles, permissions, role-permission grants, menus and the default admin
+// user. The seeder is idempotent, so an existing (or partially seeded) database is repaired rather
+// than duplicated. Disable with SeedSecurity:OnStartup=false.
+if (app.Configuration.GetValue("SeedSecurity:OnStartup", true))
+{
+    using var seedScope = app.Services.CreateScope();
+    var seedLogger = seedScope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("SecuritySeed");
+    try
+    {
+        await seedScope.ServiceProvider.GetRequiredService<ISecuritySeederService>().SeedAsync(
+            app.Configuration["SeedSecurity:AdminUserName"],
+            app.Configuration["SeedSecurity:AdminPassword"]);
+        seedLogger.LogInformation("Security seed completed (roles, permissions, menus, default admin).");
+    }
+    catch (Exception ex)
+    {
+        // Log and continue: a seeding failure must not take down a working instance.
+        seedLogger.LogError(ex, "Security seed failed. No login may be possible on a fresh database.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

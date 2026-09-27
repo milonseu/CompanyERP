@@ -3,27 +3,34 @@
 - **Date:** 2026-09-27
 - **Environment:** Local (Win), app on `https://localhost:7168`, **rebuilt clean** SQL Server Express DB `CompanyERP` (`DESKTOP-H7V9030\SQLEXPRESS`, user `vs`)
 - **DB reset:** Old DB backed up to `F:\ERPbackup`, then `CompanyERP` dropped and rebuilt from EF migrations before this run.
-- **Method:** All business records created/edited through the **web UI** as a real user. Only the **security bootstrap** (roles/permissions/menus/admin) was inserted with a direct SQL script, because the app has no first-run seeder wired up (see finding 9).
+- **Method:** All business records created/edited through the **web UI** as a real user. The security bootstrap for *this* run was inserted with a direct SQL script, because at the time of the run the app had no first-run seeder wired up — **that is now fixed** (see section 1).
 - **Test user:** `admin` / `Pass@1234` (SUPERADMIN)
 - **Harness:** `e2e.ps1` (GET page → reuse server-prefilled numbers/hidden values → POST with `__RequestVerificationToken`, submitting the fields the rendered form actually contains).
 - **Build:** `dotnet build` — 0 warnings, 0 errors.
 
 ---
 
-## 1. Security bootstrap (direct SQL, documented exception)
+## 1. Security bootstrap
 
-`SecuritySeederService.SeedAsync()` exists but is never registered or called, so a fresh DB has no login possible. Seeded once, then all security pages exercised through the UI.
+The clean run itself needed a direct SQL script, because `SecuritySeederService` existed but was never registered or called — a fresh database had no way to create the first user. **That gap is now fixed**: the seeder is registered and invoked at startup (idempotent), so a fresh DB bootstraps itself.
+
+Seed result (verified on a scratch database, then dropped):
 
 | Table | Rows |
 |---|---|
-| Roles | 6 (Superadmin + 5 business roles) |
-| Permissions | 59 |
-| RolePermissions | 111 (Superadmin holds all) |
-| Menus | 7 (1 group + 6 security items) |
-| Users | 1 (`admin`) |
-| UserRoles | 1 |
+| Roles | 6 (SUPERADMIN, ADMIN, ACCOUNTS, SALES, INVENTORY_OPERATOR, ASSET_OPERATOR) |
+| Permissions | 59 (13 modules x 4 actions + 7 accounting) |
+| RolePermissions | 111 (SUPERADMIN all, ADMIN all non-accounting) |
+| Menus | 7 (1 group + 6 security children) |
+| Users | 1 (`admin`, IsSystem) |
+| UserRoles | 1 (SUPERADMIN) |
 
-Login works; `/User`, `/Role`, `/Permission`, `/Menu`, `/ActivityLog`, `/LoginHistory` all render for SUPERADMIN even though only the security subtree is in the sidebar menu set.
+- Runs after `builder.Build()`, before the request pipeline; failures are logged, not thrown, so a seeding hiccup cannot take down a live instance.
+- `SeedSecurity:OnStartup=false` disables it; `SeedSecurity:AdminUserName` / `SeedSecurity:AdminPassword` override the default `admin` / `Admin@123` (a warning is logged when the well-known default password is used for a new install).
+- **Idempotency verified:** a second startup produced identical counts and no duplicate permission codes, and the pre-existing E2E admin password was not overwritten.
+- The app was also run against the E2E database with the new build: seeding was a no-op (12 journals, 6 roles, 7 menus, 1 user unchanged) and login still worked.
+
+Login works; `/User`, `/Role`, `/Permission`, `/Menu`, `/ActivityLog`, `/LoginHistory` all render for SUPERADMIN.
 
 ---
 
@@ -36,6 +43,7 @@ Login works; `/User`, `/Role`, `/Permission`, `/Menu`, `/ActivityLog`, `/LoginHi
 | 3a | Payment invoice picker | `GET /Payment/GetCustomerInvoices`, `GET /Payment/GetSupplierInvoices` return outstanding invoices with due amounts; both selects render in the form. |
 | 3b | Payment "Opening" option | New **Opening (no invoice)** option in both selects, no longer disabled when there are no outstanding invoices. `PAY-20260930-001` posted against invoice-less customer `CUST-002` with `SourceReferenceNo=Opening` → journal `JR-20260930-001` (DR Cash 100 / CR AR 100). Required a narrow service change: the over-payment cap is skipped for the `Opening` sentinel, otherwise a party with no invoice could never be paid. |
 | 4 | `ServiceDelivery` create form | Form had **no `companyId` field**, so every real submission failed with *"Company does not exist."* Hidden `companyId` added (sourced from `ViewData`) → the flow now reaches real business validation. |
+| 5 | First-run security seeder | `SecuritySeederService` is now registered and invoked at startup. On a scratch database: 6 roles / 59 permissions / 111 role-permissions / 7 menus / 1 admin, login with `admin`/`Admin@123` works, `/Home/Index` and `/User` reachable, and a second startup changed nothing. The E2E database is unaffected. |
 
 ---
 
@@ -277,15 +285,15 @@ COA 62 · Menus 7 · Permissions 59 · Roles 6 · RolePermissions 111 · Users 1
 2. `Warehouse` create required `BranchId` but had no validation → misleading *"Selected branch does not exist."*; now rejected server-side with `[Range(1, int.MaxValue)]`.
 3. Payment source reference was free text and the "pick an invoice" control could not express an opening receipt. Now a server-fed picker plus an explicit Opening option, with the over-payment cap skipped only for that sentinel.
 4. `ServiceDelivery/Create.cshtml` never posted `companyId` → the screen was unusable (*"Company does not exist."*).
+5. **No first-run seeder** — `SecuritySeederService` was never invoked, so a fresh database had no way to create the first user. It is now registered and run at startup, idempotently, with the admin credential configurable.
 
 **Open / design questions**
-5. Stock transfer, adjustment and opening stock-in post **no journal entry** (stock rows only). If the ERP targets full double entry, these should post Inventory ↔ Opening-Balance/adjustment contra.
-6. COGS uses `Product.CostPrice` (10) while the running stock average is 8.00–8.47 → COGS overstated (400 instead of 320 on the first invoice). Stock-out unit cost should come from `StockBalance.AverageCost` if moving-average valuation is intended.
-7. A sales return against a fully-paid invoice leaves an **AR credit** (refund owed) with no credit-note/refund workflow in the UI.
-8. Asset acquisition silently used the **Bank** account although the form offers no bank-account choice for acquisitions.
-9. No first-run seeder: `SecuritySeederService` is never invoked, so a fresh DB has no way to create the first user. Consider calling it at startup or shipping a migration seed.
-10. The warehouse "branch required" error surfaces only as a generic EF message (*"The value '' is invalid."*) rather than a friendly field message.
-11. Asset `Status` persisted as `Registered (0)` although the payload requested `Active (1)` — confirm the intended lifecycle transition.
+1. **Stock transfer / adjustment / opening stock-in post no journal entry** (stock rows only). If the ERP targets full double entry, these should post Inventory ↔ Opening-Balance/adjustment contra.
+2. **COGS uses `Product.CostPrice`, not the moving-average stock cost** (10 vs 8.00–8.47), so COGS is overstated when the two differ. Stock-out unit cost should come from `StockBalance.AverageCost` if moving-average valuation is intended.
+3. **Sales return against a fully-paid invoice** leaves an AR credit with no credit-note/refund workflow in the UI.
+4. **Asset acquisition silently defaults to the Bank account** although the form offers no choice.
+5. Minor: warehouse "branch required" surfaces only as a generic EF message; asset `Status` persists as `Registered (0)` when the payload requests `Active (1)`.
+6. The seeder's default admin password is well known; it is now configurable and warns on use, but a deployment checklist item would be safer than relying on configuration.
 
 ---
 
