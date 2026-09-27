@@ -22,7 +22,7 @@ html {
 .bg-purple { background-color: #6f42c1 !important; }
 .text-purple { color: #6f42c1 !important; }
 
-/* ===== App layout: topbar + sidebar + content ===== */
+/* ===== App layout: topbar + left sidebar + content ===== */
 :root {
   --topbar-h: 56px;
   --sidebar-w: 260px;
@@ -33,13 +33,20 @@ body {
 }
 
 .dash-layout {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "topbar topbar"
+    "sidebar content"
+    "footer footer";
   min-height: 100vh;
 }
 
-/* Top bar */
+/* Top bar — always spans the full screen width */
 .topbar {
+  grid-area: topbar;
+  width: 100%;
   position: sticky;
   top: 0;
   z-index: 1030;
@@ -79,17 +86,15 @@ body {
   margin-right: 0.4rem;
 }
 
-/* Sidebar (desktop: static column; mobile: off-canvas) */
+/* Sidebar — locked to the LEFT column */
 .sidebar {
-  flex: 0 0 var(--sidebar-w);
-  width: var(--sidebar-w);
+  grid-area: sidebar;
   background: #f8f9fa;
   border-right: 1px solid #e5e7eb;
   position: sticky;
   top: var(--topbar-h);
   height: calc(100vh - var(--topbar-h));
   overflow-y: auto;
-  transition: transform 0.25s ease, margin-left 0.25s ease;
   z-index: 1029;
 }
 
@@ -150,35 +155,48 @@ body {
   background: transparent;
 }
 
-/* Content */
+/* Content — sits to the RIGHT of the sidebar */
 .content {
-  flex: 1 1 0;
+  grid-area: content;
   min-width: 0;
   padding: 0;
 }
 
-/* Footer */
+/* Footer spans the full width */
 .app-footer {
+  grid-area: footer;
   width: 100%;
   padding: 0.9rem 0;
   border-top: 1px solid #e5e7eb;
   font-size: 0.85rem;
 }
 
-/* Overlay + off-canvas on small screens */
+/* Overlay + off-canvas on small screens: sidebar stays on the LEFT edge */
 .side-overlay {
   display: none;
 }
 
 @media (max-width: 991.98px) {
+  .dash-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "topbar"
+      "content"
+      "footer";
+  }
+
   .sidebar {
+    grid-area: auto;
     position: fixed;
     left: 0;
     top: var(--topbar-h);
     bottom: 0;
+    width: var(--sidebar-w);
     height: auto;
     transform: translateX(-100%);
+    transition: transform 0.25s ease;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    z-index: 1029;
   }
 
   .sidebar.show {

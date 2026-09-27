@@ -18,4 +18,13 @@
     </PackageReference>
   </ItemGroup>
 
+  <Target Name="CopyWwwrootToOutput" AfterTargets="Build">
+    <ItemGroup>
+      <_WwwrootFiles Include="$(MSBuildProjectDirectory)\wwwroot\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_WwwrootFiles)"
+          DestinationFiles="@(_WwwrootFiles->'$(OutDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>
