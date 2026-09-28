@@ -87,9 +87,14 @@ public class BranchService : IBranchService
         branch.Code = string.IsNullOrWhiteSpace(branch.Code) ? string.Empty : branch.Code.Trim().ToUpperInvariant();
         branch.Name = string.IsNullOrWhiteSpace(branch.Name) ? string.Empty : branch.Name.Trim();
 
+        //var existing = await _db.Branches
+        //    .Include(b => b.Settings)
+        //    .FirstOrDefaultAsync(b => b.Id == branch.Id);
         var existing = await _db.Branches
-            .Include(b => b.Settings)
-            .FirstOrDefaultAsync(b => b.Id == branch.Id);
+        .Include(b => b.Settings)
+        .AsNoTracking()
+        .FirstOrDefaultAsync(b => b.Id == branch.Id);
+
         if (existing is null)
         {
             return (false, "Branch not found.");
