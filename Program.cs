@@ -24,7 +24,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
-    options.Filters.Add<ActivityLogFilter>());
+{
+    options.Filters.Add<ActivityLogFilter>();
+    options.Filters.Add<MustChangePasswordFilter>();
+});
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -39,6 +42,7 @@ builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<ILoginHistoryService, LoginHistoryService>();
 builder.Services.AddScoped<ISecuritySeederService, SecuritySeederService>();
 builder.Services.AddScoped<ActivityLogFilter>();
+builder.Services.AddScoped<MustChangePasswordFilter>();
 builder.Services.AddScoped<IClaimsTransformation, PermissionClaimsTransformer>();
 
 builder.Services.AddHttpContextAccessor();

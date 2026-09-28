@@ -85,28 +85,83 @@ public class PaymentService : IPaymentService
             .ToListAsync();
     }
 
-    public async Task<decimal> GetCustomerOutstandingAsync(int customerId)
+    /// <summary>
+    /// Everything that moves a customer receivable: what was invoiced, returned, paid and refunded.
+    /// </summary>
+    private async Task<(decimal Opening, decimal Invoiced, decimal Returned, decimal Paid, decimal Refunded)> GetCustomerTotalsAsync(
+        int customerId, bool customerExists)
     {
-        var customer = await _db.Customers
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == customerId);
-        if (customer is null)
+        if (!customerExists)
         {
-            return 0;
+            return (0m, 0m, 0m, 0m, 0m);
         }
 
-        var invoiceAmounts = await _db.SalesInvoices
+        var customer = await _db.Customers
+            .AsNoTracking()
+            .FirstAsync(c => c.Id == customerId);
+
+        var invoices = await _db.SalesInvoices
             .AsNoTracking()
             .Where(i => i.CustomerId == customerId)
             .Include(i => i.Lines)
             .ToListAsync();
-        var invoiceTotal = invoiceAmounts.Sum(i => i.Lines.Sum(l => l.Quantity * l.UnitPrice));
-        var invoicePaid = invoiceAmounts.Sum(i => i.AmountPaid);
-        var modulePayments = await _db.Payments
+
+        // A posted sales return reduces what the customer owes (it credits receivable), so it has to
+        // come off the balance here as well as in the ledger.
+        var returns = await _db.SalesReturns
+            .AsNoTracking()
+            .Where(r => r.CustomerId == customerId && r.Status == SalesReturnStatus.Posted)
+            .Include(r => r.Lines)
+            .ToListAsync();
+
+        var paid = await _db.Payments
             .Where(p => p.Category == PaymentCategory.Customer && p.CustomerId == customerId)
             .SumAsync(p => (decimal?)p.Amount) ?? 0;
+        var refunded = await _db.Payments
+            .Where(p => p.Category == PaymentCategory.CustomerRefund && p.CustomerId == customerId)
+            .SumAsync(p => (decimal?)p.Amount) ?? 0;
 
-        return Math.Max(0, customer.OpeningReceivable + invoiceTotal - invoicePaid - modulePayments);
+        return (
+            customer.OpeningReceivable,
+            Math.Round(invoices.Sum(i => i.Lines.Sum(l => l.Quantity * l.UnitPrice)), 2),
+            Math.Round(returns.Sum(r => r.Lines.Sum(l => l.Quantity * l.UnitPrice)), 2),
+            Math.Round(invoices.Sum(i => i.AmountPaid) + paid, 2),
+            Math.Round(refunded, 2));
+    }
+
+    public async Task<decimal> GetCustomerOutstandingAsync(int customerId)
+    {
+        var exists = await _db.Customers.AsNoTracking().AnyAsync(c => c.Id == customerId);
+        if (!exists)
+        {
+            return 0;
+        }
+
+        var t = await GetCustomerTotalsAsync(customerId, true);
+        return Math.Max(0, Math.Round(t.Opening + t.Invoiced - t.Returned - t.Paid + t.Refunded, 2));
+    }
+
+    /// <summary>
+    /// Signed receivable balance. A sales return on an already paid invoice leaves the customer in
+    /// credit, and that credit is what a refund may be paid against, so it must not be clamped away.
+    /// </summary>
+    public async Task<decimal> GetCustomerBalanceAsync(int customerId)
+    {
+        var exists = await _db.Customers.AsNoTracking().AnyAsync(c => c.Id == customerId);
+        if (!exists)
+        {
+            return 0;
+        }
+
+        var t = await GetCustomerTotalsAsync(customerId, true);
+        return Math.Round(t.Opening + t.Invoiced - t.Returned - t.Paid + t.Refunded, 2);
+    }
+
+    /// <summary>Credit available to pay back to the customer, i.e. the negative side of the balance.</summary>
+    public async Task<decimal> GetCustomerRefundableAsync(int customerId)
+    {
+        var balance = await GetCustomerBalanceAsync(customerId);
+        return balance < 0 ? Math.Round(-balance, 2) : 0m;
     }
 
     public async Task<decimal> GetSupplierOutstandingAsync(int supplierId)
@@ -231,6 +286,8 @@ public class PaymentService : IPaymentService
                 return await CreateSalaryPaymentAsync(payment);
             case PaymentCategory.Asset:
                 return await CreateAssetPaymentAsync(payment);
+            case PaymentCategory.CustomerRefund:
+                return await CreateCustomerRefundAsync(payment);
             default:
                 return (false, "Invalid payment category.");
         }
@@ -276,6 +333,55 @@ public class PaymentService : IPaymentService
 
         payment.SourceModule = "Sales Invoice";
         var post = await _postingService.PostCustomerPaymentAsync(payment);
+        if (!post.Success)
+        {
+            return (false, post.Error);
+        }
+
+        _db.Payments.Add(payment);
+        await _db.SaveChangesAsync();
+        return (true, string.Empty);
+    }
+
+    /// <summary>
+    /// Pays money back to a customer who is in credit, which is what a sales return against an
+    /// already paid invoice leaves behind. Posts the reverse of a receipt: the receivable falls
+    /// because the customer's claim on us falls, and cash/bank leaves the business.
+    /// </summary>
+    private async Task<(bool Success, string Error)> CreateCustomerRefundAsync(Payment payment)
+    {
+        if (!payment.CustomerId.HasValue)
+        {
+            return (false, "Customer is required for a refund.");
+        }
+
+        var customer = await _db.Customers
+            .FirstOrDefaultAsync(c => c.Id == payment.CustomerId.Value && c.CompanyId == payment.CompanyId);
+        if (customer is null)
+        {
+            return (false, "Selected customer does not belong to the company.");
+        }
+
+        var refundable = await GetCustomerRefundableAsync(customer.Id);
+        if (refundable <= 0)
+        {
+            return (false, $"{customer.Name} has no credit balance to refund.");
+        }
+
+        if (payment.Amount > refundable)
+        {
+            return (false, $"Refund amount exceeds the available credit of {refundable:N2}. " +
+                "The rest stays as a credit on the customer account.");
+        }
+
+        if (string.IsNullOrWhiteSpace(payment.SourceReferenceNo))
+        {
+            return (false, "A return or credit note number is required for a refund.");
+        }
+
+        payment.SourceModule = "Customer Refund";
+
+        var post = await _postingService.PostCustomerRefundAsync(payment);
         if (!post.Success)
         {
             return (false, post.Error);

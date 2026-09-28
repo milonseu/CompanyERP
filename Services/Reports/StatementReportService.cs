@@ -33,7 +33,8 @@ public class StatementReportService : IStatementReportService
 
         var payments = await _db.Payments
             .AsNoTracking()
-            .Where(p => p.CompanyId == companyId && p.Category == PaymentCategory.Customer && p.CustomerId == customerId)
+            .Where(p => p.CompanyId == companyId && p.CustomerId == customerId)
+            .Where(p => p.Category == PaymentCategory.Customer || p.Category == PaymentCategory.CustomerRefund)
             .ToListAsync();
 
         var debits = invoices.Select(i => new StatementDebit
@@ -45,13 +46,29 @@ public class StatementReportService : IStatementReportService
             Paid = Math.Round(Math.Min(i.AmountPaid, i.Lines.Sum(l => l.Quantity * l.UnitPrice)), 2)
         }).ToList();
 
-        var credits = payments.Select(p => new StatementCredit
-        {
-            Date = p.PaymentDate,
-            Reference = p.PaymentNo,
-            Description = $"Payment ({p.PaymentMethod?.Name ?? "Payment"})",
-            Amount = Math.Round(p.Amount, 2)
-        }).ToList();
+        // Money paid back to the customer raises what the business owes them, so on their statement
+        // it is a debit. Listing it keeps the statement agreeing with the receivable ledger.
+        debits.AddRange(payments
+            .Where(p => p.Category == PaymentCategory.CustomerRefund)
+            .Select(p => new StatementDebit
+            {
+                Date = p.PaymentDate,
+                Reference = p.PaymentNo,
+                Description = "Refund paid to customer",
+                Total = Math.Round(p.Amount, 2),
+                Paid = 0
+            }));
+
+        var credits = payments
+            .Where(p => p.Category == PaymentCategory.Customer)
+            .Select(p => new StatementCredit
+            {
+                Date = p.PaymentDate,
+                Reference = p.PaymentNo,
+                Description = $"Payment ({p.PaymentMethod?.Name ?? "Payment"})",
+                Amount = Math.Round(p.Amount, 2)
+            })
+            .ToList();
 
         return BuildStatement(
             isCustomer: true,

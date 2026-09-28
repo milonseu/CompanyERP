@@ -36,7 +36,7 @@ public class InventoryReportService : IInventoryReportService
                 Warehouse = b.Warehouse?.Name ?? "",
                 Quantity = b.Quantity,
                 AverageCost = Math.Round(b.AverageCost, 4),
-                Value = Math.Round(b.Quantity * b.AverageCost, 2),
+                Value = Math.Round(b.TotalValue, 2),
                 MinimumStockLevel = b.Product.MinimumStockLevel
             })
             .OrderBy(r => r.Code)
@@ -169,7 +169,7 @@ public class InventoryReportService : IInventoryReportService
                 Warehouse = g.First().Warehouse?.Name ?? "",
                 Products = g.Count(),
                 Quantity = Math.Round(g.Sum(b => b.Quantity), 2),
-                Value = Math.Round(g.Sum(b => b.Quantity * b.AverageCost), 2)
+                Value = Math.Round(g.Sum(b => b.TotalValue), 2)
             })
             .OrderBy(r => r.Warehouse)
             .ToList();

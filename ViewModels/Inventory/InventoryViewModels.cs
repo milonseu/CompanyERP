@@ -57,13 +57,12 @@ public class StockOutViewModel
     [Display(Name = "Available Quantity")]
     public decimal AvailableQty { get; set; }
 
+    [Display(Name = "Average Cost")]
+    public decimal AvailableAvgCost { get; set; }
+
     [Range(0.0001, double.MaxValue, ErrorMessage = "Quantity must be positive.")]
     [Display(Name = "Quantity")]
     public decimal Quantity { get; set; }
-
-    [Range(0, double.MaxValue, ErrorMessage = "Unit cost cannot be negative.")]
-    [Display(Name = "Unit Cost")]
-    public decimal UnitCost { get; set; }
 
     [Required(ErrorMessage = "Reference number is required.")]
     [StringLength(30)]
@@ -120,6 +119,9 @@ public class StockAdjustmentViewModel
 
     [Display(Name = "Current Quantity")]
     public decimal CurrentQty { get; set; }
+
+    [Display(Name = "Current Average Cost")]
+    public decimal CurrentAvgCost { get; set; }
 
     [Display(Name = "Quantity (+/-)")]
     public decimal Quantity { get; set; }

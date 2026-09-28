@@ -115,16 +115,24 @@ public class SalesReturnService : ISalesReturnService
                 .Where(p => productIds.Contains(p.Id))
                 .ToDictionaryAsync(p => p.Id, p => p);
 
+            // Returned goods re-enter stock at the warehouse moving average, and the COGS reversal
+            // uses that same figure.
+            var reversalByProduct = new Dictionary<int, decimal>();
+
             foreach (var line in salesReturn.Lines.Where(l => l.ItemType == SalesItemType.Product && l.ProductId.HasValue))
             {
-                var product = products[line.ProductId!.Value];
+                var balance = await _inventoryService.GetBalanceAsync(line.ProductId!.Value, invoice.WarehouseId);
+                var returnCost = balance is not null && balance.AverageCost > 0
+                    ? balance.AverageCost
+                    : products[line.ProductId!.Value].CostPrice;
+
                 var result = await _inventoryService.StockInAsync(
                     invoice.CompanyId,
                     line.ProductId!.Value,
                     invoice.WarehouseId,
                     StockTransactionType.SalesReturn,
                     line.Quantity,
-                    product.CostPrice,
+                    returnCost,
                     referenceNo: invoice.InvoiceNo,
                     transactionDate: returnDate,
                     note: $"Sales return {returnNo}");
@@ -133,11 +141,16 @@ public class SalesReturnService : ISalesReturnService
                     await tx.RollbackAsync();
                     return (false, result.Error);
                 }
+
+                var lineReversal = Math.Round(line.Quantity * returnCost, 2, MidpointRounding.AwayFromZero);
+                reversalByProduct[line.ProductId!.Value] = reversalByProduct.TryGetValue(line.ProductId!.Value, out var existing)
+                    ? Math.Round(existing + lineReversal, 2, MidpointRounding.AwayFromZero)
+                    : lineReversal;
             }
 
             // NOTE: Accounting effect is created during Accounting module integration:
             // reverse the revenue (Debit Revenue, Credit AR) and the COGS/Inventory.
-            var post = await _postingService.PostSalesReturnAsync(salesReturn, invoice, products);
+            var post = await _postingService.PostSalesReturnAsync(salesReturn, invoice, reversalByProduct);
             if (!post.Success)
             {
                 await tx.RollbackAsync();

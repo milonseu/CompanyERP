@@ -303,3 +303,71 @@ COA 62 · Menus 7 · Permissions 59 · Roles 6 · RolePermissions 111 · Users 1
 - Status actions (Approve, SendToSupplier, Confirm) are **POST-only**; a GET returns 200 but changes nothing.
 - Enum values used by the forms: PR Draft 0/Approved 1/Converted 2/Cancelled 3 · Quotation 0/1/2 · PO 0/1/2 · SalesOrder 0/1/2 · SI PaymentType Cash 0/Bank 1/OnAccount 2 · Payment Category Customer 0/Supplier 1/… · AccountType Cash 0/Bank 1 · AccountingPeriod Open 1/Closed 2 · AssetStatus 0..3 · DepreciationMethod StraightLine 0/ReducingBalance 1 · StockIn Type Opening 0.
 - The app must be started with `ASPNETCORE_URLS=https://localhost:7168` — running the built exe directly falls back to port 5000 because `launchSettings.json` is not applied.
+
+---
+
+# Round 2 — Accounting & UX findings (2026-09-28)
+
+- **Environment:** same app/database; dataset reset to the Round 1 baseline before the run. All records below were created through the **web UI**.
+- **DB state:** 21 migrations recorded (`dotnet ef migrations list`: no Pending), 12 baseline journals untouched, all new journals balanced.
+- **Harness:** `verify.ps1` (reuses the `e2e.ps1` helpers). **55 checks passed, 0 failed.**
+- **Build:** 0 warnings, 0 errors.
+
+## 18. Inventory valuation moves the subledger and the ledger together
+
+All rows below posted through `/Inventory/StockIn`, `/Inventory/Transfer`, `/Inventory/Adjust`.
+
+| Action | Qty | Price | Journal (new, correct) |
+|---|---|---|---|
+| Opening in WH-HO (`091012-OPEN`) | +10 | 12.50 | DR `1300 Inventory` 125 / CR `3000` (opening contra) 125 |
+| Transfer WH-HO → WH-ST | 4 | carrier avg | no journal — both warehouses hold exactly what they held before |
+| Adjustment −2 in WH-ST (`091012-ADJ`) | −2 | 8.69 | DR `5010` write-off 17.38 / CR `1300` 17.38 |
+
+- Subledger delta = ledger delta: **+107.62 = +107.62** (the pre-existing 124.68 legacy gap is untouched and was carried into this table only so the two series could be compared independently).
+- `TotalValue / Quantity` reproduces the stored `AverageCost` (`15 @ 11.13 = 167.00`).
+- Every journal entry balanced before and after the refund run.
+
+## 19. Asset acquisition pays out of the chosen fund account
+
+`/Asset/Create` now requires the actual fund account (fix 4 in Round 1 findings).
+
+`AST-20260928-001` — Laptop, cost 1000, paid 400 from **BA-001 (Bank)**:
+
+```
+DR 1400 Fixed Assets   1000
+CR 1100 Bank            400   <- the bank account selected on the form, not a bank default
+CR 2300 Asset Payable   600
+```
+
+- Submitting without a bank account → rejected with *"Select the bank account the payment is made from."* and **no asset row**.
+- The branch is chosen on the form, so the cash/bank lists are shipped as JSON and refiltered client-side when the branch changes (spare accounts from another branch cannot be selected).
+
+## 20. Sales return → refund workflow
+
+Round 1 finding 3 (return on a paid invoice leaves no way to pay the credit back) is closed.
+
+| Step | Document | Effect |
+|---|---|---|
+| Existing credit (Round 1 return) | `SR-20260325-001` | AR credit 150 |
+| New return, 2 × USB @ 15 | `SR-20260928-001` | DR `4000` 30 / CR `1200` 30; DR `1300` 22.26 / CR `5000` 22.26 (moving-average relief) |
+| Payment form credit endpoint | `GET /Payment/GetCustomerCredit?customerId=1` | `{"credit":180.00}` — 150 + 30, exactly what the user is offered |
+| Partial refund 30 | `PAY-20260928-001` (Customer Refund) | DR `1200` 30 / CR `1000` 30; credit drops to 150 |
+| Over-refund attempt 175 | — | rejected: *"Refund amount exceeds the available credit of 150.00. The rest stays as a credit on the customer account."*; nothing saved |
+| Remaining 150 | refund | DR `1200` 150 / CR `1000` 150; credit → 0 |
+| Refund after credit is gone | — | rejected: *"…has no credit balance to refund."* |
+
+Guard rails verified: refund category shows its display name **"Customer Refund"** (not `CustomerRefund`); hidden payment sections are **disabled** on the form so they cannot post duplicate `CustomerId`/`SourceReferenceNo`; a customer with an opening receipt but no invoices gets **no** refundable credit.
+
+## 21. Supporting fixes
+
+- **COGS/receiving source:** goods revert to stock and are relieved at the warehouse **moving average**, COGS sum is computed once per product, and duplicate receiving lines are grouped before the weighted cost is applied. Round 1 Finding 2 closed.
+- **Manual stock entries:** stock-in only offers Opening/Adjustment, stock-out only Adjustment (module-owned types removed); server-side allowlist also rejects document types.
+- **Warehouse form:** `Company is required.` / `Branch is required.` friendly messages (Round 1 Finding 5, first half).
+- **Forced password change:** seeded admin is flagged `MustChangePassword`; successful password change clears the flag and the cookie is reissued; global filter redirects until changed. Default-seeder idempotency re-verified.
+- **Payment category filter:** `/Payment/Index?category=5` keeps "Customer Refund" selected.
+
+Reports re-probed after the changes (all HTTP 200): PaymentReport, StatementReport, SalesReport, PurchaseReport, InventoryReport, AgingReport (Receivables), AccountingReport (TrialBalance, Ledger, ReceivablesPayables), AssetReport, Payment Index filtered, `/Dashboard`.
+
+## 22. Row counts (end of Round 2 baseline restore)
+
+Same as Round 1: 12 journals, 4 payments, 2 customers, 1 return, 1 asset, stock values 42.00 + 372.68 = 414.68, 21 migrations recorded, unbalanced journals 0.

@@ -93,11 +93,23 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Payment Type</label>
-                    <select name="acquisition.PaymentType" asp-items="Html.GetEnumSelectList<AcquisitionPaymentType>()" class="form-select"></select>
+                    <select name="acquisition.PaymentType" asp-items="Html.GetEnumSelectList<AcquisitionPaymentType>()" class="form-select" id="assetPaymentType"></select>
+                </div>
+                <div class="col-md-4" id="assetCashAccountBox" style="display:none;">
+                    <label class="form-label">Cash Account</label>
+                    <select name="acquisition.CashAccountId" asp-items="ViewBag.CashAccounts" class="form-select">
+                        <option value="">-- Select Cash Account --</option>
+                    </select>
+                </div>
+                <div class="col-md-4" id="assetBankAccountBox" style="display:none;">
+                    <label class="form-label">Bank Account</label>
+                    <select name="acquisition.BankAccountId" asp-items="ViewBag.BankAccounts" class="form-select">
+                        <option value="">-- Select Bank Account --</option>
+                    </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Amount Paid</label>
-                    <input name="acquisition.AmountPaid" class="form-control" value="0" />
+                    <input name="acquisition.AmountPaid" class="form-control" value="0" id="assetAmountPaid" />
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Payment Reference</label>
@@ -106,6 +118,7 @@
                 <div class="col-md-4">
                     <div class="form-text mt-4">
                         Depreciation method, useful life and salvage value are taken from the selected asset type. Book value = Cost &minus; Accumulated Depreciation.
+                        Paying part of the cost needs the actual cash or bank account it leaves from plus a payment reference; otherwise leave the amount at 0 and the balance becomes an asset payable.
                     </div>
                 </div>
             </div>
@@ -123,6 +136,48 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         const assetsTypes = @Html.Raw(ViewBag.TypesJson);
+        const cashAccounts = @Html.Raw(ViewBag.CashAccountsJson);
+        const bankAccounts = @Html.Raw(ViewBag.BankAccountsJson);
+
+        (function () {
+            var typeSelect = document.getElementById('assetPaymentType');
+            var cashBox = document.getElementById('assetCashAccountBox');
+            var bankBox = document.getElementById('assetBankAccountBox');
+            var amount = document.getElementById('assetAmountPaid');
+            if (!typeSelect) {
+                return;
+            }
+
+            function sync() {
+                var isBank = typeSelect.value === '1';
+                cashBox.style.display = isBank ? 'none' : '';
+                bankBox.style.display = isBank ? '' : 'none';
+            }
+
+            typeSelect.addEventListener('change', sync);
+            sync();
+        })();
+
+        // The account may only be one that belongs to the branch the asset is registered in, so the
+        // lists are rebuilt whenever the branch changes instead of offering another branch's till.
+        function filterFundAccounts() {
+            const branchId = Number(document.getElementById('BranchId').value);
+            [['acquisition.CashAccountId', cashAccounts], ['acquisition.BankAccountId', bankAccounts]].forEach(pair => {
+                const select = document.querySelector('[name="' + pair[0] + '"]');
+                if (!select) return;
+                const chosen = select.value;
+                select.innerHTML = '<option value="">-- Select Account --</option>';
+                pair[1].filter(a => !branchId || a.BranchId === branchId).forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.Id;
+                    opt.text = a.AccountName;
+                    if (String(a.Id) === chosen) opt.selected = true;
+                    select.appendChild(opt);
+                });
+            });
+        }
+
+        document.getElementById('BranchId').addEventListener('change', filterFundAccounts);
 
         function filterTypes() {
             const categoryId = Number(document.getElementById('CategorySelect').value);

@@ -229,6 +229,9 @@ public class SecuritySeederService : ISecuritySeederService
                 Email = "admin@company.local",
                 IsSystem = true,
                 IsActive = true,
+                // The first administrator must replace the seeded password before it can use the
+                // application, so a well-known credential can never stay in use unnoticed.
+                MustChangePassword = true,
                 PasswordHash = _authService.HashPassword(adminPassword)
             };
             _db.Users.Add(admin);

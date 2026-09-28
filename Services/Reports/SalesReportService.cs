@@ -125,7 +125,8 @@ public class SalesReportService : ISalesReportService
 
         var payments = await _db.Payments
             .AsNoTracking()
-            .Where(p => p.CompanyId == companyId && p.Category == PaymentCategory.Customer)
+            .Where(p => p.CompanyId == companyId
+                && (p.Category == PaymentCategory.Customer || p.Category == PaymentCategory.CustomerRefund))
             .ToListAsync();
 
         var rows = customers
@@ -133,8 +134,11 @@ public class SalesReportService : ISalesReportService
             {
                 var invs = invoices.Where(i => i.CustomerId == c.Id).ToList();
                 var sales = invs.Sum(i => i.Lines.Sum(l => l.Quantity * l.UnitPrice));
+                var partyPayments = payments.Where(p => p.CustomerId == c.Id).ToList();
+                // A refund pays credit back out, so it works against the amount collected.
                 var paid = invs.Sum(i => Math.Min(i.AmountPaid, i.Lines.Sum(l => l.Quantity * l.UnitPrice))) +
-                           payments.Where(p => p.CustomerId == c.Id).Sum(p => p.Amount);
+                           partyPayments.Where(p => p.Category == PaymentCategory.Customer).Sum(p => p.Amount) -
+                           partyPayments.Where(p => p.Category == PaymentCategory.CustomerRefund).Sum(p => p.Amount);
                 return new OutstandingReceivableRow
                 {
                     CustomerId = c.Id,

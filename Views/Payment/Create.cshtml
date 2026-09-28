@@ -49,7 +49,7 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label asp-for="CustomerId" class="form-label"></label>
-                        <select asp-for="CustomerId" asp-items="ViewBag.Customers" class="form-select">
+                        <select asp-for="CustomerId" asp-items="ViewBag.Customers" class="form-select" id="customerSelect">
                             <option value="">-- Select Customer --</option>
                         </select>
                         <span asp-validation-for="CustomerId" class="text-danger"></span>
@@ -125,6 +125,29 @@
                 </div>
             </div>
 
+            <div id="section-CustomerRefund" class="pay-section mt-3" style="display:none;">
+                <div class="alert alert-warning py-2">
+                    Refund only works when the customer is in credit, which happens after a sales return
+                    on an invoice they already paid.
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="CustomerId" class="form-label"></label>
+                        <select asp-items="ViewBag.Customers" class="form-select" id="refundCustomerSelect" name="CustomerId">
+                            <option value="">-- Select Customer --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="refundCreditText" class="form-label">Credit available</label>
+                        <div id="refundCreditText" class="form-control-plaintext fw-semibold">--</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SourceReferenceNo" class="form-label"></label>
+                        <input asp-for="SourceReferenceNo" class="form-control" placeholder="Return / credit note no" />
+                    </div>
+                </div>
+            </div>
+
             <hr class="my-4" />
             <div class="row g-3">
                 <div class="col-md-4">
@@ -194,7 +217,14 @@
             function syncSections() {
                 var val = categorySelect ? categorySelect.value : '@((int)Model.Category)';
                 sections.forEach(function (s) {
-                    s.style.display = (s.id === 'section-' + val) ? '' : 'none';
+                    var active = s.id === 'section-' + val;
+                    s.style.display = active ? '' : 'none';
+                    // Hidden sections reuse the same field names (CustomerId, SourceReferenceNo,
+                    // BranchId) as the visible one, and a duplicate posted name binds to whichever
+                    // the model binder reads last. Only the active section may post.
+                    s.querySelectorAll('input, select, textarea').forEach(function (f) {
+                        f.disabled = !active;
+                    });
                 });
             }
 
@@ -239,7 +269,7 @@
                         selectBox.disabled = true;
                     });
             }
-            var customerSelect = document.querySelector('[name="CustomerId"]');
+            var customerSelect = document.getElementById('customerSelect');
             var customerInvoices = document.getElementById('customerInvoiceSelect');
             var supplierSelect = document.querySelector('[name="SupplierId"]');
             var supplierInvoices = document.getElementById('supplierInvoiceSelect');
@@ -247,6 +277,29 @@
                 customerSelect.addEventListener('change', function () {
                     loadInvoices('@Url.Action("GetCustomerInvoices")?customerId=', customerInvoices, encodeURIComponent(customerSelect.value));
                 });
+            }
+
+            var refundCustomer = document.getElementById('refundCustomerSelect');
+            var refundCredit = document.getElementById('refundCreditText');
+            if (refundCustomer) {
+                var loadCredit = function () {
+                    refundCredit.textContent = '--';
+                    var id = refundCustomer.value;
+                    if (!id) return;
+                    fetch('@Url.Action("GetCustomerCredit")?customerId=' + encodeURIComponent(id))
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            var credit = data.credit || 0;
+                            refundCredit.textContent = credit.toFixed(2);
+                            if (credit > 0) {
+                                var amount = document.getElementById('Amount');
+                                amount.max = credit.toFixed(2);
+                            }
+                        })
+                        .catch(function () { refundCredit.textContent = '--'; });
+                };
+                refundCustomer.addEventListener('change', loadCredit);
+                loadCredit();
             }
             if (supplierSelect) {
                 supplierSelect.addEventListener('change', function () {

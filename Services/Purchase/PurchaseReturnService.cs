@@ -118,6 +118,8 @@ public class PurchaseReturnService : IPurchaseReturnService
 
         try
         {
+            var relievedValue = 0m;
+
             foreach (var line in active)
             {
                 var result = await _inventoryService.StockOutAsync(
@@ -126,7 +128,6 @@ public class PurchaseReturnService : IPurchaseReturnService
                     purchaseReturn.WarehouseId,
                     StockTransactionType.PurchaseReturn,
                     line.Quantity,
-                    line.UnitCost,
                     referenceNo: invoice.InvoiceNo,
                     transactionDate: purchaseReturn.ReturnDate,
                     note: $"Purchase return {purchaseReturn.ReturnNo}");
@@ -135,11 +136,13 @@ public class PurchaseReturnService : IPurchaseReturnService
                     await tx.RollbackAsync();
                     return (false, $"Stock-out failed: {result.Error}");
                 }
+
+                relievedValue = Math.Round(relievedValue + (line.Quantity * result.UnitCost), 2, MidpointRounding.AwayFromZero);
             }
 
             // NOTE: Accounting effect is created during Accounting module integration:
             // Debit Accounts Payable, Credit Inventory.
-            var post = await _postingService.PostPurchaseReturnAsync(purchaseReturn);
+            var post = await _postingService.PostPurchaseReturnAsync(purchaseReturn, relievedValue);
             if (!post.Success)
             {
                 await tx.RollbackAsync();

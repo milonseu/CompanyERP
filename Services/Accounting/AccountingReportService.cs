@@ -592,13 +592,18 @@ public class AccountingReportService : IAccountingReportService
         {
             var customers = _db.Customers.Where(c => c.CompanyId == companyId).ToList().ToDictionary(c => c.Id);
             var invs = _db.SalesInvoices.Include(i => i.Lines).Where(i => i.CompanyId == companyId && i.InvoiceDate.Date <= cutoff).ToList();
-            var pays = _db.Payments.Where(p => p.CompanyId == companyId && p.Category == PaymentCategory.Customer && p.PaymentDate.Date <= cutoff).ToList();
+            var pays = _db.Payments.Where(p => p.CompanyId == companyId
+                && (p.Category == PaymentCategory.Customer || p.Category == PaymentCategory.CustomerRefund)
+                && p.PaymentDate.Date <= cutoff).ToList();
+            // Kept signed rather than clamped per customer: a refund leaves a genuine credit on the
+            // receivable, and hiding it would stop this sub-ledger tying to the AR control account.
             return customers.Values.Sum(c =>
             {
                 var sales = invs.Where(i => i.CustomerId == c.Id).Sum(i => i.Lines.Sum(l => l.Quantity * l.UnitPrice));
                 var paid = invs.Where(i => i.CustomerId == c.Id).Sum(i => Math.Min(i.AmountPaid, i.Lines.Sum(l => l.Quantity * l.UnitPrice))) +
-                           pays.Where(p => p.CustomerId == c.Id).Sum(p => p.Amount);
-                return Math.Max(0, c.OpeningReceivable + sales - paid);
+                           pays.Where(p => p.CustomerId == c.Id && p.Category == PaymentCategory.Customer).Sum(p => p.Amount) -
+                           pays.Where(p => p.CustomerId == c.Id && p.Category == PaymentCategory.CustomerRefund).Sum(p => p.Amount);
+                return c.OpeningReceivable + sales - paid;
             });
         }
 
@@ -855,6 +860,7 @@ public class AccountingReportService : IAccountingReportService
             PaymentCategory.Supplier => payment.Supplier?.Name ?? "",
             PaymentCategory.Expense => payment.ExpenseEntry?.Description ?? "",
             PaymentCategory.Salary => payment.SalaryPayment?.Employee?.Name ?? "",
+            PaymentCategory.CustomerRefund => payment.Customer?.Name ?? "",
             _ => ""
         };
 

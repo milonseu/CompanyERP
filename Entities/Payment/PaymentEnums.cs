@@ -17,7 +17,10 @@ public enum PaymentCategory
     Salary,
 
     [Display(Name = "Asset")]
-    Asset
+    Asset,
+
+    [Display(Name = "Customer Refund")]
+    CustomerRefund
 }
 
 public enum PaymentAccountType

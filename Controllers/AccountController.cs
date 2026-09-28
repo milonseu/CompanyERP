@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CompanyERP.Entities.Security;
 using CompanyERP.Interfaces.Services;
+using CompanyERP.Services.Security;
 using CompanyERP.ViewModels.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,6 +12,9 @@ namespace CompanyERP.Controllers;
 
 public class AccountController : Controller
 {
+    /// <summary>Claim carrying the "still using a seeded password" marker set at sign-in.</summary>
+    public const string PasswordChangeClaim = "MustChangePassword";
+
     private readonly IAuthService _authService;
     private readonly IUserService _userService;
 
@@ -58,7 +62,8 @@ public class AccountController : Controller
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.UserName),
-            new("FullName", user.FullName ?? user.UserName)
+            new("FullName", user.FullName ?? user.UserName),
+            new(PasswordChangeClaim, user.MustChangePassword ? "1" : "0")
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -68,6 +73,11 @@ public class AccountController : Controller
             new AuthenticationProperties { IsPersistent = model.RememberMe });
 
         await _authService.RecordLoginSuccessAsync(user.Id, ip);
+
+        if (user.MustChangePassword)
+        {
+            return RedirectToAction(nameof(ChangePassword));
+        }
 
         if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
         {
@@ -154,5 +164,61 @@ public class AccountController : Controller
 
         TempData["Success"] = "Registration successful. You are the Super Admin with full system access. Please log in.";
         return RedirectToAction("Login", "Account");
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword()
+    {
+        return View(new ChangePasswordViewModel());
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        if (string.Equals(model.NewPassword, SecuritySeederService.DefaultAdminPassword, StringComparison.Ordinal))
+        {
+            ModelState.AddModelError(nameof(model.NewPassword), "That is the seeded default password. Choose one of your own.");
+            return View(model);
+        }
+
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var result = await _userService.ChangePasswordAsync(userId, model.NewPassword);
+        if (!result.Success)
+        {
+            ModelState.AddModelError(string.Empty, result.Error);
+            return View(model);
+        }
+
+        // Re-issue the cookie so the "must change" marker is dropped, otherwise the old
+        // authentication ticket would keep the user locked on this screen.
+        var user = await _userService.GetByIdAsync(userId);
+        if (user is not null)
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new(ClaimTypes.Name, user.UserName),
+                new("FullName", user.FullName ?? user.UserName)
+            };
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)),
+                new AuthenticationProperties { IsPersistent = false });
+        }
+
+        TempData["Success"] = "Password updated.";
+        return RedirectToAction("Index", "Home");
     }
 }
