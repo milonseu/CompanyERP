@@ -371,3 +371,12 @@ Reports re-probed after the changes (all HTTP 200): PaymentReport, StatementRepo
 ## 22. Row counts (end of Round 2 baseline restore)
 
 Same as Round 1: 12 journals, 4 payments, 2 customers, 1 return, 1 asset, stock values 42.00 + 372.68 = 414.68, 21 migrations recorded, unbalanced journals 0.
+
+## 23. Scratch database — clean migrate, first-run seed, forced password change
+
+The three new migrations were proven against a brand-new database, not just patched onto the working one.
+
+- `CompanyERP_Scratch` created empty; `dotnet ef database update` applied all **21** migrations cleanly (`StockBalances.TotalValue`, `Users.MustChangePassword`, `AssetAcquisitions.CashAccountId`/`BankAccountId` all present).
+- App started against the scratch DB: startup seeding bootstrapped **1 user / 6 roles / 59 permissions / 111 role-permissions / 7 menus**, admin flagged `MustChangePassword=1`.
+- Login `admin`/`Admin@123` → redirected to Change Password (home unreachable); mismatched confirmation and a 7-character password both rejected; valid change → home, flag cleared in DB, re-login with the new password works. **7 checks passed.**
+- Scratch DB dropped afterwards; the main environment was restored (login 200), and the main DB returned to the Round 2 baseline in section 22.
