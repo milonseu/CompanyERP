@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Asset.View")]
 public class AssetMaintenanceController : Controller
 {
     private readonly IAssetMaintenanceService _maintenanceService;
@@ -39,6 +40,7 @@ public class AssetMaintenanceController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Asset.Create")]
     public async Task<IActionResult> Create(int? assetId)
     {
         var companies = await _companyService.GetAllAsync();
@@ -56,6 +58,7 @@ public class AssetMaintenanceController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Asset.Create")]
     public async Task<IActionResult> Create(AssetMaintenance model)
     {
         if (!ModelState.IsValid)
@@ -80,6 +83,7 @@ public class AssetMaintenanceController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Asset.Delete")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _maintenanceService.DeleteAsync(id);

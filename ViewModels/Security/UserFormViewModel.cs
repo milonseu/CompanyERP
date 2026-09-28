@@ -43,6 +43,7 @@ public class UserFormViewModel
     public List<int> SelectedRoleIds { get; set; } = [];
     public List<Role> AllRoles { get; set; } = [];
     public List<int> SelectedPermissionIds { get; set; } = [];
+    public List<Permission> AllPermissions { get; set; } = [];
 
     public User ToEntity()
     {

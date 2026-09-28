@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CompanyERP.Interfaces.Services;
 using CompanyERP.Models;
@@ -16,6 +17,7 @@ public class HomeController : Controller
         _dashboard = dashboard;
     }
 
+    [Authorize]
     public async Task<IActionResult> Index()
     {
         var companyId = await _dashboard.GetFirstCompanyIdAsync();

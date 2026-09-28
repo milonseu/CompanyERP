@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Purchase.View")]
 public class PurchaseReturnController : Controller
 {
     private readonly IPurchaseReturnService _returnService;
@@ -42,6 +43,7 @@ public class PurchaseReturnController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -62,6 +64,7 @@ public class PurchaseReturnController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Purchase.Create")]
     public async Task<IActionResult> Create(PurchaseReturn model, List<PurchaseReturnLine> lines)
     {
         ModelState.Remove(nameof(PurchaseReturn.ReturnNo));

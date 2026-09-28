@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Sales.View")]
 public class ServiceController : Controller
 {
     private readonly IServiceService _serviceService;
@@ -28,6 +29,7 @@ public class ServiceController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -43,6 +45,7 @@ public class ServiceController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create(Service model)
     {
         if (!ModelState.IsValid)
@@ -64,6 +67,7 @@ public class ServiceController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -83,6 +87,7 @@ public class ServiceController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Edit")]
     public async Task<IActionResult> Edit(int id, Service model)
     {
         if (id != model.Id)
@@ -109,6 +114,7 @@ public class ServiceController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -122,6 +128,7 @@ public class ServiceController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _serviceService.DeleteAsync(id);

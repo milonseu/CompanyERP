@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Asset.View")]
 public class AssetTransferController : Controller
 {
     private readonly IAssetRegisterService _assetService;
@@ -36,6 +37,7 @@ public class AssetTransferController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Asset.Create")]
     public async Task<IActionResult> Create(int? assetId)
     {
         var companies = await _companyService.GetAllAsync();
@@ -53,6 +55,7 @@ public class AssetTransferController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Asset.Create")]
     public async Task<IActionResult> Create(AssetTransfer model)
     {
         if (!ModelState.IsValid)

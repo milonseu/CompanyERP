@@ -16,13 +16,15 @@ using CompanyERP.Services.Reports;
 using CompanyERP.Services.Sales;
 using CompanyERP.Services.Security;
 using CompanyERP.Services.Supplier;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+    options.Filters.Add<ActivityLogFilter>());
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -35,7 +37,8 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<ILoginHistoryService, LoginHistoryService>();
-builder.Services.AddScoped<ISecuritySeederService, SecuritySeederService>();
+builder.Services.AddScoped<ActivityLogFilter>();
+builder.Services.AddScoped<IClaimsTransformation, PermissionClaimsTransformer>();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -148,20 +151,6 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-using (var scope = app.Services.CreateScope())
-{
-    var seeder = scope.ServiceProvider.GetRequiredService<ISecuritySeederService>();
-    try
-    {
-        await seeder.SeedAsync();
-    }
-    catch (Exception ex)
-    {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Security seeder failed to run.");
-    }
-}
 
 app.MapControllerRoute(
     name: "default",

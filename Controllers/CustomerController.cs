@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Customer.View")]
 public class CustomerController : Controller
 {
     private readonly ICustomerService _customerService;
@@ -26,6 +27,7 @@ public class CustomerController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Customer.Create")]
     public async Task<IActionResult> Create()
     {
         if (!await HasCompaniesAsync())
@@ -40,6 +42,7 @@ public class CustomerController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Customer.Create")]
     public async Task<IActionResult> Create(CustomerFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -61,6 +64,7 @@ public class CustomerController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Customer.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -86,6 +90,7 @@ public class CustomerController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Customer.Edit")]
     public async Task<IActionResult> Edit(int id, CustomerFormViewModel model)
     {
         if (id != model.Id)
@@ -129,6 +134,7 @@ public class CustomerController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Customer.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -147,6 +153,7 @@ public class CustomerController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Customer.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _customerService.DeleteAsync(id);

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Sales.View")]
 public class ServiceOrderController : Controller
 {
     private readonly IServiceOrderService _orderService;
@@ -34,6 +35,7 @@ public class ServiceOrderController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -57,6 +59,7 @@ public class ServiceOrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create(ServiceOrder model)
     {
         if (!ModelState.IsValid)
@@ -90,6 +93,7 @@ public class ServiceOrderController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -103,6 +107,7 @@ public class ServiceOrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _orderService.DeleteAsync(id);

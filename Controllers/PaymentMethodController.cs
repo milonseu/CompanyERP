@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Payment.View")]
 public class PaymentMethodController : Controller
 {
     private readonly IPaymentMethodService _methodService;
@@ -30,6 +31,7 @@ public class PaymentMethodController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Payment.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -45,6 +47,7 @@ public class PaymentMethodController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Payment.Create")]
     public async Task<IActionResult> Create(PaymentMethod model)
     {
         if (!ModelState.IsValid)
@@ -66,6 +69,7 @@ public class PaymentMethodController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Payment.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -85,6 +89,7 @@ public class PaymentMethodController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Payment.Edit")]
     public async Task<IActionResult> Edit(int id, PaymentMethod model)
     {
         if (id != model.Id)
@@ -111,6 +116,7 @@ public class PaymentMethodController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Payment.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -124,6 +130,7 @@ public class PaymentMethodController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Payment.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _methodService.DeleteAsync(id);

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Inventory.View")]
 public class InventoryController : Controller
 {
     private readonly IInventoryService _inventoryService;
@@ -55,6 +56,7 @@ public class InventoryController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Inventory.StockIn")]
     public async Task<IActionResult> StockIn()
     {
         if (!await HasDataAsync())
@@ -77,6 +79,7 @@ public class InventoryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Inventory.StockIn")]
     public async Task<IActionResult> StockIn(StockInViewModel model)
     {
         if (!ModelState.IsValid)
@@ -124,6 +127,7 @@ public class InventoryController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Inventory.StockOut")]
     public async Task<IActionResult> StockOut()
     {
         if (!await HasDataAsync())
@@ -145,6 +149,7 @@ public class InventoryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Inventory.StockOut")]
     public async Task<IActionResult> StockOut(StockOutViewModel model)
     {
         if (!ModelState.IsValid)
@@ -190,6 +195,7 @@ public class InventoryController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Inventory.StockTransfer")]
     public async Task<IActionResult> Transfer()
     {
         if (!await HasDataAsync())
@@ -204,6 +210,7 @@ public class InventoryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Inventory.StockTransfer")]
     public async Task<IActionResult> Transfer(StockTransferViewModel model)
     {
         if (!ModelState.IsValid)
@@ -233,6 +240,7 @@ public class InventoryController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Inventory.Adjust")]
     public async Task<IActionResult> Adjust()
     {
         if (!await HasDataAsync())
@@ -247,6 +255,7 @@ public class InventoryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Inventory.Adjust")]
     public async Task<IActionResult> Adjust(StockAdjustmentViewModel model)
     {
         if (!ModelState.IsValid)

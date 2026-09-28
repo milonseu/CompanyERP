@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Company.View")]
 public class CompanyController : Controller
 {
     private readonly ICompanyProfileService _companyService;
@@ -22,6 +23,7 @@ public class CompanyController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Company.Create")]
     public IActionResult Create()
     {
         return View(new CompanyProfileFormViewModel());
@@ -29,6 +31,7 @@ public class CompanyController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Company.Create")]
     public async Task<IActionResult> Create(CompanyProfileFormViewModel model)
     {
         if (!ModelState.IsValid)
@@ -48,6 +51,7 @@ public class CompanyController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Company.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -66,6 +70,7 @@ public class CompanyController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Company.Edit")]
     public async Task<IActionResult> Edit(int id, CompanyProfileFormViewModel model)
     {
         if (id != model.Id)
@@ -107,6 +112,7 @@ public class CompanyController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Company.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -125,6 +131,7 @@ public class CompanyController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Company.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _companyService.DeleteAsync(id);

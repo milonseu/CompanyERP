@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Inventory.View")]
 public class WarehouseController : Controller
 {
     private readonly IWarehouseService _warehouseService;
@@ -31,6 +32,7 @@ public class WarehouseController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Inventory.Create")]
     public async Task<IActionResult> Create()
     {
         if (!await HasCompaniesAsync())
@@ -45,6 +47,7 @@ public class WarehouseController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Inventory.Create")]
     public async Task<IActionResult> Create(Warehouse model)
     {
         if (!ModelState.IsValid)
@@ -66,6 +69,7 @@ public class WarehouseController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Inventory.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -91,6 +95,7 @@ public class WarehouseController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Inventory.Edit")]
     public async Task<IActionResult> Edit(int id, Warehouse model)
     {
         if (id != model.Id)
@@ -134,6 +139,7 @@ public class WarehouseController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Inventory.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -152,6 +158,7 @@ public class WarehouseController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Inventory.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _warehouseService.DeleteAsync(id);

@@ -18,4 +18,6 @@ public interface IUserService
     Task SetUserPermissionsAsync(int userId, List<int> permissionIds);
     Task<List<int>> GetAssignedPermissionIdsAsync(int userId);
     Task<bool> UserNameExistsAsync(string userName, int? excludeId = null);
+    Task<bool> AnyUserExistsAsync();
+    Task<(bool Success, string Error)> CreateFirstSuperAdminAsync(User user, string password);
 }

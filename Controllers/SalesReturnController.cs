@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Sales.View")]
 public class SalesReturnController : Controller
 {
     private readonly ISalesReturnService _returnService;
@@ -31,6 +32,7 @@ public class SalesReturnController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -50,6 +52,7 @@ public class SalesReturnController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create(int invoiceId, DateTime returnDate, List<SalesReturnLine> lines, string? note)
     {
         if (invoiceId <= 0)
@@ -83,6 +86,7 @@ public class SalesReturnController : Controller
 
     [HttpPost, ActionName("DeleteConfirmed")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _returnService.DeleteAsync(id);

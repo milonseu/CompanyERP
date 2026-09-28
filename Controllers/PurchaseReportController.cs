@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Report.View")]
 public class PurchaseReportController : Controller
 {
     private readonly IPurchaseReportService _reportService;

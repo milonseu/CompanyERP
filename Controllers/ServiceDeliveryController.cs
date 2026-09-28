@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Sales.View")]
 public class ServiceDeliveryController : Controller
 {
     private readonly IServiceDeliveryService _deliveryService;
@@ -30,6 +31,7 @@ public class ServiceDeliveryController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -50,6 +52,7 @@ public class ServiceDeliveryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Sales.Create")]
     public async Task<IActionResult> Create(int companyId, int branchId, int serviceOrderId, DateTime deliveryDate, string? deliveredBy, decimal quantity, string? note)
     {
         var result = await _deliveryService.DeliverAsync(companyId, branchId, serviceOrderId, deliveryDate, deliveredBy, quantity, note);

@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+@inject CompanyERP.Interfaces.Services.IUserService UserSvc
+@{
+    var registrationOpen = !(await UserSvc.AnyUserExistsAsync());
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -48,9 +52,12 @@
                 }
                 else
                 {
-                    <a class="topbar-link d-flex align-items-center gap-1" asp-controller="Account" asp-action="Register">
-                        <i class="bi bi-person-plus"></i> Register
-                    </a>
+                    @if (registrationOpen)
+                    {
+                        <a class="topbar-link d-flex align-items-center gap-1" asp-controller="Account" asp-action="Register">
+                            <i class="bi bi-person-plus"></i> Register
+                        </a>
+                    }
                     <a class="topbar-link d-flex align-items-center gap-1" asp-controller="Account" asp-action="Login">
                         <i class="bi bi-box-arrow-in-right"></i> Login
                     </a>
@@ -63,13 +70,20 @@
         <aside class="sidebar" id="siteSidebar">
             <nav class="sidebar-nav p-2">
                 <ul class="list-unstyled mb-0">
+@if (User.Identity?.IsAuthenticated == true)
+{
                     <li>
+
                         <a class="side-link" asp-area="" asp-controller="Home" asp-action="Index">
                             <i class="bi bi-speedometer2"></i><span>Dashboard</span>
                         </a>
                     </li>
+}
 
+@if (User.HasPermission("Company.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseCompany" role="button" aria-expanded="false">
                             <i class="bi bi-building"></i><span>Company Management</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -80,8 +94,12 @@
                             <li><a class="side-sub" asp-controller="AccountingPeriod" asp-action="Index"><i class="bi bi-calendar2-week"></i> Accounting Period</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Branch.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseBranch" role="button" aria-expanded="false">
                             <i class="bi bi-columns-gap"></i><span>Branch Management</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -91,8 +109,12 @@
                             <li><a class="side-sub" asp-controller="Branch" asp-action="Index"><i class="bi bi-diagram-3"></i> Branch</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Employee.View") || User.HasPermission("Report.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseEmployee" role="button" aria-expanded="false">
                             <i class="bi bi-people"></i><span>Employee Management</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -104,8 +126,12 @@
                             <li><a class="side-sub" asp-controller="HrReport" asp-action="Index"><i class="bi bi-bar-chart"></i> Reports</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Supplier.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseSupplier" role="button" aria-expanded="false">
                             <i class="bi bi-truck"></i><span>Supplier Management</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -114,8 +140,12 @@
                             <li><a class="side-sub" asp-controller="Supplier" asp-action="Index"><i class="bi bi-truck"></i> Supplier</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Customer.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseCustomer" role="button" aria-expanded="false">
                             <i class="bi bi-person-lines-fill"></i><span>Customer Management</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -124,8 +154,12 @@
                             <li><a class="side-sub" asp-controller="Customer" asp-action="Index"><i class="bi bi-person-lines-fill"></i> Customer</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("MasterData.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseMaster" role="button" aria-expanded="false">
                             <i class="bi bi-tags"></i><span>Master Data</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -135,8 +169,12 @@
                             <li><a class="side-sub" asp-controller="Category" asp-action="Index"><i class="bi bi-tags"></i> Category</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Inventory.View") || User.HasPermission("Report.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseInventory" role="button" aria-expanded="false">
                             <i class="bi bi-box-seam"></i><span>Product &amp; Inventory</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -151,8 +189,12 @@
                             <li><a class="side-sub" asp-controller="InventoryReport" asp-action="Index"><i class="bi bi-bar-chart"></i> Inventory Reports</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Purchase.View") || User.HasPermission("Report.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapsePurchase" role="button" aria-expanded="false">
                             <i class="bi bi-cart4"></i><span>Purchase</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -166,8 +208,12 @@
                             <li><a class="side-sub" asp-controller="PurchaseReturn" asp-action="Index"><i class="bi bi-arrow-return-left"></i> Return</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Asset.View") || User.HasPermission("Report.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseAsset" role="button" aria-expanded="false">
                             <i class="bi bi-truck"></i><span>Asset</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -183,8 +229,12 @@
                             <li><a class="side-sub" asp-controller="AssetReport" asp-action="Index"><i class="bi bi-bar-chart"></i> Asset Reports</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Expense.View") || User.HasPermission("Report.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseExpense" role="button" aria-expanded="false">
                             <i class="bi bi-cash-stack"></i><span>Expense</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -196,8 +246,12 @@
                             <li><a class="side-sub" asp-controller="ExpenseReport" asp-action="Index"><i class="bi bi-bar-chart"></i> Expense Reports</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Sales.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseSales" role="button" aria-expanded="false">
                             <i class="bi bi-cart"></i><span>Sales</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -211,8 +265,12 @@
                             <li><a class="side-sub" asp-controller="SalesReturn" asp-action="Index"><i class="bi bi-arrow-return-left"></i> Sales Return</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Payment.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapsePayment" role="button" aria-expanded="false">
                             <i class="bi bi-cash-coin"></i><span>Payment Management</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -224,8 +282,12 @@
                             <li><a class="side-sub" asp-controller="Payment" asp-action="Index"><i class="bi bi-cash-stack"></i> Payments</a></li>
                         </ul>
                     </li>
+}
 
+@if (User.HasPermission("Accounting.View") || User.HasPermission("Report.View"))
+{
                     <li>
+
                         <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseAccounting" role="button" aria-expanded="false">
                             <i class="bi bi-journal-text"></i><span>Accounting</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -241,8 +303,9 @@
                             <li><a class="side-sub" asp-controller="PurchaseReport" asp-action="Index"><i class="bi bi-bag"></i> Purchase Reports</a></li>
                         </ul>
                     </li>
+}
 
-                    @if (User.Identity?.IsAuthenticated == true)
+                    @if (User.Identity?.IsAuthenticated == true && User.HasPermission("Security.View"))
                     {
                         <li>
                             <a class="side-link has-sub" data-bs-toggle="collapse" href="#collapseSecurity" role="button" aria-expanded="false">

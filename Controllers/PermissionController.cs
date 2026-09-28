@@ -1,5 +1,6 @@
 using CompanyERP.Entities.Security;
 using CompanyERP.Interfaces.Services;
+using CompanyERP.Services.Security;
 using CompanyERP.ViewModels.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,55 @@ public class PermissionController : Controller
     public async Task<IActionResult> Index()
     {
         var permissions = await _permissionService.GetAllAsync();
+        var missing = SecurityDefs.Catalog
+            .Where(c => !permissions.Any(p => string.Equals(p.Code, c.Code, StringComparison.OrdinalIgnoreCase)))
+            .GroupBy(c => c.Module)
+            .OrderBy(g => g.Key);
+        ViewBag.MissingCatalog = missing;
         return View(permissions);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [HasPermission("Security.Create")]
+    public async Task<IActionResult> AddFromCatalog(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return BadRequest();
+        }
+
+        var item = SecurityDefs.Catalog.FirstOrDefault(c =>
+            string.Equals(c.Code, code, StringComparison.OrdinalIgnoreCase));
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (await _permissionService.CodeExistsAsync(item.Code))
+        {
+            TempData["Error"] = $"Permission '{item.Code}' already exists.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var result = await _permissionService.CreateAsync(new Permission
+        {
+            Code = item.Code,
+            Name = item.Name,
+            Module = item.Module,
+            Description = "Enabled from the permission catalog."
+        });
+        if (!result.Success)
+        {
+            TempData["Error"] = result.Error;
+        }
+        else
+        {
+            await _activityLogService.LogAsync(User.Identity?.Name ?? "System", "Create", "Security", nameof(Permission), null, $"Permission '{item.Code}' enabled from catalog.", HttpContext.Connection.RemoteIpAddress?.ToString());
+            TempData["Success"] = $"Permission '{item.Code}' enabled from catalog.";
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]

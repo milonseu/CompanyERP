@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CompanyERP.Controllers;
 
+[HasPermission("Asset.View")]
 public class AssetController : Controller
 {
     private readonly IAssetRegisterService _assetService;
@@ -53,6 +54,7 @@ public class AssetController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Asset.Create")]
     public async Task<IActionResult> Create()
     {
         var companies = await _companyService.GetAllAsync();
@@ -70,6 +72,7 @@ public class AssetController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Asset.Create")]
     public async Task<IActionResult> Create(AssetRegister asset, AssetAcquisition acquisition)
     {
         if (!ModelState.IsValid)
@@ -91,6 +94,7 @@ public class AssetController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Asset.Edit")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (!id.HasValue)
@@ -116,6 +120,7 @@ public class AssetController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [HasPermission("Asset.Edit")]
     public async Task<IActionResult> Edit(int id, AssetRegister asset)
     {
         if (id != asset.Id)
@@ -160,6 +165,7 @@ public class AssetController : Controller
     }
 
     [HttpGet]
+    [HasPermission("Asset.Delete")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (!id.HasValue)
@@ -173,6 +179,7 @@ public class AssetController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [HasPermission("Asset.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var result = await _assetService.DeleteAsync(id);

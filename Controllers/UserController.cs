@@ -39,7 +39,8 @@ public class UserController : Controller
     {
         var model = new UserFormViewModel
         {
-            AllRoles = await _roleService.GetAllAsync()
+            AllRoles = await _roleService.GetAllAsync(),
+            AllPermissions = await _permissionService.GetAllAsync()
         };
         return View(model);
     }
@@ -52,6 +53,7 @@ public class UserController : Controller
         if (!ModelState.IsValid)
         {
             model.AllRoles = await _roleService.GetAllAsync();
+            model.AllPermissions = await _permissionService.GetAllAsync();
             return View(model);
         }
 
@@ -59,6 +61,7 @@ public class UserController : Controller
         {
             ModelState.AddModelError(nameof(model.Password), "Password is required.");
             model.AllRoles = await _roleService.GetAllAsync();
+            model.AllPermissions = await _permissionService.GetAllAsync();
             return View(model);
         }
 
@@ -67,6 +70,7 @@ public class UserController : Controller
         {
             ModelState.AddModelError(string.Empty, result.Error);
             model.AllRoles = await _roleService.GetAllAsync();
+            model.AllPermissions = await _permissionService.GetAllAsync();
             return View(model);
         }
 
@@ -99,6 +103,7 @@ public class UserController : Controller
 
         var model = UserFormViewModel.FromEntity(user);
         model.AllRoles = await _roleService.GetAllAsync();
+        model.AllPermissions = await _permissionService.GetAllAsync();
         model.SelectedRoleIds = await _userService.GetAssignedRoleIdsAsync(user.Id);
         model.SelectedPermissionIds = await _userService.GetAssignedPermissionIdsAsync(user.Id);
 
@@ -118,6 +123,7 @@ public class UserController : Controller
         if (!ModelState.IsValid)
         {
             model.AllRoles = await _roleService.GetAllAsync();
+            model.AllPermissions = await _permissionService.GetAllAsync();
             model.SelectedRoleIds = await _userService.GetAssignedRoleIdsAsync(id);
             model.SelectedPermissionIds = await _userService.GetAssignedPermissionIdsAsync(id);
             return View(model);
@@ -128,6 +134,7 @@ public class UserController : Controller
         {
             ModelState.AddModelError(string.Empty, result.Error);
             model.AllRoles = await _roleService.GetAllAsync();
+            model.AllPermissions = await _permissionService.GetAllAsync();
             model.SelectedRoleIds = await _userService.GetAssignedRoleIdsAsync(id);
             model.SelectedPermissionIds = await _userService.GetAssignedPermissionIdsAsync(id);
             return View(model);
@@ -163,6 +170,7 @@ public class UserController : Controller
 
         var model = UserFormViewModel.FromEntity(user);
         model.AllRoles = await _userService.GetUserRolesAsync(user.Id);
+        model.AllPermissions = await _permissionService.GetAllAsync();
         model.SelectedRoleIds = await _userService.GetAssignedRoleIdsAsync(user.Id);
         model.SelectedPermissionIds = await _userService.GetAssignedPermissionIdsAsync(user.Id);
 
