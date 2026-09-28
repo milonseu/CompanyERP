@@ -1,5 +1,6 @@
 using CompanyERP.Data;
 using CompanyERP.Entities.Payment;
+using CompanyERP.Entities.Sales;
 using CompanyERP.Interfaces.Services;
 using CompanyERP.ViewModels.Accounting;
 using Microsoft.EntityFrameworkCore;
@@ -55,6 +56,7 @@ public class StatementReportService : IStatementReportService
                 Date = p.PaymentDate,
                 Reference = p.PaymentNo,
                 Description = "Refund paid to customer",
+                Type = "Refund",
                 Total = Math.Round(p.Amount, 2),
                 Paid = 0
             }));
@@ -69,6 +71,24 @@ public class StatementReportService : IStatementReportService
                 Amount = Math.Round(p.Amount, 2)
             })
             .ToList();
+
+        // A posted sales return credits receivable, lowering how much the customer owes, so it is
+        // listed as a credit. Without it the closing balance would not reconcile with the payable
+        // once a refund has been paid.
+        var returns = await _db.SalesReturns
+            .AsNoTracking()
+            .Include(r => r.Lines)
+            .Where(r => r.CompanyId == companyId && r.CustomerId == customerId && r.Status == SalesReturnStatus.Posted)
+            .ToListAsync();
+
+        credits.AddRange(returns.Select(r => new StatementCredit
+        {
+            Date = r.ReturnDate,
+            Reference = r.ReturnNo,
+            Description = "Sales return credited",
+            Type = "Return",
+            Amount = Math.Round(r.Lines.Sum(l => l.Quantity * l.UnitPrice), 2)
+        }));
 
         return BuildStatement(
             isCustomer: true,
@@ -201,7 +221,7 @@ public class StatementReportService : IStatementReportService
             {
                 Date = d.Date,
                 Reference = d.Reference,
-                Type = "Invoice",
+                Type = d.Type,
                 Description = d.Description,
                 Invoice = d.Total,
                 Payment = 0
@@ -226,7 +246,7 @@ public class StatementReportService : IStatementReportService
             {
                 Date = c.Date,
                 Reference = c.Reference,
-                Type = "Payment",
+                Type = c.Type,
                 Description = c.Description,
                 Payment = c.Amount
             });
@@ -234,7 +254,7 @@ public class StatementReportService : IStatementReportService
 
         lines = lines
             .OrderBy(l => l.Date)
-            .ThenBy(l => l.Type == "Opening" ? 0 : l.Type == "Invoice" ? 1 : 2)
+            .ThenBy(l => l.Type == "Opening" ? 0 : l.Type is "Invoice" or "Refund" ? 1 : 2)
             .ThenBy(l => l.Reference)
             .ToList();
 
@@ -269,6 +289,7 @@ public class StatementReportService : IStatementReportService
         public DateTime Date { get; set; }
         public string Reference { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Type { get; set; } = "Invoice";
         public decimal Total { get; set; }
         public decimal Paid { get; set; }
     }
@@ -278,6 +299,7 @@ public class StatementReportService : IStatementReportService
         public DateTime Date { get; set; }
         public string Reference { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Type { get; set; } = "Payment";
         public decimal Amount { get; set; }
     }
 }

@@ -355,6 +355,9 @@ Round 1 finding 3 (return on a paid invoice leaves no way to pay the credit back
 | Over-refund attempt 175 | — | rejected: *"Refund amount exceeds the available credit of 150.00. The rest stays as a credit on the customer account."*; nothing saved |
 | Remaining 150 | refund | DR `1200` 150 / CR `1000` 150; credit → 0 |
 | Refund after credit is gone | — | rejected: *"…has no credit balance to refund."* |
+| Customer statement (re-check) | `/StatementReport/Customer?partyId=1` | refund paid shows a **Refund** debit line, the posted return shows a **Return** credit line, totals **1,070.00 / 1,070.00**, closing balance **0.00** — the statement now reconciles with the receivable ledger (0.00) |
+
+The statement previously showed only invoices, payments and refunds, so a return on an already-paid invoice left the closing balance higher than the receivable ledger. Posted sales returns are now listed as a credit (`Sales return credited`, type **Return`) and refunds as a debit (`Refund paid to customer`, type **Refund**); the balance arithmetic stays `+Invoices −Returns −Payments +Refunds`, the same as the payment module and the party subledger, so all three agree after a refund. Supplier statement untouched (purchase returns out of scope).
 
 Guard rails verified: refund category shows its display name **"Customer Refund"** (not `CustomerRefund`); hidden payment sections are **disabled** on the form so they cannot post duplicate `CustomerId`/`SourceReferenceNo`; a customer with an opening receipt but no invoices gets **no** refundable credit.
 
