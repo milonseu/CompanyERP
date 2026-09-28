@@ -120,6 +120,8 @@ public class UserService : IUserService
         }
 
         user.PasswordHash = _authService.HashPassword(newPassword);
+        // The account now has an owner-chosen password, so the sign-in restriction can lift.
+        user.MustChangePassword = false;
         await _db.SaveChangesAsync();
         return (true, string.Empty);
     }

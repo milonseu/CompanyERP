@@ -69,6 +69,17 @@ public static class SecurityDefs
 
     public sealed record CatalogItem(string Module, string Code, string Name);
 
+    private static readonly string[] CrudOperations = ["View", "Create", "Edit", "Delete"];
+
+    private static readonly string[] ModulesWithFullCrud =
+    [
+        "Company", "Branch", "Employee", "Supplier", "Customer", "MasterData",
+        "Inventory", "Purchase", "Asset", "Expense", "Sales", "Payment",
+        "Accounting", "Security"
+    ];
+
+    private static readonly string[] ViewOnlyModules = ["Dashboard", "Report"];
+
     public static IReadOnlyList<CatalogItem> Catalog { get; } = BuildCatalog();
 
     public static bool IsCatalogKnown(string? code)
@@ -102,15 +113,4 @@ public static class SecurityDefs
 
         return items;
     }
-
-    private static readonly string[] CrudOperations = ["View", "Create", "Edit", "Delete"];
-
-    private static readonly string[] ModulesWithFullCrud =
-    [
-        "Company", "Branch", "Employee", "Supplier", "Customer", "MasterData",
-        "Inventory", "Purchase", "Asset", "Expense", "Sales", "Payment",
-        "Accounting", "Security"
-    ];
-
-    private static readonly string[] ViewOnlyModules = ["Dashboard", "Report"];
 }

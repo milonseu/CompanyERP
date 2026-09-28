@@ -12,6 +12,8 @@ public interface IPaymentService
     Task<List<SalaryPayment>> GetPendingSalaryCandidatesAsync(int companyId);
 
     Task<decimal> GetCustomerOutstandingAsync(int customerId);
+    Task<decimal> GetCustomerBalanceAsync(int customerId);
+    Task<decimal> GetCustomerRefundableAsync(int customerId);
     Task<decimal> GetSupplierOutstandingAsync(int supplierId);
     Task<decimal> GetExpenseOutstandingAsync(int expenseEntryId);
     Task<decimal> GetAssetOutstandingAsync(int assetRegisterId);

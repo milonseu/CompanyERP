@@ -1,5 +1,6 @@
 using CompanyERP.Data;
 using CompanyERP.Entities.Payment;
+using CompanyERP.Entities.Sales;
 using CompanyERP.Interfaces.Services;
 using CompanyERP.ViewModels.Accounting;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,8 @@ public class StatementReportService : IStatementReportService
 
         var payments = await _db.Payments
             .AsNoTracking()
-            .Where(p => p.CompanyId == companyId && p.Category == PaymentCategory.Customer && p.CustomerId == customerId)
+            .Where(p => p.CompanyId == companyId && p.CustomerId == customerId)
+            .Where(p => p.Category == PaymentCategory.Customer || p.Category == PaymentCategory.CustomerRefund)
             .ToListAsync();
 
         var debits = invoices.Select(i => new StatementDebit
@@ -45,13 +47,48 @@ public class StatementReportService : IStatementReportService
             Paid = Math.Round(Math.Min(i.AmountPaid, i.Lines.Sum(l => l.Quantity * l.UnitPrice)), 2)
         }).ToList();
 
-        var credits = payments.Select(p => new StatementCredit
+        // Money paid back to the customer raises what the business owes them, so on their statement
+        // it is a debit. Listing it keeps the statement agreeing with the receivable ledger.
+        debits.AddRange(payments
+            .Where(p => p.Category == PaymentCategory.CustomerRefund)
+            .Select(p => new StatementDebit
+            {
+                Date = p.PaymentDate,
+                Reference = p.PaymentNo,
+                Description = "Refund paid to customer",
+                Type = "Refund",
+                Total = Math.Round(p.Amount, 2),
+                Paid = 0
+            }));
+
+        var credits = payments
+            .Where(p => p.Category == PaymentCategory.Customer)
+            .Select(p => new StatementCredit
+            {
+                Date = p.PaymentDate,
+                Reference = p.PaymentNo,
+                Description = $"Payment ({p.PaymentMethod?.Name ?? "Payment"})",
+                Amount = Math.Round(p.Amount, 2)
+            })
+            .ToList();
+
+        // A posted sales return credits receivable, lowering how much the customer owes, so it is
+        // listed as a credit. Without it the closing balance would not reconcile with the payable
+        // once a refund has been paid.
+        var returns = await _db.SalesReturns
+            .AsNoTracking()
+            .Include(r => r.Lines)
+            .Where(r => r.CompanyId == companyId && r.CustomerId == customerId && r.Status == SalesReturnStatus.Posted)
+            .ToListAsync();
+
+        credits.AddRange(returns.Select(r => new StatementCredit
         {
-            Date = p.PaymentDate,
-            Reference = p.PaymentNo,
-            Description = $"Payment ({p.PaymentMethod?.Name ?? "Payment"})",
-            Amount = Math.Round(p.Amount, 2)
-        }).ToList();
+            Date = r.ReturnDate,
+            Reference = r.ReturnNo,
+            Description = "Sales return credited",
+            Type = "Return",
+            Amount = Math.Round(r.Lines.Sum(l => l.Quantity * l.UnitPrice), 2)
+        }));
 
         return BuildStatement(
             isCustomer: true,
@@ -184,7 +221,7 @@ public class StatementReportService : IStatementReportService
             {
                 Date = d.Date,
                 Reference = d.Reference,
-                Type = "Invoice",
+                Type = d.Type,
                 Description = d.Description,
                 Invoice = d.Total,
                 Payment = 0
@@ -209,7 +246,7 @@ public class StatementReportService : IStatementReportService
             {
                 Date = c.Date,
                 Reference = c.Reference,
-                Type = "Payment",
+                Type = c.Type,
                 Description = c.Description,
                 Payment = c.Amount
             });
@@ -217,7 +254,7 @@ public class StatementReportService : IStatementReportService
 
         lines = lines
             .OrderBy(l => l.Date)
-            .ThenBy(l => l.Type == "Opening" ? 0 : l.Type == "Invoice" ? 1 : 2)
+            .ThenBy(l => l.Type == "Opening" ? 0 : l.Type is "Invoice" or "Refund" ? 1 : 2)
             .ThenBy(l => l.Reference)
             .ToList();
 
@@ -252,6 +289,7 @@ public class StatementReportService : IStatementReportService
         public DateTime Date { get; set; }
         public string Reference { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Type { get; set; } = "Invoice";
         public decimal Total { get; set; }
         public decimal Paid { get; set; }
     }
@@ -261,6 +299,7 @@ public class StatementReportService : IStatementReportService
         public DateTime Date { get; set; }
         public string Reference { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Type { get; set; } = "Payment";
         public decimal Amount { get; set; }
     }
 }

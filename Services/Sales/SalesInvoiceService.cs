@@ -124,25 +124,18 @@ public class SalesInvoiceService : ISalesInvoiceService
                 }).ToList()
             };
 
-            var productIds = invoice.Lines.Where(l => l.ItemType == SalesItemType.Product && l.ProductId.HasValue)
-                .Select(l => l.ProductId!.Value)
-                .Distinct()
-                .ToList();
-
-            var products = await _db.Products
-                .Where(p => productIds.Contains(p.Id))
-                .ToDictionaryAsync(p => p.Id, p => p);
+            // COGS is built from the cost the stock subledger actually relieved (moving average),
+            // so the Inventory account and the stock ledger always carry the same figure.
+            var cogsByProduct = new Dictionary<int, decimal>();
 
             foreach (var line in invoice.Lines.Where(l => l.ItemType == SalesItemType.Product && l.ProductId.HasValue))
             {
-                var product = products[line.ProductId!.Value];
                 var result = await _inventoryService.StockOutAsync(
                     order.CompanyId,
                     line.ProductId!.Value,
                     warehouseId,
                     StockTransactionType.SalesStockOut,
                     line.Quantity,
-                    product.CostPrice,
                     referenceNo: order.OrderNo,
                     transactionDate: invoiceDate,
                     note: $"Invoiced on {invoiceNo}");
@@ -151,12 +144,17 @@ public class SalesInvoiceService : ISalesInvoiceService
                     await tx.RollbackAsync();
                     return (false, result.Error);
                 }
+
+                var lineCogs = Math.Round(line.Quantity * result.UnitCost, 2, MidpointRounding.AwayFromZero);
+                cogsByProduct[line.ProductId!.Value] = cogsByProduct.TryGetValue(line.ProductId!.Value, out var existing)
+                    ? Math.Round(existing + lineCogs, 2, MidpointRounding.AwayFromZero)
+                    : lineCogs;
             }
 
             // NOTE: Accounting effect is created during Accounting module integration:
             // Debit Cash/Bank/AR, Credit Product/Software/Service Revenue;
             // Debit Cost of Goods Sold, Credit Inventory.
-            var post = await _postingService.PostSalesInvoiceAsync(invoice, products);
+            var post = await _postingService.PostSalesInvoiceAsync(invoice, cogsByProduct);
             if (!post.Success)
             {
                 await tx.RollbackAsync();

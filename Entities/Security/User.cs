@@ -28,8 +28,14 @@ public class User : BaseEntity
 
     [Display(Name = "System Account")]
     public bool IsSystem { get; set; }
-
     public DateTime? LastLoginAt { get; set; }
+
+    /// <summary>
+    /// Set when the account is still carrying a password the owner never chose (the seeded default
+    /// administrator). While this is set the user is confined to the change-password screen.
+    /// </summary>
+    public bool MustChangePassword { get; set; }
+
 
     public ICollection<UserRole> UserRoles { get; set; } = [];
     public ICollection<UserPermission> UserPermissions { get; set; } = [];

@@ -20,6 +20,12 @@ public class AssetAcquisition : BaseEntity
     [Display(Name = "Payment Type")]
     public AcquisitionPaymentType PaymentType { get; set; } = AcquisitionPaymentType.Bank;
 
+    /// <summary>The cash account the payment actually leaves from. Required when type is Cash.</summary>
+    public int? CashAccountId { get; set; }
+
+    /// <summary>The bank account the payment actually leaves from. Required when type is Bank.</summary>
+    public int? BankAccountId { get; set; }
+
     [Range(0, double.MaxValue, ErrorMessage = "Amount paid must be zero or more.")]
     [Display(Name = "Amount Paid")]
     public decimal AmountPaid { get; set; }

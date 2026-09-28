@@ -266,6 +266,7 @@ public class DashboardService : IDashboardService
             PaymentCategory.Expense => expenseLookup.GetValueOrDefault(p.ExpenseEntryId ?? 0, "Expense"),
             PaymentCategory.Salary => salaryLookup.GetValueOrDefault(p.SalaryPaymentId ?? 0, "Salary"),
             PaymentCategory.Asset => assetLookup.GetValueOrDefault(p.AssetRegisterId ?? 0, "Asset"),
+            PaymentCategory.CustomerRefund => customerLookup.GetValueOrDefault(p.CustomerId ?? 0, "Unknown"),
             _ => "Unknown"
         };
     }

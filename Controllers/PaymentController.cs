@@ -6,6 +6,7 @@ using CompanyERP.Entities.Supplier;
 using CompanyERP.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace CompanyERP.Controllers;
 
@@ -22,6 +23,8 @@ public class PaymentController : Controller
     private readonly ISupplierService _supplierService;
     private readonly IExpenseEntryService _expenseService;
     private readonly IAssetRegisterService _assetService;
+    private readonly ISalesInvoiceService _salesInvoiceService;
+    private readonly IPurchaseInvoiceService _purchaseInvoiceService;
 
     public PaymentController(
         IPaymentService paymentService,
@@ -33,7 +36,9 @@ public class PaymentController : Controller
         ICustomerService customerService,
         ISupplierService supplierService,
         IExpenseEntryService expenseService,
-        IAssetRegisterService assetService)
+        IAssetRegisterService assetService,
+        ISalesInvoiceService salesInvoiceService,
+        IPurchaseInvoiceService purchaseInvoiceService)
     {
         _paymentService = paymentService;
         _methodService = methodService;
@@ -45,6 +50,29 @@ public class PaymentController : Controller
         _supplierService = supplierService;
         _expenseService = expenseService;
         _assetService = assetService;
+        _salesInvoiceService = salesInvoiceService;
+        _purchaseInvoiceService = purchaseInvoiceService;
+    }
+
+    /// <summary>
+    /// Built from the enum's display names so a two word category is offered as "Customer Refund"
+    /// rather than the raw enum member name.
+    /// </summary>
+    private static SelectList PaymentCategoryList(PaymentCategory? selected = null)
+    {
+        var items = Enum.GetValues<PaymentCategory>()
+            .Select(c => new SelectListItem
+            {
+                Value = ((int)c).ToString(),
+                Text = c.GetType().GetField(c.ToString())?
+                    .GetCustomAttributes(typeof(DisplayAttribute), false)
+                    .Cast<DisplayAttribute>()
+                    .FirstOrDefault()?.GetName() ?? c.ToString()
+            })
+            .ToList();
+
+        return new SelectList(items, nameof(SelectListItem.Value), nameof(SelectListItem.Text),
+            selected.HasValue ? ((int)selected.Value).ToString() : null);
     }
 
     [HttpGet]
@@ -57,7 +85,7 @@ public class PaymentController : Controller
         }
 
         var companyId = companies.First().Id;
-        ViewBag.Categories = new SelectList(Enum.GetValues<PaymentCategory>(), category);
+        ViewBag.Categories = PaymentCategoryList(category);
         return View(await _paymentService.GetAllAsync(companyId, category));
     }
 
@@ -95,6 +123,7 @@ public class PaymentController : Controller
             return View(model);
         }
 
+        model.PaymentNo = await _paymentService.GeneratePaymentNoAsync(model.CompanyId, model.PaymentDate);
         var result = await _paymentService.CreateAsync(model);
         if (!result.Success)
         {
@@ -145,7 +174,7 @@ public class PaymentController : Controller
         var branches = (await _branchService.GetAllAsync()).Where(b => b.CompanyId == model.CompanyId);
         ViewBag.Branches = new SelectList(branches, "Id", "Name", model.BranchId);
 
-        ViewBag.Categories = new SelectList(Enum.GetValues<PaymentCategory>(), model.Category);
+        ViewBag.Categories = PaymentCategoryList(model.Category);
 
         ViewBag.PaymentMethods = new SelectList(
             await _methodService.GetAllAsync(model.CompanyId), "Id", "Name", model.PaymentMethodId == 0 ? null : model.PaymentMethodId);
@@ -198,5 +227,68 @@ public class PaymentController : Controller
         ViewBag.AssetCandidates = assets
             .Select(a => new SelectListItem($"{a.AssetNo} - {a.Name}", a.Id.ToString(), model.AssetRegisterId == a.Id))
             .ToList();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetCustomerInvoices(int customerId)
+    {
+        var companies = await _companyService.GetAllAsync();
+        if (companies.Count == 0)
+        {
+            return Json(new { invoices = Array.Empty<object>() });
+        }
+
+        var companyId = companies.First().Id;
+        var invoices = (await _salesInvoiceService.GetByCustomerIdAsync(companyId, customerId))
+            .Select(i =>
+            {
+                var total = i.Lines.Sum(l => l.Quantity * l.UnitPrice);
+                return new { InvoiceNo = i.InvoiceNo, Total = total, Outstanding = Math.Max(0, total - i.AmountPaid) };
+            })
+            .Where(i => i.Outstanding > 0)
+            .OrderBy(i => i.InvoiceNo)
+            .ToList();
+
+        return Json(new { invoices });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetCustomerCredit(int customerId)
+    {
+        if (customerId <= 0)
+        {
+            return Json(new { credit = 0m });
+        }
+
+        return Json(new { credit = await _paymentService.GetCustomerRefundableAsync(customerId) });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetSupplierInvoices(int supplierId)
+    {
+        var companies = await _companyService.GetAllAsync();
+        if (companies.Count == 0)
+        {
+            return Json(new { invoices = Array.Empty<object>() });
+        }
+
+        var companyId = companies.First().Id;
+        var paidByInvoice = (await _paymentService.GetAllAsync(companyId, PaymentCategory.Supplier))
+            .Where(p => p.SupplierId == supplierId && !string.IsNullOrWhiteSpace(p.SourceReferenceNo))
+            .GroupBy(p => p.SourceReferenceNo!.Trim())
+            .ToDictionary(g => g.Key, g => g.Sum(p => p.Amount), StringComparer.OrdinalIgnoreCase);
+
+        var invoices = (await _purchaseInvoiceService.GetBySupplierIdAsync(companyId, supplierId))
+            .Select(i =>
+            {
+                var total = i.Lines.Sum(l => l.Quantity * l.UnitPrice);
+                var paid = paidByInvoice.TryGetValue(i.InvoiceNo.Trim(), out var p) ? p : 0;
+                return new { InvoiceNo = i.InvoiceNo, Total = total, Outstanding = Math.Max(0, total - paid) };
+            })
+            .Where(i => i.Outstanding > 0)
+            .OrderBy(i => i.InvoiceNo)
+            .ToList();
+
+        return Json(new { invoices });
     }
 }

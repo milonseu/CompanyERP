@@ -79,7 +79,9 @@ public class PaymentReportService : IPaymentReportService
 
         var payments = await _db.Payments
             .AsNoTracking()
-            .Where(p => p.CompanyId == companyId && p.Category == PaymentCategory.Customer && p.PaymentDate >= from && p.PaymentDate <= to)
+            .Where(p => p.CompanyId == companyId
+                && (p.Category == PaymentCategory.Customer || p.Category == PaymentCategory.CustomerRefund)
+                && p.PaymentDate >= from && p.PaymentDate <= to)
             .ToListAsync();
 
         var byCustomer = new SortedDictionary<int, SalesVsPaymentRow>(Comparer<int>.Default);
@@ -122,7 +124,10 @@ public class PaymentReportService : IPaymentReportService
                 byCustomer[key] = row;
             }
 
-            row.Paid = Math.Round(row.Paid + pay.Amount, 2);
+            // A refund is money handed back, so it reduces what was collected rather than adding to it.
+            row.Paid = Math.Round(pay.Category == PaymentCategory.CustomerRefund
+                ? row.Paid - pay.Amount
+                : row.Paid + pay.Amount, 2);
         }
 
         var rows = byCustomer.Values

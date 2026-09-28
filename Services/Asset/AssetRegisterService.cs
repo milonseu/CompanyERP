@@ -149,6 +149,50 @@ public class AssetRegisterService : IAssetRegisterService
             return (false, "Selected supplier does not belong to the company.");
         }
 
+        if (acquisition.AmountPaid > 0)
+        {
+            // The acquisition journal credits the specific cash or bank account the money leaves
+            // from, so a payment has to name a real account of this company and branch. Posting
+            // against a fund the branch does not hold would leave the ledger describing money that
+            // was never there.
+            var fundLabel = acquisition.PaymentType == AcquisitionPaymentType.Cash ? "cash account" : "bank account";
+            if (acquisition.PaymentType == AcquisitionPaymentType.Cash)
+            {
+                if (!acquisition.CashAccountId.HasValue)
+                {
+                    return (false, $"Select the {fundLabel} the payment is made from.");
+                }
+
+                if (!await _db.CashAccounts.AnyAsync(c =>
+                        c.Id == acquisition.CashAccountId.Value &&
+                        c.CompanyId == asset.CompanyId &&
+                        c.BranchId == asset.BranchId))
+                {
+                    return (false, $"The selected {fundLabel} is not an account of this company and branch.");
+                }
+            }
+            else
+            {
+                if (!acquisition.BankAccountId.HasValue)
+                {
+                    return (false, $"Select the {fundLabel} the payment is made from.");
+                }
+
+                if (!await _db.BankAccounts.AnyAsync(b =>
+                        b.Id == acquisition.BankAccountId.Value &&
+                        b.CompanyId == asset.CompanyId &&
+                        b.BranchId == asset.BranchId))
+                {
+                    return (false, $"The selected {fundLabel} is not an account of this company and branch.");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(acquisition.PaymentReference))
+            {
+                return (false, "Payment reference is required when part of the cost is paid.");
+            }
+        }
+
         acquisition.AcquisitionDate = acquisition.AcquisitionDate == default ? asset.PurchaseDate : acquisition.AcquisitionDate;
 
         asset.Acquisition = acquisition;

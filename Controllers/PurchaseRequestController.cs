@@ -62,6 +62,7 @@ public class PurchaseRequestController : Controller
             return View(model);
         }
 
+        model.RequestNo = await _requestService.GenerateNumberAsync(model.CompanyId, model.RequestDate);
         var result = await _requestService.CreateAsync(model, lines ?? new List<PurchaseRequestLine>());
         if (!result.Success)
         {

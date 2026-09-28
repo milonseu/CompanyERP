@@ -15,6 +15,8 @@ public class AssetController : Controller
     private readonly IBranchService _branchService;
     private readonly ISupplierService _supplierService;
     private readonly IEmployeeService _employeeService;
+    private readonly ICashAccountService _cashAccountService;
+    private readonly IBankAccountService _bankAccountService;
 
     public AssetController(
         IAssetRegisterService assetService,
@@ -23,7 +25,9 @@ public class AssetController : Controller
         ICompanyProfileService companyService,
         IBranchService branchService,
         ISupplierService supplierService,
-        IEmployeeService employeeService)
+        IEmployeeService employeeService,
+        ICashAccountService cashAccountService,
+        IBankAccountService bankAccountService)
     {
         _assetService = assetService;
         _categoryService = categoryService;
@@ -32,6 +36,8 @@ public class AssetController : Controller
         _branchService = branchService;
         _supplierService = supplierService;
         _employeeService = employeeService;
+        _cashAccountService = cashAccountService;
+        _bankAccountService = bankAccountService;
     }
 
     [HttpGet]
@@ -81,6 +87,7 @@ public class AssetController : Controller
             return View(asset);
         }
 
+        asset.AssetNo = await _assetService.GenerateAssetNoAsync(asset.CompanyId, asset.PurchaseDate);
         var result = await _assetService.CreateAsync(asset, acquisition ?? new AssetAcquisition());
         if (!result.Success)
         {
@@ -268,5 +275,21 @@ public class AssetController : Controller
         var employees = (await _employeeService.GetAllAsync()).Where(e => e.CompanyId == companyId);
         ViewBag.Employees = new SelectList(employees, "Id", "Name");
         ViewBag.EmployeesJson = System.Text.Json.JsonSerializer.Serialize(employees.Select(e => new { e.Id, e.Name }));
+
+        // Payment funds are limited to the branch the asset is registered in, because that is the
+        // branch the acquisition journal is posted against. The branch is chosen on the form, so the
+        // lists travel to the page and are filtered there as the branch changes.
+        var cashAccounts = await _cashAccountService.GetAllAsync(companyId);
+        var bankAccounts = await _bankAccountService.GetAllAsync(companyId);
+
+        ViewBag.CashAccounts = new SelectList(
+            cashAccounts.Where(a => a.BranchId == selectedBranchId), "Id", "AccountName");
+        ViewBag.BankAccounts = new SelectList(
+            bankAccounts.Where(a => a.BranchId == selectedBranchId), "Id", "AccountName");
+
+        ViewBag.CashAccountsJson = System.Text.Json.JsonSerializer.Serialize(
+            cashAccounts.Select(a => new { a.Id, a.AccountName, a.BranchId }));
+        ViewBag.BankAccountsJson = System.Text.Json.JsonSerializer.Serialize(
+            bankAccounts.Select(a => new { a.Id, a.AccountName, a.BranchId }));
     }
 }

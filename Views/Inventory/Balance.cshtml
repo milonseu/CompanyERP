@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Stock Balance";
     var totalQty = Model.Sum(sb => sb.Quantity);
-    var totalValue = Model.Sum(sb => sb.Quantity * sb.AverageCost);
+    var totalValue = Model.Sum(sb => sb.TotalValue);
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -76,7 +76,7 @@
                     @foreach (var item in Model)
                     {
                         var low = item.Product?.MinimumStockLevel > 0 && item.Quantity < item.Product.MinimumStockLevel;
-                        var rowValue = item.Quantity * item.AverageCost;
+                        var rowValue = item.TotalValue;
                         <tr>
                             <td>@item.Product?.Name</td>
                             <td>@(item.Product?.Category?.Name ?? "-")</td>

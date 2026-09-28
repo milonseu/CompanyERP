@@ -45,11 +45,14 @@ public class TransactionPostingService : ITransactionPostingService
     private const string SoftwareRevenue = "4100";
     private const string ServiceRevenue = "4200";
     private const string CostOfGoodsSold = "5000";
+    private const string InventoryWriteOff = "5010";
     private const string SalaryExpense = "5100";
     private const string DepreciationExpense = "5200";
     private const string OperatingExpense = "5300";
     private const string GainOnDisposal = "5400";
     private const string LossOnDisposal = "5410";
+    private const string PurchasePriceVariance = "5500";
+    private const string InventoryGain = "4310";
 
     // Default 4-layer chart of accounts seeded per company so every posting always resolves.
     // Codes stay on ROWS; parents are named explicitly. Parent-first ordering matters only
@@ -120,11 +123,14 @@ public class TransactionPostingService : ITransactionPostingService
         (SoftwareRevenue, "Software Revenue", AccountType.Revenue, AccountNormalBalance.Credit, "410"),
         (ServiceRevenue, "Service Revenue", AccountType.Revenue, AccountNormalBalance.Credit, "420"),
         (CostOfGoodsSold, "Cost of Goods Sold", AccountType.Expense, AccountNormalBalance.Debit, "500"),
+        (InventoryWriteOff, "Inventory Write-off", AccountType.Expense, AccountNormalBalance.Debit, "500"),
         (SalaryExpense, "Salary Expense", AccountType.Expense, AccountNormalBalance.Debit, "510"),
         (DepreciationExpense, "Depreciation Expense", AccountType.Expense, AccountNormalBalance.Debit, "520"),
         (OperatingExpense, "Operating Expenses", AccountType.Expense, AccountNormalBalance.Debit, "530"),
         (GainOnDisposal, "Gain on Asset Disposal", AccountType.Revenue, AccountNormalBalance.Credit, "430"),
-        (LossOnDisposal, "Loss on Asset Disposal", AccountType.Expense, AccountNormalBalance.Debit, "540")
+        (LossOnDisposal, "Loss on Asset Disposal", AccountType.Expense, AccountNormalBalance.Debit, "540"),
+        (PurchasePriceVariance, "Purchase Price Variance", AccountType.Expense, AccountNormalBalance.Debit, "540"),
+        (InventoryGain, "Inventory Gain", AccountType.Revenue, AccountNormalBalance.Credit, "430")
     ];
 
     public async Task<(bool Success, string Error)> EnsureDefaultsAsync(int companyId)
@@ -252,7 +258,7 @@ public class TransactionPostingService : ITransactionPostingService
             [(Equity, openingPayable, 0, null), (AccountsPayable, 0, openingPayable, null)]);
     }
 
-    public async Task<(bool Success, string Error)> PostSalesInvoiceAsync(SalesInvoice invoice, IReadOnlyDictionary<int, Product> products)
+    public async Task<(bool Success, string Error)> PostSalesInvoiceAsync(SalesInvoice invoice, IReadOnlyDictionary<int, decimal> cogsByProduct)
     {
         var companyId = invoice.CompanyId;
         var total = invoice.Lines.Sum(l => l.Quantity * l.UnitPrice);
@@ -288,16 +294,9 @@ public class TransactionPostingService : ITransactionPostingService
             lines.Add((AccountsReceivable, receivable, 0, "Unpaid invoice balance"));
         }
 
-        var cogs = 0m;
-        foreach (var line in invoice.Lines.Where(l => l.ItemType == SalesItemType.Product && l.ProductId.HasValue))
-        {
-            if (products.TryGetValue(line.ProductId!.Value, out var product))
-            {
-                cogs += line.Quantity * product.CostPrice;
-            }
-        }
-
-        cogs = Math.Round(cogs, 2);
+        // The dictionaries already hold a per-product total, so sum the values once. Adding them
+        // per line would count an invoice that repeats a product more than once.
+        var cogs = Math.Round(cogsByProduct.Values.Sum(), 2);
         if (cogs > 0)
         {
             lines.Add((CostOfGoodsSold, cogs, 0, "Cost of goods sold"));
@@ -308,7 +307,7 @@ public class TransactionPostingService : ITransactionPostingService
             $"Sales invoice {invoice.InvoiceNo}", lines, invoice.BranchId);
     }
 
-    public async Task<(bool Success, string Error)> PostSalesReturnAsync(SalesReturn salesReturn, SalesInvoice invoice, IReadOnlyDictionary<int, Product> products)
+    public async Task<(bool Success, string Error)> PostSalesReturnAsync(SalesReturn salesReturn, SalesInvoice invoice, IReadOnlyDictionary<int, decimal> reversalByProduct)
     {
         var lines = new List<(string Code, decimal Debit, decimal Credit, string? Note)>();
 
@@ -337,44 +336,114 @@ public class TransactionPostingService : ITransactionPostingService
             lines.Add((AccountsReceivable, 0, total, "Customer credit for returned goods"));
         }
 
-        var cogs = 0m;
-        foreach (var line in salesReturn.Lines.Where(l => l.ItemType == SalesItemType.Product && l.ProductId.HasValue))
+        var reversal = Math.Round(reversalByProduct.Values.Sum(), 2);
+        if (reversal > 0)
         {
-            if (products.TryGetValue(line.ProductId!.Value, out var product))
-            {
-                cogs += line.Quantity * product.CostPrice;
-            }
-            else if (invoice.Lines.FirstOrDefault(l => l.ItemType == SalesItemType.Product && l.ProductId == line.ProductId) is { } invLine)
-            {
-                cogs += line.Quantity * invLine.UnitPrice;
-            }
-        }
-
-        cogs = Math.Round(cogs, 2);
-        if (cogs > 0)
-        {
-            lines.Add((Inventory, cogs, 0, "Inventory restored"));
-            lines.Add((CostOfGoodsSold, 0, cogs, "COGS reversal"));
+            lines.Add((Inventory, reversal, 0, "Inventory restored"));
+            lines.Add((CostOfGoodsSold, 0, reversal, "COGS reversal"));
         }
 
         return await PostAsync(salesReturn.CompanyId, salesReturn.ReturnDate, "Sales Return", salesReturn.ReturnNo,
             $"Sales return {salesReturn.ReturnNo}", lines, salesReturn.BranchId);
     }
 
-    public async Task<(bool Success, string Error)> PostPurchaseInvoiceAsync(PurchaseInvoice invoice)
+    public async Task<(bool Success, string Error)> PostPurchaseInvoiceAsync(PurchaseInvoice invoice, IReadOnlyDictionary<int, decimal> receivedCostByProduct)
     {
-        var total = Math.Round(invoice.Lines.Sum(l => l.Quantity * l.UnitPrice), 2);
+        // Accounts Payable carries the invoiced amount we owe the supplier. Inventory carries the
+        // cost the goods actually came in at, so the stock subledger and account 1300 stay equal;
+        // the difference between the two is a purchase price variance.
+        var supplierPayable = Math.Round(invoice.Lines.Sum(l => l.Quantity * l.UnitPrice), 2);
+        var inventoryValue = Math.Round(invoice.Lines.Sum(l =>
+            l.Quantity * (receivedCostByProduct.TryGetValue(l.ProductId, out var received) ? received : l.UnitPrice)), 2);
+        var variance = Math.Round(supplierPayable - inventoryValue, 2);
+
+        var lines = new List<(string Code, decimal Debit, decimal Credit, string? Note)>
+        {
+            (Inventory, inventoryValue, 0, "Purchased goods received"),
+            (AccountsPayable, 0, supplierPayable, "Supplier payable")
+        };
+
+        if (variance > 0)
+        {
+            lines.Add((PurchasePriceVariance, variance, 0, "Invoiced cost above received cost"));
+        }
+        else if (variance < 0)
+        {
+            lines.Add((PurchasePriceVariance, 0, Math.Abs(variance), "Invoiced cost below received cost"));
+        }
+
         return await PostAsync(invoice.CompanyId, invoice.InvoiceDate, "Purchase Invoice", invoice.InvoiceNo,
-            $"Purchase invoice {invoice.InvoiceNo}",
-            [(Inventory, total, 0, "Purchased goods received"), (AccountsPayable, 0, total, "Supplier payable")], invoice.BranchId);
+            $"Purchase invoice {invoice.InvoiceNo}", lines, invoice.BranchId);
     }
 
-    public async Task<(bool Success, string Error)> PostPurchaseReturnAsync(PurchaseReturn purchaseReturn)
+    public async Task<(bool Success, string Error)> PostPurchaseReturnAsync(PurchaseReturn purchaseReturn, decimal relievedValue)
     {
-        var total = Math.Round(purchaseReturn.Lines.Sum(l => l.Quantity * l.UnitCost), 2);
+        // The supplier credits the invoiced amount, while our books relieve stock at the moving
+        // average we actually carry. Any gap between the two is a purchase price variance.
+        var supplierCredit = Math.Round(purchaseReturn.Lines.Sum(l => l.Quantity * l.UnitCost), 2);
+        var inventoryRelief = Math.Round(relievedValue, 2);
+        var variance = Math.Round(supplierCredit - inventoryRelief, 2);
+
+        var lines = new List<(string Code, decimal Debit, decimal Credit, string? Note)>
+        {
+            (AccountsPayable, supplierCredit, 0, "Supplier credit for returned goods"),
+            (Inventory, 0, inventoryRelief, "Returned goods out at average cost")
+        };
+
+        if (variance > 0)
+        {
+            lines.Add((PurchasePriceVariance, variance, 0, "Returned cost below carrying value"));
+        }
+        else if (variance < 0)
+        {
+            lines.Add((PurchasePriceVariance, 0, Math.Abs(variance), "Returned cost above carrying value"));
+        }
+
         return await PostAsync(purchaseReturn.CompanyId, purchaseReturn.ReturnDate, "Purchase Return", purchaseReturn.ReturnNo,
-            $"Purchase return {purchaseReturn.ReturnNo}",
-            [(AccountsPayable, total, 0, "Supplier credit for returned goods"), (Inventory, 0, total, "Returned goods out")], purchaseReturn.BranchId);
+            $"Purchase return {purchaseReturn.ReturnNo}", lines, purchaseReturn.BranchId);
+    }
+
+    /// <summary>
+    /// Opening stock brought onto the books: Debit Inventory, Credit Opening Balance Equity, so the
+    /// balance sheet carries the stock value and the capital that funded it.
+    /// </summary>
+    public Task<(bool Success, string Error)> PostStockOpeningAsync(int companyId, DateTime entryDate, string referenceNo, decimal value, string description, string? note)
+    {
+        var amount = Math.Round(value, 2);
+        if (amount <= 0)
+        {
+            return Task.FromResult((true, string.Empty));
+        }
+
+        return PostAsync(companyId, entryDate, "Stock Opening", referenceNo, description,
+            [(Inventory, amount, 0, "Opening stock value"), (Equity, 0, amount, "Opening balance equity")]);
+    }
+
+    /// <summary>
+    /// Physical count difference. A shortfall is written off to expense; a surplus is recognised as
+    /// inventory gain. Signed: negative value = write-off, positive value = gain.
+    /// </summary>
+    public Task<(bool Success, string Error)> PostStockAdjustmentAsync(int companyId, DateTime entryDate, string referenceNo, decimal valueEffect, string description, string? note)
+    {
+        var amount = Math.Round(valueEffect, 2);
+        if (amount == 0)
+        {
+            return Task.FromResult((true, string.Empty));
+        }
+
+        var lines = amount > 0
+            ? new List<(string Code, decimal Debit, decimal Credit, string? Note)>
+            {
+                (Inventory, amount, 0, "Stock surplus counted"),
+                (InventoryGain, 0, amount, "Inventory gain")
+            }
+            : new List<(string Code, decimal Debit, decimal Credit, string? Note)>
+            {
+                (InventoryWriteOff, Math.Abs(amount), 0, "Stock shortage written off"),
+                (Inventory, 0, Math.Abs(amount), "Stock shortage relieved")
+            };
+
+        return PostAsync(companyId, entryDate, "Stock Adjustment", referenceNo, description, lines);
     }
 
     public async Task<(bool Success, string Error)> PostCustomerPaymentAsync(Payment payment)
@@ -383,6 +452,17 @@ public class TransactionPostingService : ITransactionPostingService
         return await PostAsync(payment.CompanyId, payment.PaymentDate, "Customer Payment", payment.PaymentNo,
             $"Customer payment {payment.PaymentNo}",
             [(account, payment.Amount, 0, "Cash received"), (AccountsReceivable, 0, payment.Amount, "Receivable settled")], payment.BranchId);
+    }
+
+    public Task<(bool Success, string Error)> PostCustomerRefundAsync(Payment payment)
+    {
+        // Reverse of a customer receipt: the receivable is reduced because the customer is paying
+        // back credit, and cash or bank leaves the business.
+        var account = payment.AccountType == PaymentAccountType.Cash ? Cash : Bank;
+        return PostAsync(payment.CompanyId, payment.PaymentDate, "Customer Refund", payment.PaymentNo,
+            $"Customer refund {payment.PaymentNo}",
+            [(AccountsReceivable, payment.Amount, 0, "Customer credit settled"),
+             (account, 0, payment.Amount, "Cash refunded")], payment.BranchId);
     }
 
     public async Task<(bool Success, string Error)> PostSupplierPaymentAsync(Payment payment)
@@ -458,31 +538,120 @@ public class TransactionPostingService : ITransactionPostingService
 
     public async Task<(bool Success, string Error)> PostAssetAcquisitionAsync(AssetRegister asset, AssetAcquisition acquisition)
     {
-        var lines = new List<(string Code, decimal Debit, decimal Credit, string? Note)>
+        // A company with no chart of accounts yet has to be seeded before any of the codes below can
+        // be resolved, otherwise a first ever asset fails on a missing account instead of creating it.
+        var ensure = await EnsureDefaultsAsync(asset.CompanyId);
+        if (!ensure.Success)
         {
-            (FixedAssets, asset.Cost, 0, asset.Name)
-        };
+            return ensure;
+        }
+
+        if (_db.ChangeTracker.Entries<ChartOfAccount>().Any(e => e.State == EntityState.Added))
+        {
+            await _db.SaveChangesAsync();
+        }
 
         var paid = Math.Round(Math.Min(acquisition.AmountPaid, asset.Cost), 2);
+        var payable = Math.Round(asset.Cost - paid, 2);
+
+        var lines = new List<(int AccountId, decimal Debit, decimal Credit, string? Note)>();
+
+        if (asset.Cost > 0)
+        {
+            var fixedAssets = await ResolveAccountIdAsync(asset.CompanyId, FixedAssets);
+            if (!fixedAssets.Success)
+            {
+                return (false, fixedAssets.Error);
+            }
+
+            lines.Add((fixedAssets.AccountId, asset.Cost, 0, asset.Name));
+        }
+
         if (paid > 0)
         {
-            var account = acquisition.PaymentType switch
+            // Credit the account the money actually leaves from rather than a generic cash or bank
+            // control account, so the ledger agrees with the company's cash and bank balances.
+            var fund = await ResolveFundAccountAsync(asset, acquisition);
+            if (!fund.Success)
             {
-                AcquisitionPaymentType.Bank => Bank,
-                AcquisitionPaymentType.Cash => Cash,
-                _ => Cash
-            };
-            lines.Add((account, 0, paid, "Asset payment"));
+                return (false, fund.Error);
+            }
+
+            lines.Add((fund.AccountId, 0, paid, "Asset payment"));
         }
 
-        var payable = Math.Round(asset.Cost - paid, 2);
         if (payable > 0)
         {
-            lines.Add((AssetPayable, 0, payable, "Asset payable"));
+            var assetPayable = await ResolveAccountIdAsync(asset.CompanyId, AssetPayable);
+            if (!assetPayable.Success)
+            {
+                return (false, assetPayable.Error);
+            }
+
+            lines.Add((assetPayable.AccountId, 0, payable, "Asset payable"));
         }
 
-        return await PostAsync(asset.CompanyId, acquisition.AcquisitionDate, "Asset Acquisition", asset.AssetNo,
+        return await StagePostAsync(asset.CompanyId, acquisition.AcquisitionDate, "Asset Acquisition", asset.AssetNo,
             $"Asset acquisition {asset.AssetNo}", lines, asset.BranchId);
+    }
+
+    /// <summary>
+    /// Resolves the account the asset payment actually leaves from. A cash account carries its own
+    /// chart code, so the ledger can follow that specific till. A bank account has no code of its own
+    /// in this schema, so it posts to the bank control account after the bank account itself has been
+    /// confirmed as real for this company and branch.
+    /// </summary>
+    private async Task<(bool Success, string Error, int AccountId)> ResolveFundAccountAsync(AssetRegister asset, AssetAcquisition acquisition)
+    {
+        if (acquisition.PaymentType == AcquisitionPaymentType.Cash)
+        {
+            if (!acquisition.CashAccountId.HasValue)
+            {
+                return (false, "Select the cash account the payment is made from.", 0);
+            }
+
+            var cashAccount = await _db.CashAccounts
+                .FirstOrDefaultAsync(c => c.Id == acquisition.CashAccountId.Value && c.CompanyId == asset.CompanyId);
+            if (cashAccount is null || cashAccount.BranchId != asset.BranchId)
+            {
+                return (false, "The selected cash account is not an account of this company and branch.", 0);
+            }
+
+            return await ResolveAccountIdAsync(asset.CompanyId, cashAccount.AccountCode);
+        }
+
+        if (!acquisition.BankAccountId.HasValue)
+        {
+            return (false, "Select the bank account the payment is made from.", 0);
+        }
+
+        var bankAccount = await _db.BankAccounts
+            .FirstOrDefaultAsync(b => b.Id == acquisition.BankAccountId.Value && b.CompanyId == asset.CompanyId);
+        if (bankAccount is null || bankAccount.BranchId != asset.BranchId)
+        {
+            return (false, "The selected bank account is not an account of this company and branch.", 0);
+        }
+
+        return await ResolveAccountIdAsync(asset.CompanyId, Bank);
+    }
+
+    private async Task<(bool Success, string Error, int AccountId)> ResolveAccountIdAsync(int companyId, string code)
+    {
+        var account = _db.ChartOfAccounts.Local
+            .FirstOrDefault(a => a.CompanyId == companyId && a.AccountCode == code && a.IsActive)
+            ?? await _db.ChartOfAccounts
+                .FirstOrDefaultAsync(a => a.CompanyId == companyId && a.AccountCode == code && a.IsActive);
+        if (account is null)
+        {
+            return (false, $"Chart of Accounts entry '{code}' is missing for this company.", 0);
+        }
+
+        if (!account.IsPostable)
+        {
+            return (false, $"Account '{code}' is a parent/group account and cannot receive postings.", 0);
+        }
+
+        return (true, string.Empty, account.Id);
     }
 
     public async Task<(bool Success, string Error)> PostAssetDepreciationAsync(int companyId, string periodKey, decimal amount, string note)

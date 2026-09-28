@@ -20,11 +20,14 @@ public interface ITransactionPostingService
 
     Task<(bool Success, string Error)> PostCustomerOpeningAsync(Entities.Customer.Customer customer, decimal openingReceivable);
     Task<(bool Success, string Error)> PostSupplierOpeningAsync(Entities.Supplier.Supplier supplier, decimal openingPayable);
-    Task<(bool Success, string Error)> PostSalesInvoiceAsync(SalesInvoice invoice, IReadOnlyDictionary<int, Product> products);
-    Task<(bool Success, string Error)> PostSalesReturnAsync(SalesReturn salesReturn, SalesInvoice invoice, IReadOnlyDictionary<int, Product> products);
-    Task<(bool Success, string Error)> PostPurchaseInvoiceAsync(PurchaseInvoice invoice);
-    Task<(bool Success, string Error)> PostPurchaseReturnAsync(PurchaseReturn purchaseReturn);
+    Task<(bool Success, string Error)> PostSalesInvoiceAsync(SalesInvoice invoice, IReadOnlyDictionary<int, decimal> cogsByProduct);
+    Task<(bool Success, string Error)> PostSalesReturnAsync(SalesReturn salesReturn, SalesInvoice invoice, IReadOnlyDictionary<int, decimal> reversalByProduct);
+    Task<(bool Success, string Error)> PostPurchaseInvoiceAsync(PurchaseInvoice invoice, IReadOnlyDictionary<int, decimal> receivedCostByProduct);
+    Task<(bool Success, string Error)> PostPurchaseReturnAsync(PurchaseReturn purchaseReturn, decimal relievedValue);
+    Task<(bool Success, string Error)> PostStockOpeningAsync(int companyId, DateTime entryDate, string referenceNo, decimal value, string description, string? note);
+    Task<(bool Success, string Error)> PostStockAdjustmentAsync(int companyId, DateTime entryDate, string referenceNo, decimal valueEffect, string description, string? note);
     Task<(bool Success, string Error)> PostCustomerPaymentAsync(Payment payment);
+    Task<(bool Success, string Error)> PostCustomerRefundAsync(Payment payment);
     Task<(bool Success, string Error)> PostSupplierPaymentAsync(Payment payment);
     Task<(bool Success, string Error)> PostExpenseEntryAsync(ExpenseEntry entry);
     Task<(bool Success, string Error)> PostExpensePaymentAsync(Payment payment, ExpenseEntry entry);

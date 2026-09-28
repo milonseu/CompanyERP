@@ -50,6 +50,8 @@ public class WarehouseController : Controller
     [HasPermission("Inventory.Create")]
     public async Task<IActionResult> Create(Warehouse model)
     {
+        NormaliseRequiredSelectErrors(model);
+
         if (!ModelState.IsValid)
         {
             await PopulateOptionsAsync(model.CompanyId);
@@ -102,6 +104,8 @@ public class WarehouseController : Controller
         {
             return NotFound();
         }
+
+        NormaliseRequiredSelectErrors(model);
 
         if (!ModelState.IsValid)
         {
@@ -178,6 +182,28 @@ public class WarehouseController : Controller
     {
         var companies = await _companyService.GetAllAsync();
         return companies.Count > 0;
+    }
+
+    /// <summary>
+    /// A required dropdown posts an empty string when nothing is chosen, which model binding reports
+    /// as "The value '' is invalid." before the entity's own validation ever runs. Replace that raw
+    /// binding error with the message the user needs, so the form explains the missing field.
+    /// </summary>
+    private void NormaliseRequiredSelectErrors(Warehouse model)
+    {
+        ReplaceBindingErrorWithMessage(nameof(Warehouse.CompanyId), model.CompanyId, "Company is required.");
+        ReplaceBindingErrorWithMessage(nameof(Warehouse.BranchId), model.BranchId, "Branch is required.");
+    }
+
+    private void ReplaceBindingErrorWithMessage(string field, int value, string message)
+    {
+        if (value != 0 || !ModelState.TryGetValue(field, out var entry) || entry.Errors.Count == 0)
+        {
+            return;
+        }
+
+        ModelState.Remove(field);
+        ModelState.AddModelError(field, message);
     }
 
     private async Task PopulateOptionsAsync(int? companyId = null, int? branchId = null)

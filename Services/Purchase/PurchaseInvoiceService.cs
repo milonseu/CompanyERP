@@ -75,9 +75,24 @@ public class PurchaseInvoiceService : IPurchaseInvoiceService
             }).ToList()
         };
 
+            // If the goods have already been received at a different cost, that cost is what inventory
+            // is carried at; the invoice price still drives the payable and the gap is a variance.
+            // Grouped rather than ToDictionaryAsync because a product can be received on more than
+            // one receipt against the same order.
+            var receivedCosts = (await _db.PurchaseReceivings
+                .Include(r => r.Lines)
+                .Where(r => r.PurchaseOrderId == order.Id)
+                .SelectMany(r => r.Lines)
+                .Where(l => l.Quantity > 0)
+                .ToListAsync())
+                .GroupBy(l => l.ProductId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Sum(l => l.Quantity * l.UnitCost) / g.Sum(l => l.Quantity));
+
         // NOTE: Accounting effect is created during Accounting module integration:
         // Debit Inventory, Credit Accounts Payable.
-        var post = await _postingService.PostPurchaseInvoiceAsync(invoice);
+        var post = await _postingService.PostPurchaseInvoiceAsync(invoice, receivedCosts);
         if (!post.Success)
         {
             return (false, post.Error);

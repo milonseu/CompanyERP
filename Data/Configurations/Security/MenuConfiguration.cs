@@ -19,6 +19,7 @@ public class MenuConfiguration : IEntityTypeConfiguration<Menu>
         builder.Property(m => m.Icon).HasMaxLength(60);
         builder.Property(m => m.Controller).HasMaxLength(60);
         builder.Property(m => m.Action).HasMaxLength(60);
+        builder.Property(m => m.PermissionCode).HasMaxLength(60);
         builder.Property(m => m.Area).HasMaxLength(60);
         builder.Property(m => m.DisplayOrder);
         builder.Property(m => m.IsSystem).HasDefaultValue(false);

@@ -5,8 +5,27 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Menus</h1>
-    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Menu</a>
+    <div class="d-flex gap-2">
+        @if (ViewBag.MissingCatalogCount is int missing && missing > 0)
+        {
+            <form asp-action="AddFromCatalog" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success"><i class="bi bi-database-add"></i> Add Missing Standard Menus (@missing)</button>
+            </form>
+        }
+        <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Menu</a>
+    </div>
 </div>
+
+@if (ViewBag.MissingCatalogCount is int mCount && mCount > 0)
+{
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <div>
+            <i class="bi bi-info-circle"></i> <strong>@mCount</strong> standard menu item(s) from the catalog are not in the menu database yet.
+            Use <em>Add Missing Standard Menus</em> to load the default menu tree (you can then edit or delete any of them), or create menus manually.
+        </div>
+    </div>
+}
 
 <div class="card shadow-sm">
     <div class="card-body p-0">
@@ -16,6 +35,7 @@
                     <th>Menu</th>
                     <th>Code</th>
                     <th>Route</th>
+                    <th>Permission</th>
                     <th>Parent</th>
                     <th class="text-center">Order</th>
                     <th class="text-center">Active</th>
@@ -26,7 +46,7 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No menu found.</td>
+                        <td colspan="8" class="text-center text-muted py-4">No menu found.</td>
                     </tr>
                 }
                 else
@@ -43,6 +63,16 @@
                             </td>
                             <td><span class="badge bg-light text-dark">@parent.Code</span></td>
                             <td>@(parent.Controller ?? "-")</td>
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(parent.PermissionCode))
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-primary">@parent.PermissionCode</span>
+                                }
+                            </td>
                             <td>-</td>
                             <td class="text-center">@parent.DisplayOrder</td>
                             <td class="text-center">
@@ -72,6 +102,16 @@
                                 </td>
                                 <td><span class="badge bg-light text-dark">@child.Code</span></td>
                                 <td>@(child.Controller != null ? $"{child.Controller}/{child.Action}" : "-")</td>
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(child.PermissionCode))
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-primary">@child.PermissionCode</span>
+                                    }
+                                </td>
                                 <td>@parent.Name</td>
                                 <td class="text-center">@child.DisplayOrder</td>
                                 <td class="text-center">

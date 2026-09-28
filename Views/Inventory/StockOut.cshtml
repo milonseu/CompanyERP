@@ -39,8 +39,9 @@
                     <span asp-validation-for="Quantity" class="text-danger"></span>
                 </div>
                 <div class="col-md-4">
-                    <label asp-for="UnitCost" class="form-label"></label>
-                    <input asp-for="UnitCost" class="form-control" />
+                    <label asp-for="AvailableAvgCost" class="form-label"></label>
+                    <input asp-for="AvailableAvgCost" class="form-control" readonly />
+                    <span class="form-text">Cost is taken from the moving average, not typed in.</span>
                 </div>
                 <div class="col-md-6">
                     <label asp-for="ReferenceNo" class="form-label"></label>

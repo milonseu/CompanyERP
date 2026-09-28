@@ -55,6 +55,17 @@ public class InventoryController : Controller
         return View(transfers);
     }
 
+    /// <summary>
+    /// A manual stock-in is either opening stock or a surplus adjustment, and both post their own
+    /// journal. Purchase receipts and sales returns are entered by their modules, which post the
+    /// matching payable or receivable entry, so they are not offered here.
+    /// </summary>
+    private static readonly StockTransactionType[] ManualStockInTypes =
+    {
+        StockTransactionType.Opening,
+        StockTransactionType.Adjustment
+    };
+
     [HttpGet]
     [HasPermission("Inventory.StockIn")]
     public async Task<IActionResult> StockIn()
@@ -66,14 +77,7 @@ public class InventoryController : Controller
         }
 
         await PopulateTransactionOptionsAsync();
-        ViewBag.Types = new SelectList(
-            new[]
-            {
-                StockTransactionType.Opening,
-                StockTransactionType.PurchaseReceiving,
-                StockTransactionType.SalesReturn,
-                StockTransactionType.Adjustment
-            }, StockTransactionType.Opening);
+        ViewBag.Types = new SelectList(ManualStockInTypes, StockTransactionType.Opening);
         return View(new StockInViewModel());
     }
 
@@ -84,14 +88,16 @@ public class InventoryController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.Types = new SelectList(
-                new[]
-                {
-                    StockTransactionType.Opening,
-                    StockTransactionType.PurchaseReceiving,
-                    StockTransactionType.SalesReturn,
-                    StockTransactionType.Adjustment
-                }, model.Type);
+            ViewBag.Types = new SelectList(ManualStockInTypes, model.Type);
+            await PopulateTransactionOptionsAsync(model.ProductId, model.WarehouseId);
+            return View(model);
+        }
+
+        if (!ManualStockInTypes.Contains(model.Type))
+        {
+            ModelState.AddModelError(string.Empty,
+                "This type is created by its own module. Receive the goods through purchase, or return them through sales, so the payable or receivable is posted with the stock.");
+            ViewBag.Types = new SelectList(ManualStockInTypes, model.Type);
             await PopulateTransactionOptionsAsync(model.ProductId, model.WarehouseId);
             return View(model);
         }
@@ -110,21 +116,25 @@ public class InventoryController : Controller
         if (!result.Success)
         {
             ModelState.AddModelError(string.Empty, result.Error);
-            ViewBag.Types = new SelectList(
-                new[]
-                {
-                    StockTransactionType.Opening,
-                    StockTransactionType.PurchaseReceiving,
-                    StockTransactionType.SalesReturn,
-                    StockTransactionType.Adjustment
-                }, model.Type);
+            ViewBag.Types = new SelectList(ManualStockInTypes, model.Type);
             await PopulateTransactionOptionsAsync(model.ProductId, model.WarehouseId);
             return View(model);
         }
 
-        TempData["Success"] = "Stock added successfully.";
+        TempData["Success"] =
+            $"Stock added successfully. New average cost: {result.AverageCost:0.00}. A journal entry was posted for this {model.Type} movement.";
         return RedirectToAction(nameof(Balance));
     }
+
+    /// <summary>
+    /// A manual stock-out can only be a write-off. Sales issues and purchase returns belong to the
+    /// sales and purchase modules because they need the customer or supplier document to post a
+    /// matching receivable or payable; creating them here would move stock with no journal behind it.
+    /// </summary>
+    private static readonly StockTransactionType[] ManualStockOutTypes =
+    {
+        StockTransactionType.Adjustment
+    };
 
     [HttpGet]
     [HasPermission("Inventory.StockOut")]
@@ -137,13 +147,7 @@ public class InventoryController : Controller
         }
 
         await PopulateTransactionOptionsAsync();
-        ViewBag.Types = new SelectList(
-            new[]
-            {
-                StockTransactionType.SalesStockOut,
-                StockTransactionType.PurchaseReturn,
-                StockTransactionType.Adjustment
-            }, StockTransactionType.SalesStockOut);
+        ViewBag.Types = new SelectList(ManualStockOutTypes, StockTransactionType.Adjustment);
         return View(new StockOutViewModel());
     }
 
@@ -154,13 +158,16 @@ public class InventoryController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.Types = new SelectList(
-                new[]
-                {
-                    StockTransactionType.SalesStockOut,
-                    StockTransactionType.PurchaseReturn,
-                    StockTransactionType.Adjustment
-                }, model.Type);
+            ViewBag.Types = new SelectList(ManualStockOutTypes, model.Type);
+            await PopulateTransactionOptionsAsync(model.ProductId, model.WarehouseId);
+            return View(model);
+        }
+
+        if (!ManualStockOutTypes.Contains(model.Type))
+        {
+            ModelState.AddModelError(string.Empty,
+                "This type is created by its own module. Record a stock adjustment here, or use the sales or purchase document it belongs to.");
+            ViewBag.Types = new SelectList(ManualStockOutTypes, model.Type);
             await PopulateTransactionOptionsAsync(model.ProductId, model.WarehouseId);
             return View(model);
         }
@@ -171,7 +178,6 @@ public class InventoryController : Controller
             model.WarehouseId,
             model.Type,
             model.Quantity,
-            model.UnitCost,
             model.ReferenceNo,
             model.TransactionDate,
             model.Note);
@@ -179,18 +185,16 @@ public class InventoryController : Controller
         if (!result.Success)
         {
             ModelState.AddModelError(string.Empty, result.Error);
-            ViewBag.Types = new SelectList(
-                new[]
-                {
-                    StockTransactionType.SalesStockOut,
-                    StockTransactionType.PurchaseReturn,
-                    StockTransactionType.Adjustment
-                }, model.Type);
+            ViewBag.Types = new SelectList(ManualStockOutTypes, model.Type);
             await PopulateTransactionOptionsAsync(model.ProductId, model.WarehouseId);
+            var balance = await _inventoryService.GetBalanceAsync(model.ProductId, model.WarehouseId);
+            model.AvailableQty = balance?.Quantity ?? 0m;
+            model.AvailableAvgCost = balance?.AverageCost ?? 0m;
             return View(model);
         }
 
-        TempData["Success"] = "Stock deducted successfully.";
+        var relieved = Math.Round(model.Quantity * result.UnitCost, 2, MidpointRounding.AwayFromZero);
+        TempData["Success"] = $"Stock deducted successfully. {model.Quantity} at {result.UnitCost:0.00} ({relieved:N2} relieved at average cost).";
         return RedirectToAction(nameof(Balance));
     }
 
@@ -277,10 +281,14 @@ public class InventoryController : Controller
         {
             ModelState.AddModelError(string.Empty, result.Error);
             await PopulateTransactionOptionsAsync(model.ProductId, model.WarehouseId);
+            var balance = await _inventoryService.GetBalanceAsync(model.ProductId, model.WarehouseId);
+            model.CurrentQty = balance?.Quantity ?? 0m;
+            model.CurrentAvgCost = balance?.AverageCost ?? 0m;
             return View(model);
         }
 
-        TempData["Success"] = "Stock adjusted successfully.";
+        var direction = result.ValueEffect < 0 ? "shortage written off" : "surplus recognised as gain";
+        TempData["Success"] = $"Stock adjusted successfully. {Math.Abs(result.ValueEffect):N2} {direction}.";
         return RedirectToAction(nameof(Balance));
     }
 

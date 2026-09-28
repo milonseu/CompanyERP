@@ -16,6 +16,7 @@ public class StockBalanceConfiguration : IEntityTypeConfiguration<StockBalance>
 
         builder.Property(sb => sb.Quantity).HasPrecision(18, 3);
         builder.Property(sb => sb.AverageCost).HasPrecision(18, 2);
+        builder.Property(sb => sb.TotalValue).HasPrecision(18, 2);
 
         builder.Property(sb => sb.CreatedBy).HasMaxLength(100);
         builder.Property(sb => sb.UpdatedBy).HasMaxLength(100);
