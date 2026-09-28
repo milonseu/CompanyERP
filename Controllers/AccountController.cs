@@ -183,12 +183,6 @@ public class AccountController : Controller
             return View(model);
         }
 
-        if (string.Equals(model.NewPassword, SecuritySeederService.DefaultAdminPassword, StringComparison.Ordinal))
-        {
-            ModelState.AddModelError(nameof(model.NewPassword), "That is the seeded default password. Choose one of your own.");
-            return View(model);
-        }
-
         if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
         {
             return RedirectToAction("Login", "Account");

@@ -7,32 +7,21 @@ namespace CompanyERP.Services.Security;
 
 public class SecuritySeederService : ISecuritySeederService
 {
-    public const string DefaultAdminUserName = "admin";
-    public const string DefaultAdminPassword = "Admin@123";
+    private const string LegacySecurityPrefix = "SECURITY_";
 
     private readonly ApplicationDbContext _db;
-    private readonly IAuthService _authService;
-    private readonly ILogger<SecuritySeederService> _logger;
 
-    public SecuritySeederService(
-        ApplicationDbContext db,
-        IAuthService authService,
-        ILogger<SecuritySeederService> logger)
+    public SecuritySeederService(ApplicationDbContext db)
     {
         _db = db;
-        _authService = authService;
-        _logger = logger;
     }
 
-    public async Task SeedAsync(string? adminUserName = null, string? adminPassword = null)
+    public async Task SeedAsync()
     {
         await SeedRolesAndSaveAsync();
         await SeedPermissionsAndSaveAsync();
         await SeedRolePermissionsAsync();
-        await SeedMenusAndSaveAsync();
-        await SeedDefaultAdminAsync(
-            string.IsNullOrWhiteSpace(adminUserName) ? DefaultAdminUserName : adminUserName.Trim(),
-            string.IsNullOrWhiteSpace(adminPassword) ? DefaultAdminPassword : adminPassword);
+        await SeedMenusAsync();
         await _db.SaveChangesAsync();
     }
 
@@ -40,7 +29,7 @@ public class SecuritySeederService : ISecuritySeederService
     {
         var roles = new[]
         {
-            ("SUPERADMIN", "Super Admin", "Full system access.", true),
+            (SecurityDefs.SuperAdminRoleCode, "Super Admin", "Full system access.", true),
             ("ADMIN", "Admin", "Administrative access.", true),
             ("ACCOUNTS", "Accounts", "Accounting and finance operations.", false),
             ("SALES", "Sales", "Sales operations.", false),
@@ -66,135 +55,18 @@ public class SecuritySeederService : ISecuritySeederService
 
     private async Task SeedPermissionsAndSaveAsync()
     {
-        var modules = new[]
-        {
-            "Company", "MasterData", "Branch", "Customer", "Supplier", "Employee",
-            "Expense", "Inventory", "Asset", "Purchase", "Sales", "Payment", "Security"
-        };
-
-        var permissions = new List<(string Code, string Name, string Module)>();
-
-        foreach (var module in modules)
-        {
-            foreach (var action in new[] { "View", "Create", "Edit", "Delete" })
-            {
-                permissions.Add(($"{module}.{action}", $"{module} - {action}", module));
-            }
-        }
-
-        permissions.Add(("Accounting.View", "Accounting - View", "Accounting"));
-        permissions.Add(("Accounting.Create", "Accounting - Create", "Accounting"));
-        permissions.Add(("Accounting.Post", "Accounting - Post", "Accounting"));
-        permissions.Add(("Accounting.Edit", "Accounting - Edit", "Accounting"));
-        permissions.Add(("Accounting.Delete", "Accounting - Delete", "Accounting"));
-        permissions.Add(("Accounting.Approve", "Accounting - Approve", "Accounting"));
-        permissions.Add(("Accounting.Close", "Accounting - Close", "Accounting"));
-
+        // The catalog is the single source of truth shared with /Permission and the menu required
+        // permissions, so seeding it here keeps the three from drifting apart.
         var added = false;
-        foreach (var (code, name, module) in permissions)
+        foreach (var item in SecurityDefs.Catalog)
         {
-            if (!await _db.Permissions.AnyAsync(p => p.Code == code))
+            if (!await _db.Permissions.AnyAsync(p => p.Code == item.Code))
             {
-                _db.Permissions.Add(new Permission { Code = code, Name = name, Module = module, IsSystem = true });
-                added = true;
-            }
-        }
-
-        if (added)
-        {
-            await _db.SaveChangesAsync();
-        }
-    }
-
-    private async Task SeedRolePermissionsAsync()
-    {
-        var allCodes = await _db.Permissions.Select(p => p.Code).ToListAsync();
-        var superAdmin = await _db.Roles.FirstOrDefaultAsync(r => r.Code == "SUPERADMIN");
-        var admin = await _db.Roles.FirstOrDefaultAsync(r => r.Code == "ADMIN");
-
-        if (superAdmin is not null)
-        {
-            foreach (var code in allCodes)
-            {
-                var permission = await _db.Permissions.FirstOrDefaultAsync(p => p.Code == code);
-                if (permission is not null &&
-                    !await _db.RolePermissions.AnyAsync(rp => rp.RoleId == superAdmin.Id && rp.PermissionId == permission.Id))
+                _db.Permissions.Add(new Permission
                 {
-                    _db.RolePermissions.Add(new RolePermission { RoleId = superAdmin.Id, PermissionId = permission.Id });
-                }
-            }
-        }
-
-        if (admin is not null)
-        {
-            foreach (var code in allCodes.Where(c => !c.StartsWith("Accounting.")))
-            {
-                var permission = await _db.Permissions.FirstOrDefaultAsync(p => p.Code == code);
-                if (permission is not null &&
-                    !await _db.RolePermissions.AnyAsync(rp => rp.RoleId == admin.Id && rp.PermissionId == permission.Id))
-                {
-                    _db.RolePermissions.Add(new RolePermission { RoleId = admin.Id, PermissionId = permission.Id });
-                }
-            }
-        }
-    }
-
-    private async Task SeedMenusAndSaveAsync()
-    {
-        var parent = await _db.Menus.FirstOrDefaultAsync(m => m.Code == "SECURITY");
-        if (parent is null)
-        {
-            parent = new Menu
-            {
-                Code = "SECURITY",
-                Name = "Security & Permission",
-                Icon = "bi-shield-lock",
-                DisplayOrder = 99,
-                IsSystem = true
-            };
-            _db.Menus.Add(parent);
-            await _db.SaveChangesAsync();
-        }
-
-        // Fix children that were previously created with a null parent.
-        var existingChildren = await _db.Menus
-            .Where(m => m.Code.StartsWith("SECURITY_") && m.ParentId != parent.Id)
-            .ToListAsync();
-
-        foreach (var child in existingChildren)
-        {
-            child.ParentId = parent.Id;
-        }
-
-        if (existingChildren.Count > 0)
-        {
-            await _db.SaveChangesAsync();
-        }
-
-        var children = new[]
-        {
-            ("SECURITY_USERS", "Users", "bi-person", "User", "Index", 1),
-            ("SECURITY_ROLES", "Roles", "bi-person-badge", "Role", "Index", 2),
-            ("SECURITY_PERMISSIONS", "Permissions", "bi-key", "Permission", "Index", 3),
-            ("SECURITY_MENUS", "Menus", "bi-menu-button-wide", "Menu", "Index", 4),
-            ("SECURITY_ACTIVITY_LOG", "Activity Log", "bi-clock-history", "ActivityLog", "Index", 5),
-            ("SECURITY_LOGIN_HISTORY", "Login History", "bi-box-arrow-in-right", "LoginHistory", "Index", 6)
-        };
-
-        var added = false;
-        foreach (var (code, name, icon, controller, action, order) in children)
-        {
-            if (!await _db.Menus.AnyAsync(m => m.Code == code))
-            {
-                _db.Menus.Add(new Menu
-                {
-                    Code = code,
-                    Name = name,
-                    Icon = icon,
-                    Controller = controller,
-                    Action = action,
-                    ParentId = parent.Id,
-                    DisplayOrder = order,
+                    Code = item.Code,
+                    Name = item.Name,
+                    Module = item.Module,
                     IsSystem = true
                 });
                 added = true;
@@ -207,41 +79,130 @@ public class SecuritySeederService : ISecuritySeederService
         }
     }
 
-    private async Task SeedDefaultAdminAsync(string adminUserName, string adminPassword)
+    private async Task SeedRolePermissionsAsync()
     {
-        const string adminRoleCode = "SUPERADMIN";
+        var permissions = await _db.Permissions.AsNoTracking().ToListAsync();
+        var superAdmin = await _db.Roles.FirstOrDefaultAsync(r => r.Code == SecurityDefs.SuperAdminRoleCode);
+        var admin = await _db.Roles.FirstOrDefaultAsync(r => r.Code == "ADMIN");
 
-        var admin = await _db.Users.FirstOrDefaultAsync(u => u.UserName == adminUserName);
-        if (admin is null)
+        if (superAdmin is not null)
         {
-            if (adminPassword == DefaultAdminPassword)
-            {
-                _logger.LogWarning(
-                    "Seeding default administrator '{User}' with the well-known default password. " +
-                    "Set SeedSecurity:AdminPassword before first run in any shared environment.",
-                    adminUserName);
-            }
+            await GrantAsync(superAdmin.Id, permissions.Select(p => p.Id));
+        }
 
-            admin = new User
-            {
-                UserName = adminUserName,
-                FullName = "System Administrator",
-                Email = "admin@company.local",
-                IsSystem = true,
-                IsActive = true,
-                // The first administrator must replace the seeded password before it can use the
-                // application, so a well-known credential can never stay in use unnoticed.
-                MustChangePassword = true,
-                PasswordHash = _authService.HashPassword(adminPassword)
-            };
-            _db.Users.Add(admin);
+        if (admin is not null)
+        {
+            await GrantAsync(admin.Id, permissions.Where(p => p.Module != "Accounting").Select(p => p.Id));
+        }
+    }
+
+    private async Task GrantAsync(int roleId, IEnumerable<int> permissionIds)
+    {
+        var granted = await _db.RolePermissions
+            .Where(rp => rp.RoleId == roleId)
+            .Select(rp => rp.PermissionId)
+            .ToListAsync();
+
+        var missing = permissionIds.Distinct().Where(id => !granted.Contains(id));
+        foreach (var permissionId in missing)
+        {
+            _db.RolePermissions.Add(new RolePermission { RoleId = roleId, PermissionId = permissionId });
+        }
+
+        if (missing.Any())
+        {
             await _db.SaveChangesAsync();
         }
+    }
 
-        var role = await _db.Roles.FirstOrDefaultAsync(r => r.Code == adminRoleCode);
-        if (role is not null && !await _db.UserRoles.AnyAsync(ur => ur.UserId == admin.Id && ur.RoleId == role.Id))
+    private async Task SeedMenusAsync()
+    {
+        await NormaliseLegacySecurityCodesAsync();
+
+        // Parents first so every child can be attached to an already-persisted parent row.
+        var parents = new Dictionary<string, Menu>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in MenuCatalog.Items.Where(i => i.ParentCode is null))
         {
-            _db.UserRoles.Add(new UserRole { UserId = admin.Id, RoleId = role.Id });
+            parents[item.Code] = await EnsureMenuAsync(item, parent: null);
         }
+
+        foreach (var item in MenuCatalog.Items.Where(i => i.ParentCode is not null))
+        {
+            if (parents.TryGetValue(item.ParentCode!, out var parent))
+            {
+                await EnsureMenuAsync(item, parent);
+            }
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Earlier builds seeded the Security children as SECURITY_USERS, SECURITY_ROLES and so on. Renaming
+    /// them onto the catalog codes lets a partially seeded database be repaired in place instead of
+    /// ending up with two copies of every Security entry once the catalog is synced.
+    /// </summary>
+    private async Task NormaliseLegacySecurityCodesAsync()
+    {
+        var existing = await _db.Menus.ToListAsync();
+        var changed = false;
+
+        foreach (var legacy in existing.Where(m =>
+                     m.Code.StartsWith(LegacySecurityPrefix, StringComparison.OrdinalIgnoreCase)))
+        {
+            var code = legacy.Code[LegacySecurityPrefix.Length..];
+
+            if (existing.Any(m => m.Id != legacy.Id
+                                  && string.Equals(m.Code, code, StringComparison.OrdinalIgnoreCase)))
+            {
+                // The catalog row is already present, so this one is a leftover duplicate. Retire it
+                // instead of deleting, so an administrator can still find it in the menu list.
+                legacy.IsActive = false;
+                changed = true;
+                continue;
+            }
+
+            legacy.Code = code;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            await _db.SaveChangesAsync();
+        }
+    }
+
+    private async Task<Menu> EnsureMenuAsync(MenuCatalog.CatalogMenu item, Menu? parent)
+    {
+        var menu = await _db.Menus.FirstOrDefaultAsync(m => m.Code == item.Code);
+        if (menu is not null)
+        {
+            // Repair a parent that was left null or points at the wrong row. Names, icons and required
+            // permissions are left untouched so administrator customisations survive a restart.
+            var parentId = parent?.Id;
+            if (menu.ParentId != parentId)
+            {
+                menu.ParentId = parentId;
+            }
+
+            return menu;
+        }
+
+        menu = new Menu
+        {
+            Code = item.Code,
+            Name = item.Name,
+            Icon = item.Icon,
+            Controller = item.Controller,
+            Action = item.Action,
+            PermissionCode = item.PermissionCode,
+            ParentId = parent?.Id,
+            DisplayOrder = item.DisplayOrder,
+            IsSystem = true
+        };
+
+        _db.Menus.Add(menu);
+        await _db.SaveChangesAsync();
+        return menu;
     }
 }

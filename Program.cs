@@ -141,24 +141,23 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var app = builder.Build();
 
-// First-run security seed: roles, permissions, role-permission grants, menus and the default admin
-// user. The seeder is idempotent, so an existing (or partially seeded) database is repaired rather
-// than duplicated. Disable with SeedSecurity:OnStartup=false.
+// First-run security seed: roles, permissions, role-permission grants and the standard menu tree. No
+// user is created, so the first person to register at /Account/Register becomes the Super Admin and
+// owns the only credential in the system. The seeder is idempotent, so an existing (or partially
+// seeded) database is repaired rather than duplicated. Disable with SeedSecurity:OnStartup=false.
 if (app.Configuration.GetValue("SeedSecurity:OnStartup", true))
 {
     using var seedScope = app.Services.CreateScope();
     var seedLogger = seedScope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("SecuritySeed");
     try
     {
-        await seedScope.ServiceProvider.GetRequiredService<ISecuritySeederService>().SeedAsync(
-            app.Configuration["SeedSecurity:AdminUserName"],
-            app.Configuration["SeedSecurity:AdminPassword"]);
-        seedLogger.LogInformation("Security seed completed (roles, permissions, menus, default admin).");
+        await seedScope.ServiceProvider.GetRequiredService<ISecuritySeederService>().SeedAsync();
+        seedLogger.LogInformation("Security seed completed (roles, permissions, role grants, menus).");
     }
     catch (Exception ex)
     {
         // Log and continue: a seeding failure must not take down a working instance.
-        seedLogger.LogError(ex, "Security seed failed. No login may be possible on a fresh database.");
+        seedLogger.LogError(ex, "Security seed failed. Registration may not be able to grant Super Admin.");
     }
 }
 
