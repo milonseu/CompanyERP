@@ -1,5 +1,6 @@
 using CompanyERP.Entities.Accounting;
 using CompanyERP.Interfaces.Services;
+using CompanyERP.ViewModels.Accounting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -23,17 +24,17 @@ public class ChartOfAccountController : Controller
         var companies = await _companyService.GetAllAsync();
         if (companies.Count == 0)
         {
-            return View(new List<(CompanyERP.Entities.Accounting.ChartOfAccount Account, int Depth)>());
+            return View(new ChartOfAccountIndexViewModel());
         }
 
         var tree = await _accountService.GetTreeAsync(companies.First().Id);
         ViewBag.Companies = new SelectList(companies, "Id", "Name");
-        return View(tree);
+        return View(new ChartOfAccountIndexViewModel().Build(tree));
     }
 
     [HttpGet]
     [HasPermission("Accounting.Create")]
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(int? parentId)
     {
         var companies = await _companyService.GetAllAsync();
         if (companies.Count == 0)
@@ -42,9 +43,25 @@ public class ChartOfAccountController : Controller
         }
 
         var companyId = companies.First().Id;
-        ViewBag.Companies = new SelectList(companies, "Id", "Name");
-        ViewBag.Parents = new SelectList(await _accountService.GetParentCandidatesAsync(companyId), "Id", "AccountDisplayLabel");
-        return View(new ChartOfAccount { CompanyId = companyId });
+        var account = new ChartOfAccount { CompanyId = companyId };
+
+        if (parentId.HasValue)
+        {
+            var parent = await _accountService.GetByIdAsync(parentId.Value);
+            if (parent is not null && parent.CompanyId == companyId)
+            {
+                account.ParentId = parent.Id;
+                // Copy the parent's class and balance rather than deriving them. Deriving
+                // would get contra accounts wrong (Accumulated Depreciation is an Asset
+                // with a Credit balance), and the service rejects any mismatch anyway.
+                account.AccountType = parent.AccountType;
+                account.NormalBalance = parent.NormalBalance;
+                ViewBag.ParentPath = parent.AccountDisplayLabel;
+            }
+        }
+
+        await PopulateFormAsync(account);
+        return View(account);
     }
 
     [HttpPost]
@@ -83,6 +100,12 @@ public class ChartOfAccountController : Controller
         if (account is null)
         {
             return NotFound();
+        }
+
+        if (account.ParentId.HasValue)
+        {
+            var parent = await _accountService.GetByIdAsync(account.ParentId.Value);
+            ViewBag.ParentPath = parent?.AccountDisplayLabel;
         }
 
         await PopulateFormAsync(account);
@@ -156,9 +179,24 @@ public class ChartOfAccountController : Controller
     private async Task PopulateFormAsync(ChartOfAccount model)
     {
         await PopulateCompaniesAsync(model.CompanyId);
-        ViewBag.Parents = new SelectList(
-            await _accountService.GetParentCandidatesAsync(model.CompanyId, excludeId: model.Id),
-            "Id", "AccountDisplayLabel", model.ParentId);
+        // Excluding self (and its descendants) is what keeps the tree acyclic; the
+        // service also rejects a self parent, but the UI should not offer it.
+        ViewBag.Parents = await BuildParentOptionsAsync(model.CompanyId, model.Id > 0 ? model.Id : null);
+    }
+
+    private async Task<List<ChartOfAccountParentOption>> BuildParentOptionsAsync(int companyId, int? excludeId)
+    {
+        var candidates = await _accountService.GetParentCandidatesAsync(companyId, excludeId);
+
+        return candidates
+            .Select(a => new ChartOfAccountParentOption
+            {
+                Id = a.Id,
+                Label = a.AccountDisplayLabel,
+                AccountType = (int)a.AccountType,
+                NormalBalance = (int)a.NormalBalance
+            })
+            .ToList();
     }
 
     private async Task PopulateCompaniesAsync(int? selectedId = null)

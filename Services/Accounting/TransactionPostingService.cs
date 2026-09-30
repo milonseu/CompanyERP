@@ -229,6 +229,11 @@ public class TransactionPostingService : ITransactionPostingService
             account.IsLeaf = !isParent;
         }
 
+        // Commit here so a standalone seed (startup, or the seeding utility) persists the tree
+        // even when no posting follows. The posting paths that call this method always call
+        // SaveChangesAsync themselves, so this extra save only adds the rows a little earlier.
+        await _db.SaveChangesAsync();
+
         return (true, string.Empty);
     }
 

@@ -1,11 +1,21 @@
-@model List<(CompanyERP.Entities.Accounting.ChartOfAccount Account, int Depth)>
+@model ChartOfAccountIndexViewModel
 @{
     ViewData["Title"] = "Chart of Accounts";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Chart of Accounts</h1>
-    <a asp-action="Create" class="btn btn-primary">Add Account</a>
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h1 class="h3 mb-0">Chart of Accounts</h1>
+        <small class="text-muted">Every account lives in one of four layers. Only <strong>Leaf</strong> accounts accept journal postings.</small>
+    </div>
+    <div>
+        @if (User.HasPermission("Accounting.Create"))
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>New Account
+            </a>
+        }
+    </div>
 </div>
 
 @if (TempData["Success"] != null)
@@ -17,47 +27,314 @@
     <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
 }
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Normal Balance</th>
-                        <th>Opening</th>
-                        <th>Postable</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        var n = item.Account;
-                        var indent = item.Depth * 20;
-                        <tr class="@(n.IsLeaf ? "" : "table-light")">
-                            <td class="text-nowrap">@n.AccountCode</td>
-                            <td style="padding-left: @(10 + indent)px;">
-                                @if (item.Depth > 0)
-                                {
-                                    <span class="text-muted me-1">@(n.IsLeaf ? "└─" : "├─")</span>
-                                }
-                                <span class="@(n.IsLeaf ? "" : "fw-bold")">@n.AccountName</span>
-                            </td>
-                            <td>@n.AccountType</td>
-                            <td>@n.NormalBalance</td>
-                            <td class="text-end">@n.OpeningBalance.ToString("N2")</td>
-                            <td>@(n.IsPostable ? "Yes" : "No")</td>
-                            <td class="text-end">
-                                <a asp-action="Edit" asp-route-id="@n.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                <a asp-action="Delete" asp-route-id="@n.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+@if (Model.TotalCount > 0)
+{
+    <div class="row g-3">
+        @* ---------- Left pane: layer legend + type filter ---------- *@
+    <div class="col-lg-3 col-xl-2">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header py-2"><strong class="small">The four layers</strong></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex align-items-center gap-2 py-2">
+                    <span class="coa-level-badge coa-level-1">1</span>
+                    <div><div class="small fw-semibold">Class</div><div class="coa-hint">Assets, Liabilities, Equity, Revenue, Expenses</div></div>
+                </li>
+                <li class="list-group-item d-flex align-items-center gap-2 py-2">
+                    <span class="coa-level-badge coa-level-2">2</span>
+                    <div><div class="small fw-semibold">Group</div><div class="coa-hint">Broad category, e.g. Cash &amp; Bank</div></div>
+                </li>
+                <li class="list-group-item d-flex align-items-center gap-2 py-2">
+                    <span class="coa-level-badge coa-level-3">3</span>
+                    <div><div class="small fw-semibold">Sub-Group</div><div class="coa-hint">Narrows it down, e.g. Cash Accounts</div></div>
+                </li>
+                <li class="list-group-item d-flex align-items-center gap-2 py-2">
+                    <span class="coa-level-badge coa-level-4">4</span>
+                    <div><div class="small fw-semibold">Leaf</div><div class="coa-hint">Postable — the only layer a journal entry can use</div></div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                <strong class="small">Account types</strong>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" id="coaShowAll">All</button>
+            </div>
+            <div class="list-group list-group-flush" id="coaTypeFilter">
+                @foreach (var t in Model.TypeCounts)
+                {
+                    <button type="button"
+                            class="list-group-item list-group-item-action coa-type-filter d-flex align-items-center gap-2 @(t.Count == 0 ? "disabled" : "")"
+                            data-type="@t.AccountType">
+                        <i class="bi @t.Icon @t.CssClass"></i>
+                        <span class="small flex-grow-1 text-start">@t.Name</span>
+                        <span class="badge rounded-pill text-bg-light">@t.Count</span>
+                    </button>
+                }
+            </div>
+            <div class="card-footer small text-muted py-2">
+                <div><strong>@Model.TotalCount</strong> accounts total</div>
+                <div><strong>@Model.PostableCount</strong> postable (leaf)</div>
+                <div><strong>@Model.ParentCount</strong> parents (grouping only)</div>
+            </div>
         </div>
     </div>
-</div>
+
+    @* ---------- Right pane: the tree ---------- *@
+    <div class="col-lg-9 col-xl-10">
+        <div class="card shadow-sm">
+            <div class="card-header py-2 d-flex flex-wrap gap-2 align-items-center">
+                <div class="input-group input-group-sm" style="max-width: 320px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="search" class="form-control" id="coaSearch"
+                           placeholder="Search code or name…" aria-label="Search accounts" />
+                </div>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Expand or collapse">
+                    <button type="button" class="btn btn-outline-secondary" id="coaExpandAll" title="Expand all"><i class="bi bi-arrows-expand"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="coaCollapseAll" title="Collapse to classes only"><i class="bi bi-arrows-collapse"></i></button>
+                </div>
+                <span class="small text-muted ms-auto" id="coaResultCount">@Model.TotalCount shown</span>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle coa-table mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 34%;">Account</th>
+                                <th>Layer</th>
+                                <th>Type</th>
+                                <th>Normal</th>
+                                <th class="text-end">Opening</th>
+                                <th>Posting</th>
+                                <th class="text-end" style="width: 210px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coaTree">
+                            @foreach (var row in Model.Rows)
+                            {
+                                <tr class="coa-row @(row.HasChildren ? "coa-parent" : "coa-leaf")"
+                                    data-id="@row.Id"
+                                    data-parent-id="@(row.ParentId?.ToString() ?? "")"
+                                    data-depth="@row.Depth"
+                                    data-type="@row.AccountType"
+                                    data-search="@($"{row.AccountCode} {row.AccountName} {row.LevelName}".ToLowerInvariant())">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2" style="padding-left: @(row.Depth * 22)px;">
+                                            @if (row.HasChildren)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-link p-0 coa-toggle text-decoration-none" data-target="@row.Id" aria-label="Expand or collapse @row.AccountName" aria-expanded="true">
+                                                    <i class="bi bi-chevron-down"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span class="coa-toggle-spacer"></span>
+                                            }
+                                            <i class="bi @row.TypeIcon @row.TypeCssClass"></i>
+                                            <span class="coa-code">@row.AccountCode</span>
+                                            <span class="fw-semibold">@row.AccountName</span>
+                                            @if (!row.IsActive)
+                                            {
+                                                <span class="badge text-bg-secondary">Inactive</span>
+                                            }
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(row.Description))
+                                        {
+                                            <small class="text-muted d-block ms-4 ps-2">@row.Description</small>
+                                        }
+                                    </td>
+                                    <td><span class="coa-level-badge @row.LevelBadgeCss">@row.Level · @row.LevelName</span></td>
+                                    <td><span class="small">@row.AccountType</span></td>
+                                    <td><span class="small @(row.NormalBalance == AccountNormalBalance.Debit ? "coa-dr" : "coa-cr")">@row.NormalBalance</span></td>
+                                    <td class="text-end small">@(row.OpeningBalance == 0 ? "—" : row.OpeningBalance.ToString("N2"))</td>
+                                    <td>
+                                        @if (row.IsPostable)
+                                        {
+                                            <span class="badge coa-badge-postable"><i class="bi bi-check2 me-1"></i>Postable</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge coa-badge-group">Grouping only</span>
+                                        }
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        @if (row.HasChildren)
+                                        {
+                                            @if (User.HasPermission("Accounting.Create"))
+                                            {
+                                                <a asp-action="Create" asp-route-parentId="@row.Id"
+                                                   class="btn btn-sm btn-outline-primary" title="Add a child account under @row.AccountName">
+                                                    <i class="bi bi-diagram-2 me-1"></i>Add child
+                                                </a>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            @if (User.HasPermission("Accounting.Edit"))
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@row.Id" class="btn btn-sm btn-outline-secondary" title="Edit @row.AccountName">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            }
+                                            @if (User.HasPermission("Accounting.Delete"))
+                                            {
+                                                <a asp-action="Delete" asp-route-id="@row.Id" class="btn btn-sm btn-outline-danger ms-1" title="Delete @row.AccountName">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center text-muted py-4 d-none" id="coaNoMatch">
+                    <i class="bi bi-search fs-3 d-block mb-2"></i>
+                    No account matches that search.
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-diagram-3 fs-1 text-muted"></i>
+            <h2 class="h5 mt-3">No accounts yet</h2>
+            <p class="text-muted mb-3">Start with the five top level classes, then drill down to leaf accounts.</p>
+            @if (User.HasPermission("Accounting.Create"))
+            {
+                <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Create the first account</a>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const rows = Array.from(document.querySelectorAll('#coaTree .coa-row'));
+            if (rows.length === 0) return;
+
+            const byId = new Map();       // id -> row
+            const toggles = new Map();   // id -> expanded?
+            rows.forEach(r => {
+                byId.set(r.dataset.id, r);
+                toggles.set(r.dataset.id, true);
+            });
+
+            const search = document.getElementById('coaSearch');
+            const resultCount = document.getElementById('coaResultCount');
+            const noMatch = document.getElementById('coaNoMatch');
+            let activeType = null;
+            let term = '';
+
+            // Ancestor ids from the immediate parent up to the root.
+            function ancestorsOf(row) {
+                const out = [];
+                let p = row.dataset.parentId;
+                while (p && byId.has(p)) {
+                    out.push(p);
+                    p = byId.get(p).dataset.parentId;
+                }
+                return out;
+            }
+
+            function matches(row) {
+                const okType = !activeType || row.dataset.type === activeType;
+                const okTerm = !term || row.dataset.search.includes(term);
+                return okType && okTerm;
+            }
+
+            function apply() {
+                // A row shows when it matches, or when it is on the path to a match so
+                // the match keeps its context in the tree. Collapsed ancestors still
+                // hide their subtrees, except while searching, where we auto-expand.
+                const keep = new Set();
+                rows.forEach(row => {
+                    if (matches(row)) {
+                        keep.add(row);
+                        ancestorsOf(row).forEach(id => keep.add(id));
+                    }
+                });
+
+                let shown = 0;
+                rows.forEach(row => {
+                    const open = ancestorsOf(row).every(id => toggles.get(id) !== false);
+                    const visible = keep.has(row) && open;
+                    row.classList.toggle('d-none', !visible);
+                    if (visible) shown++;
+                });
+
+                document.querySelectorAll('#coaTree .coa-toggle').forEach(btn => {
+                    const row = btn.closest('tr');
+                    btn.classList.toggle('d-none', row.classList.contains('d-none'));
+                    const open = toggles.get(btn.dataset.target) !== false;
+                    btn.setAttribute('aria-expanded', String(open));
+                    btn.querySelector('i').className = open ? 'bi bi-chevron-down' : 'bi bi-chevron-right';
+                });
+
+                resultCount.textContent = shown === rows.length
+                    ? `${shown} shown`
+                    : `${shown} of ${rows.length} shown`;
+                noMatch.classList.toggle('d-none', shown > 0);
+            }
+
+            // A user toggling a branch by hand should keep that choice even when
+            // the search box is empty, so expand/collapse only applies outside search.
+            function resetExpansion() {
+                toggles.forEach((_, k) => toggles.set(k, true));
+            }
+
+            document.getElementById('coaTree').addEventListener('click', function (e) {
+                const btn = e.target.closest('.coa-toggle');
+                if (!btn) return;
+                const id = btn.dataset.target;
+                toggles.set(id, toggles.get(id) === false);
+                apply();
+            });
+
+            document.getElementById('coaExpandAll').addEventListener('click', function () {
+                resetExpansion();
+                apply();
+            });
+
+            document.getElementById('coaCollapseAll').addEventListener('click', function () {
+                toggles.forEach((_, k) => toggles.set(k, false));
+                apply();
+            });
+
+            search.addEventListener('input', function () {
+                term = this.value.trim().toLowerCase();
+                if (term) resetExpansion();
+                apply();
+            });
+
+            document.getElementById('coaTypeFilter').addEventListener('click', function (e) {
+                const btn = e.target.closest('.coa-type-filter');
+                if (!btn || btn.classList.contains('disabled')) return;
+                const t = btn.dataset.type;
+                activeType = (activeType === t) ? null : t;
+                document.querySelectorAll('.coa-type-filter').forEach(b => {
+                    b.classList.toggle('active', b.dataset.type === activeType);
+                });
+                if (activeType) resetExpansion();
+                apply();
+            });
+
+            document.getElementById('coaShowAll').addEventListener('click', function () {
+                activeType = null;
+                term = '';
+                search.value = '';
+                resetExpansion();
+                document.querySelectorAll('.coa-type-filter').forEach(b => b.classList.remove('active'));
+                apply();
+            });
+
+            apply();
+        })();
+    </script>
+}

@@ -1,18 +1,31 @@
 @model ChartOfAccount
 @{
     ViewData["Title"] = "Edit Account";
+    var hasParent = Model.ParentId.HasValue;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Edit Account</h1>
-    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+    <h1 class="h3 mb-0">Edit @Model.AccountName</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to list</a>
 </div>
+
+@if (hasParent)
+{
+    <div class="alert alert-info d-flex align-items-start gap-2">
+        <i class="bi bi-diagram-2 fs-5"></i>
+        <div>
+            This account sits inside a group, so its type and balance are fixed to match that group.
+            <div class="small">Parent: <strong>@(ViewBag.ParentPath as string ?? "—")</strong></div>
+        </div>
+    </div>
+}
 
 <div class="card shadow-sm">
     <div class="card-body">
         <form asp-action="Edit" method="post">
             <input type="hidden" asp-for="Id" />
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
             <div class="row g-3">
                 <div class="col-md-4">
                     <label asp-for="CompanyId" class="form-label"></label>
@@ -43,8 +56,16 @@
                 </div>
                 <div class="col-md-4">
                     <label asp-for="ParentId" class="form-label"></label>
-                    <select asp-for="ParentId" asp-items="ViewBag.Parents" class="form-select">
+                    <select asp-for="ParentId" class="form-select">
                         <option value="">-- Root / Top Level --</option>
+                        @if (ViewBag.Parents is IEnumerable<ChartOfAccountParentOption> parentOptions)
+                        {
+                            foreach (var p in parentOptions)
+                            {
+                                var selected = Model.ParentId == p.Id ? " selected" : null;
+                                <option value="@p.Id" data-type="@p.AccountType" data-balance="@p.NormalBalance" selected="@selected">@p.Label</option>
+                            }
+                        }
                     </select>
                     <span asp-validation-for="ParentId" class="text-danger"></span>
                 </div>
@@ -59,8 +80,9 @@
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
             </div>
+
             <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Save Account</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
                 <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
@@ -69,4 +91,21 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            // asp-for renders these ids, so they match the model property names.
+            const parentSelect = document.getElementById('ParentId');
+            const typeSelect = document.getElementById('AccountType');
+            const balanceSelect = document.getElementById('NormalBalance');
+            if (!parentSelect || !typeSelect || !balanceSelect) return;
+
+            parentSelect.addEventListener('change', function () {
+                const opt = this.options[this.selectedIndex];
+                if (opt && opt.value) {
+                    typeSelect.value = opt.dataset.type;
+                    balanceSelect.value = opt.dataset.balance;
+                }
+            });
+        })();
+    </script>
 }

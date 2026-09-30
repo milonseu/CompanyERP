@@ -161,6 +161,39 @@ if (app.Configuration.GetValue("SeedSecurity:OnStartup", true))
     }
 }
 
+// Chart of Accounts seed: installs the default four layer tree (Class > Group > Sub-Group > Leaf)
+// for every company that does not have one yet. TransactionPostingService already runs the same
+// routine lazily before a posting, which leaves a new company with an empty Chart of Accounts page
+// until its first transaction. Seeding here means the user sees the structure immediately.
+// Idempotent: existing accounts keep their codes, names and types. Disable with SeedChartOfAccounts:OnStartup=false.
+if (app.Configuration.GetValue("SeedChartOfAccounts:OnStartup", true))
+{
+    using var coaScope = app.Services.CreateScope();
+    var coaLogger = coaScope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("ChartOfAccountsSeed");
+    try
+    {
+        var companyService = coaScope.ServiceProvider.GetRequiredService<ICompanyProfileService>();
+        var postingService = coaScope.ServiceProvider.GetRequiredService<ITransactionPostingService>();
+        var companies = await companyService.GetAllAsync();
+
+        foreach (var company in companies)
+        {
+            var result = await postingService.EnsureDefaultsAsync(company.Id);
+            if (!result.Success)
+            {
+                coaLogger.LogWarning("Chart of Accounts seed skipped for company {CompanyId}: {Error}", company.Id, result.Error);
+            }
+        }
+
+        coaLogger.LogInformation("Chart of Accounts seed completed for {CompanyCount} company(ies).", companies.Count);
+    }
+    catch (Exception ex)
+    {
+        // Log and continue: a missing default chart must not stop the app from starting.
+        coaLogger.LogError(ex, "Chart of Accounts seed failed. Accounts will be created on first posting instead.");
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
